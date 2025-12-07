@@ -1,11 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MusicServer.API;
 using MusicServer.API.Database;
 
 /////////////////////////////////////////////////////
-/// конфигурация приложения
+/// конфигурация билдера
 ///
 ////////////////////////////////////////////////////
 var builder = WebApplication.CreateBuilder(args); //Построитель приложения по шаблону dotnetWebApi
+
+// Сохраняем путь к файлам в конфигурации
+builder.Configuration["MusicStorage:Path"] = AppConfigUtils.InitMusicFolder(builder.Configuration["MusicStorage:Path"]);
 
 // Добавляем контроллеры
 builder.Services.AddControllers();
@@ -13,6 +17,9 @@ builder.Services.AddControllers();
 // Настраиваем PostgreSQL - в рамках разработки курсовой подключение к локальноve серверу БД
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DevelopConnection")));
+
+// Регистрируем MusicService сервис в приложении
+AppConfigUtils.RegistrateMusicService(builder);
 
 //#ifdef __DEBUG/////////////////////////////////////////////////////////////////////////////
 // Разрешаем CORS для клиента -- чтобы в целях тестирования отправлять запросы с одного компa
@@ -23,7 +30,8 @@ builder.Services.AddCors(options =>
         {
             policy.AllowAnyOrigin()     // Разрешить ВСЕ источники (опасно для продакшена!)
                   .AllowAnyMethod()
-                  .AllowAnyHeader();
+                  .AllowAnyHeader()
+                  .WithExposedHeaders("Content-Disposition"); // Важно для скачивания!
         });
 });
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -32,8 +40,18 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
+
+/////////////////////////////////////////////////////
+/// создание приложения
+///
+////////////////////////////////////////////////////
 var app = builder.Build();
 
+
+/////////////////////////////////////////////////////
+/// конфигурация приложения
+///
+////////////////////////////////////////////////////
 // Конфигурация middleware - для тестирования Post запроса
 if (app.Environment.IsDevelopment())
 {
