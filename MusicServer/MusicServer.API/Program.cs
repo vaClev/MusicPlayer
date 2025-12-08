@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http.Features;
+using Microsoft.EntityFrameworkCore;
 using MusicServer.API;
 using MusicServer.API.Database;
 
@@ -9,7 +10,15 @@ using MusicServer.API.Database;
 var builder = WebApplication.CreateBuilder(args); //Построитель приложения по шаблону dotnetWebApi
 
 // Сохраняем путь к файлам в конфигурации
-builder.Configuration["MusicStorage:Path"] = AppConfigUtils.InitMusicFolder(builder.Configuration["MusicStorage:Path"]);
+builder.Configuration["MusicStorage:FullPath"] = AppConfigUtils.InitMusicFolder(builder.Configuration["MusicStorage:Path"]);
+
+// ВАЖНО: Настройка лимитов ДО добавления контроллеров
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.ValueLengthLimit = int.MaxValue;
+    options.MultipartBodyLengthLimit = 104857600; // 100MB
+    options.MemoryBufferThreshold = int.MaxValue;
+});
 
 // Добавляем контроллеры
 builder.Services.AddControllers();

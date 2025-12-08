@@ -16,9 +16,9 @@ namespace MusicServer.API.Models
 
         public string title { get; set; }
         public string artist { get; set; }
-        public string album { get; set; }
+        public string? album { get; set; }
         public int? year { get; set; }
-        public string genre { get; set; }
+        public string? genre { get; set; }
 
         public long filesize { get; set; }
         public TimeSpan duration { get; set; }

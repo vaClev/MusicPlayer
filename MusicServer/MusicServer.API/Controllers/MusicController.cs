@@ -1,10 +1,10 @@
-﻿
-
-
+﻿using System.IO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MusicServer.API.Database;
+using MusicServer.API.DTO;
 using MusicServer.API.Models;
+using MusicServer.API.Services;
 
 namespace MusicServer.API.Controllers
 {
@@ -12,40 +12,157 @@ namespace MusicServer.API.Controllers
     [ApiController]
     public class MusicController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IMusicService _musicService;
+        private readonly IWebHostEnvironment _environment;
 
-        public MusicController(AppDbContext context)
+        // Конструктор для dependency injection
+        public MusicController(IMusicService musicService, IWebHostEnvironment environment)
         {
-            _context = context;
+            _musicService = musicService;
+            _environment = environment;
         }
 
+        #region GetDTO
         // GET: api/music
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MusicFile>>> GetMusicFiles()
+        public async Task<ActionResult<IEnumerable<MusicFileResponseDto>>> GetMusicFiles()
         {
-            return await _context.MusicFiles.ToListAsync();
+            var musicFiles = await _musicService.GetAllMusicFilesAsync();
+            return Ok(musicFiles.Select(musicFile => new MusicFileResponseDto
+            {
+                Id = musicFile.id,
+                FileName = musicFile.filename,
+                Title = musicFile.title,
+                Artist = musicFile.artist,
+                Album = musicFile.album,
+                Genre = musicFile.genre,
+                Year = musicFile.year,
+                FileSize = musicFile.filesize,
+                Duration = musicFile.duration,
+                UploadDate = musicFile.uploadDate,
+                DownloadUrl = Url.Action("Download", "Music", new { id = musicFile.id }, Request.Scheme)
+            }));
         }
 
-        // GET: api/music/id5 ,где 5 это id сущности "MusicFile"
+
+        // GET: api/music/id5 ,где 5 это id сущности "MusicFile" в таблице БД
         [HttpGet("id{id}")]
-        public async Task<ActionResult<MusicFile>> GetMusicFile(int id)
+        public async Task<ActionResult<MusicFileResponseDto>> GetMusicFile(int id)
         {
-            var musicFile = await _context.MusicFiles.FindAsync(id);
+            var musicFile = await _musicService.GetMusicFileAsync(id);
 
             if (musicFile == null)
             {
                 return NotFound();
             }
 
-            return musicFile;
+            return new MusicFileResponseDto //TODO создать class helper для создания MusicFileResponseDto 
+            {
+                Id = musicFile.id,
+                FileName = musicFile.filename,
+                Title = musicFile.title,
+                Artist = musicFile.artist,
+                Album = musicFile.album,
+                Genre = musicFile.genre,
+                Year = musicFile.year,
+                FileSize = musicFile.filesize,
+                Duration = musicFile.duration,
+                UploadDate = musicFile.uploadDate,
+                DownloadUrl = Url.Action("Download", "Music", new { id = musicFile.id }, Request.Scheme)
+            };
+        }
+        #endregion
+
+        #region UploadFile
+        // Загрузка файла на сервер. Прототип.
+        // TODO: сделать возможным только для авторизованных админов.
+        // POST: api/music/upload
+        [HttpPost("upload")]
+        [RequestSizeLimit(52428800)] // 50MB
+        public async Task<ActionResult<MusicFileResponseDto>> UploadMusic(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("Файл отсутсвует");
+
+            try
+            {
+                var uploadedFile = await _musicService.UploadMusicAsync(file);
+
+                return CreatedAtAction(nameof(GetMusicFile), new { id = uploadedFile.id },
+                    new MusicFileResponseDto //TODO создать class helper для создания MusicFileResponseDto 
+                    {
+                        Id = uploadedFile.id,
+                        FileName = uploadedFile.filename,
+                        Title = uploadedFile.title,
+                        Artist = uploadedFile.artist,
+                        Album = uploadedFile.album,
+                        Genre = uploadedFile.genre,
+                        Year = uploadedFile.year,
+                        FileSize = uploadedFile.filesize,
+                        Duration = uploadedFile.duration,
+                        UploadDate = uploadedFile.uploadDate,
+                        DownloadUrl = Url.Action("Download", "Music", new { id = uploadedFile.id }, Request.Scheme)
+                    });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Ошибка загрузки: {ex.Message}");
+            }
+        }
+        #endregion
+
+        #region Download
+        // запрос скачивания файла
+        // GET: api/music/download/5
+        [HttpGet("download/id{id}")]
+        public async Task<IActionResult> Download(int id)
+        {
+            var filePath = await _musicService.GetMusicFilePathAsync(id);
+
+            // может быть ошибка в запросе. Или в БД есть запись а файла нет в папке.
+            if (string.IsNullOrEmpty(filePath) || !System.IO.File.Exists(filePath))
+                return NotFound();
+
+            MusicFile musicFile = await _musicService.GetMusicFileAsync(id);
+            string extension = Path.GetExtension(musicFile.filepath).ToLower();
+            string contentType = GetContentType(extension);
+
+            return PhysicalFile(filePath, contentType, $"{musicFile.artist} - {musicFile.title}{extension}");
         }
 
+        private string GetContentType(string extension)
+        {
+            return extension switch
+            {
+                ".mp3" => "audio/mpeg",
+                ".wav" => "audio/wav",
+                ".flac" => "audio/flac",
+                ".ogg" => "audio/ogg",
+                _ => "application/octet-stream"
+            };
+        }
+        #endregion
+
+
+        // DELETE: api/music/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteMusicFile(int id)
+        {
+            var result = await _musicService.DeleteMusicFileAsync(id);
+            if (!result)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
 
         /// Тестовый POST запрос добавления сущности в базу данных.
         /// TODO: Сделать админское приложение на WPF для добавления сущностей.
         [HttpPost("test")]
         public async Task<ActionResult<MusicFile>> PostTestMusic()
         {
+            var testFilePAth = Path.Combine(_environment.WebRootPath, "test.mp3");
             var testMusic = new MusicFile
             {
                 filename = "test_song.mp3",
@@ -59,10 +176,9 @@ namespace MusicServer.API.Controllers
                 duration = TimeSpan.FromMinutes(3.5)
             };
 
-            _context.MusicFiles.Add(testMusic);
-            await _context.SaveChangesAsync();
+            await _musicService.SaveToDbForTest(testMusic);
 
-            return CreatedAtAction("GetMusicFile", new { id = testMusic.id }, testMusic);
+            return Ok(testMusic);
         }
     }
 }

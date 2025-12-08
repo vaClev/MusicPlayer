@@ -27,7 +27,7 @@ namespace MusicServer.API.Services
         public async Task<MusicFile> UploadMusicAsync(IFormFile file)
         {
             // 1. Проверяем расширение файла
-            var allowedExtensions = _configuration.GetSection("MusicStorage:AllowedExtensions").Get<string[]>() 
+            var allowedExtensions = _configuration.GetSection("MusicStorage:AllowedExtensions").Get<string[]>()
                                     ?? new[] { ".mp3" }; // ?? если null то харкоженные mp3 толко
             var extension = Path.GetExtension(file.FileName).ToLower();
 
@@ -38,15 +38,12 @@ namespace MusicServer.API.Services
 
             // 2. Создаем уникальное имя файла
             var fileName = Guid.NewGuid().ToString() + extension;
-            var musicFolder = _configuration["MusicStoragePath"]
-                ?? Path.Combine(_environment.WebRootPath, "MusicFiles");
-
-            if (!Directory.Exists(musicFolder))
+            var musicFolderFullSystemPath = _configuration.GetSection("MusicStorage:FullPath").Get<string>();
+            if (musicFolderFullSystemPath != null && !Directory.Exists(musicFolderFullSystemPath))
             {
-                Directory.CreateDirectory(musicFolder);
+                Directory.CreateDirectory(musicFolderFullSystemPath);
             }
-
-            var filePath = Path.Combine(musicFolder, fileName);
+            var filePath = Path.Combine(musicFolderFullSystemPath, fileName);
 
             // 3. Сохраняем файл
             using (var stream = new FileStream(filePath, FileMode.Create))
@@ -60,6 +57,9 @@ namespace MusicServer.API.Services
 
             // 5. Сохраняем в БД 
             // TODO вынести в отдельный класс MusicFileDBHelper 
+            //Подмена пути на короткий для сохранения в БД
+            string shortFolderName = _configuration.GetSection("MusicStorage:Path").Value ?? string.Empty;
+            musicFile.filepath = Path.Combine(shortFolderName, fileName)  ?? ""; //в базу пишем только от папки MusicFiles, для кросплатформенности Linux
             _context.MusicFiles.Add(musicFile);
             await _context.SaveChangesAsync();
 
@@ -124,7 +124,9 @@ namespace MusicServer.API.Services
         public async Task<string> GetMusicFilePathAsync(int id)
         {
             var musicFile = await GetMusicFileAsync(id);
-            return (musicFile != null) ? musicFile.filepath : "";
+            string pathPrefix = _configuration.GetSection("MusicStorage:PrefixPath").Get<string>() ?? "";
+
+            return (musicFile != null) ? Path.Combine(pathPrefix, musicFile.filepath) : "";
         }
 
         // Удаление карточки и файла
@@ -147,6 +149,15 @@ namespace MusicServer.API.Services
             await _context.SaveChangesAsync();
 
             return true;
+        }
+
+
+
+        public async Task<MusicFile> SaveToDbForTest(MusicFile musicFile)
+        {
+            _context.MusicFiles.Add(musicFile);
+            await _context.SaveChangesAsync();
+            return musicFile;
         }
         #endregion
 

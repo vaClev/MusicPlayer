@@ -9,5 +9,7 @@ namespace MusicServer.API.Services
         Task<IEnumerable<MusicFile>> GetAllMusicFilesAsync();
         Task<string> GetMusicFilePathAsync(int id);
         Task<bool> DeleteMusicFileAsync(int id);
+
+        Task<MusicFile> SaveToDbForTest(MusicFile musicFile);
     }
 }
