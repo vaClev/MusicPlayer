@@ -27,5 +27,8 @@ namespace MusicServer.API.Models
 
         // Для будущих окружений, концертов (типо плейлистов)
         //public virtual ICollection<Tracklist> tracklists { get; set; }
+
+        // Навигационное свойство для ExtraFiles
+        public virtual ICollection<ExtraFile> ExtraFiles { get; set; } = new List<ExtraFile>();
     }
 }

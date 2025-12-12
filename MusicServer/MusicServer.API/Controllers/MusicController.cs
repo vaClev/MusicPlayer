@@ -1,7 +1,4 @@
-﻿using System.IO;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MusicServer.API.Database;
+﻿using Microsoft.AspNetCore.Mvc;
 using MusicServer.API.DTO;
 using MusicServer.API.Models;
 using MusicServer.API.Services;
