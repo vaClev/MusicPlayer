@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using MusicServer.API;
 using MusicServer.API.Database;
+using MusicServer.API.Services.Upload;
 
 /////////////////////////////////////////////////////
 /// конфигурация билдера
@@ -29,6 +30,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Регистрируем MusicService сервис в приложении
 AppConfigUtils.RegistrateMusicService(builder);
+
+// Регистрируем фабрику Upload
+builder.Services.AddSingleton<IUploadServiceFactory, UploadServiceFactory>();
 
 //#ifdef __DEBUG/////////////////////////////////////////////////////////////////////////////
 // Разрешаем CORS для клиента -- чтобы в целях тестирования отправлять запросы с одного компa

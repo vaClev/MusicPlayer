@@ -119,15 +119,17 @@ namespace MusicServer.API.Controllers
         {
             var filePath = await _musicService.GetMusicFilePathAsync(id);
 
-            // может быть ошибка в запросе. Или в БД есть запись а файла нет в папке.
             if (string.IsNullOrEmpty(filePath) || !System.IO.File.Exists(filePath))
-                return NotFound();
+                return NotFound();// может быть ошибка в запросе. Или в БД есть запись а файла нет в папке.
 
-            MusicFile musicFile = await _musicService.GetMusicFileAsync(id);
-            string extension = Path.GetExtension(musicFile.filepath).ToLower();
+            string extension = Path.GetExtension(filePath).ToLower();
             string contentType = GetContentType(extension);
 
-            return PhysicalFile(filePath, contentType, $"{musicFile.artist} - {musicFile.title}{extension}");
+            MusicFile? musicFile = await _musicService.GetMusicFileAsync(id);
+            string artist = musicFile != null ? musicFile.artist : string.Empty;
+            string title = musicFile != null ? musicFile.title : string.Empty;
+
+            return PhysicalFile(filePath, contentType, $"{artist} - {title}{extension}");
         }
 
         private string GetContentType(string extension)

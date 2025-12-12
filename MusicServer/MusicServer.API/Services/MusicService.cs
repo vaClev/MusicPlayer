@@ -1,7 +1,9 @@
 ﻿
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MusicServer.API.Database;
 using MusicServer.API.Models;
+using MusicServer.API.Services.Upload;
 using TagLib;
 
 namespace MusicServer.API.Services
@@ -11,55 +13,49 @@ namespace MusicServer.API.Services
         private readonly AppDbContext _context;
         private readonly IWebHostEnvironment _environment;
         private readonly IConfiguration _configuration;
+        private readonly IUploadService m_uploadService;
+        private readonly string m_pathPrefix;
 
         public MusicService(
             AppDbContext context,
             IWebHostEnvironment environment,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IUploadServiceFactory uploadServiceFactory)
         {
             _context = context;
             _environment = environment;
             _configuration = configuration;
+
+            string musicFolderFullSystemPath = _configuration.GetSection("MusicStorage:FullPath").Get<string>() ?? string.Empty; ;
+            var allowedExtensions = _configuration.GetSection("MusicStorage:AllowedExtensions").Get<string[]>() ?? new[] { string.Empty };
+            m_uploadService = uploadServiceFactory.Create(musicFolderFullSystemPath, allowedExtensions);
+
+            m_pathPrefix = _configuration.GetSection("MusicStorage:PrefixPath").Get<string>() ?? string.Empty;
         }
+
 
         #region "Реализация интерфейса IMusicService"
         //Загрузка файла на сервер
-        public async Task<MusicFile> UploadMusicAsync(IFormFile file)
+        public async Task<MusicFile> UploadMusicAsync([FromForm] IFormFile file)
         {
-            // 1. Проверяем расширение файла
-            var allowedExtensions = _configuration.GetSection("MusicStorage:AllowedExtensions").Get<string[]>()
-                                    ?? new[] { ".mp3" }; // ?? если null то харкоженные mp3 толко
-            var extension = Path.GetExtension(file.FileName).ToLower();
-
-            if (!allowedExtensions.Contains(extension))
-            {
-                throw new ArgumentException($"Недопустимый формат файла. Разрешены: {string.Join(", ", allowedExtensions)}");
-            }
+            // 1. Проверяем расширение файла.
+            var extension = m_uploadService.GetExtensionWithCheck(file);
 
             // 2. Создаем уникальное имя файла
             var fileName = Guid.NewGuid().ToString() + extension;
-            var musicFolderFullSystemPath = _configuration.GetSection("MusicStorage:FullPath").Get<string>();
-            if (musicFolderFullSystemPath != null && !Directory.Exists(musicFolderFullSystemPath))
-            {
-                Directory.CreateDirectory(musicFolderFullSystemPath);
-            }
-            var filePath = Path.Combine(musicFolderFullSystemPath, fileName);
+            var filePath = m_uploadService.CreateFilePath(fileName);
 
             // 3. Сохраняем файл
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
+            await m_uploadService.SaveFile(file, filePath);
 
-            // 4. Извлекаем метаданные
-            // TODO создать класс обертку для этой функции.
-            var musicFile = await ExtractMetadataAsync(filePath, fileName, file);
+            // 4. Извлекаем метаданные из mp3
+            var musicFile = ExtractMetadataAsync(filePath, fileName, file);
 
             // 5. Сохраняем в БД 
             // TODO вынести в отдельный класс MusicFileDBHelper 
             //Подмена пути на короткий для сохранения в БД
             string shortFolderName = _configuration.GetSection("MusicStorage:Path").Value ?? string.Empty;
-            musicFile.filepath = Path.Combine(shortFolderName, fileName)  ?? ""; //в базу пишем только от папки MusicFiles, для кросплатформенности Linux
+            musicFile.filepath = Path.Combine(shortFolderName, fileName) ?? ""; //в базу пишем только от папки MusicFiles, для кросплатформенности Linux
             _context.MusicFiles.Add(musicFile);
             await _context.SaveChangesAsync();
 
@@ -68,7 +64,7 @@ namespace MusicServer.API.Services
 
         // TODO создать класс обертку для этой функции.
         // зависит от библиотеки TagLib
-        private async Task<MusicFile> ExtractMetadataAsync(string filePath, string fileName, IFormFile originalFile)
+        private MusicFile ExtractMetadataAsync(string filePath, string fileName, IFormFile originalFile)
         {
             var musicFile = new MusicFile
             {
@@ -100,11 +96,12 @@ namespace MusicServer.API.Services
                 musicFile.album = "Unknown Album";
                 musicFile.duration = TimeSpan.Zero;
             }
+
             return musicFile;
         }
 
         // Получить MusicFile(карточку) из БД
-        public async Task<MusicFile> GetMusicFileAsync(int id)
+        public async Task<MusicFile?> GetMusicFileAsync(int id)
         {
             return await _context.MusicFiles.FindAsync(id);
         }
@@ -124,9 +121,10 @@ namespace MusicServer.API.Services
         public async Task<string> GetMusicFilePathAsync(int id)
         {
             var musicFile = await GetMusicFileAsync(id);
-            string pathPrefix = _configuration.GetSection("MusicStorage:PrefixPath").Get<string>() ?? "";
+            if (musicFile == null)
+                throw new ArgumentException($"Файла c id={id} не найдено");
 
-            return (musicFile != null) ? Path.Combine(pathPrefix, musicFile.filepath) : "";
+            return Path.Combine(m_pathPrefix, musicFile.filepath);
         }
 
         // Удаление карточки и файла
@@ -137,21 +135,16 @@ namespace MusicServer.API.Services
                 return false;
 
             // Удаляем физический файл из папки
-            // TODO вынести в Utils
-            if (System.IO.File.Exists(musicFile.filepath))
-            {
-                System.IO.File.Delete(musicFile.filepath);
-            }
+            string filepath = Path.Combine(m_pathPrefix, musicFile.filepath);
+            m_uploadService.DeleteFile(filepath);
 
             // Удаляем запись из БД
-            // TODO ВЫнести 
+            // TODO Вынести 
             _context.MusicFiles.Remove(musicFile);
             await _context.SaveChangesAsync();
 
             return true;
         }
-
-
 
         public async Task<MusicFile> SaveToDbForTest(MusicFile musicFile)
         {
@@ -160,7 +153,5 @@ namespace MusicServer.API.Services
             return musicFile;
         }
         #endregion
-
-
     }
 } //namespace MusicServer.API.Services
