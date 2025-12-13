@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MusicServer.API.DTO;
+using MusicServer.API.DTOs;
 using MusicServer.API.Models;
 using MusicServer.API.Services;
 
@@ -28,7 +29,6 @@ namespace MusicServer.API.Controllers
             return Ok(musicFiles.Select(musicFile => new MusicFileResponseDto
             {
                 Id = musicFile.id,
-                FileName = musicFile.filename,
                 Title = musicFile.title,
                 Artist = musicFile.artist,
                 Album = musicFile.album,
@@ -53,20 +53,29 @@ namespace MusicServer.API.Controllers
                 return NotFound();
             }
 
-            return new MusicFileResponseDto //TODO создать class helper для создания MusicFileResponseDto 
+            var dto = new MusicFileWithExtrasDto //TODO создать class helper для создания MusicFileWithExtrasDto 
             {
                 Id = musicFile.id,
-                FileName = musicFile.filename,
                 Title = musicFile.title,
                 Artist = musicFile.artist,
                 Album = musicFile.album,
                 Genre = musicFile.genre,
                 Year = musicFile.year,
-                FileSize = musicFile.filesize,
                 Duration = musicFile.duration,
                 UploadDate = musicFile.uploadDate,
-                DownloadUrl = Url.Action("Download", "Music", new { id = musicFile.id }, Request.Scheme)
+                DownloadMusicUrl = Url.Action("Download", "Music", new { id = musicFile.id }, Request.Scheme),
+                ExtraFiles = musicFile.ExtraFiles.Select(ef => new ExtraFileDto
+                {
+                    Id = ef.Id,
+                    OriginalFileName = ef.OriginalFileName,
+                    Description = ef.Description,
+                    FileType = ef.FileType,
+                    FileSize = ef.FileSize,
+                    UploadDate = ef.UploadDate,
+                    DownloadExtraUrl = Url.Action("Download", "ExtraFiles", new { id = ef.Id }, Request.Scheme)
+                }).ToList()
             };
+            return Ok(dto);
         }
         #endregion
 
@@ -89,7 +98,6 @@ namespace MusicServer.API.Controllers
                     new MusicFileResponseDto //TODO создать class helper для создания MusicFileResponseDto 
                     {
                         Id = uploadedFile.id,
-                        FileName = uploadedFile.filename,
                         Title = uploadedFile.title,
                         Artist = uploadedFile.artist,
                         Album = uploadedFile.album,

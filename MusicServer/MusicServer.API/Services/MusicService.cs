@@ -11,10 +11,12 @@ namespace MusicServer.API.Services
     public class MusicService : IMusicService
     {
         private readonly AppDbContext _context;
-        private readonly IWebHostEnvironment _environment;
-        private readonly IConfiguration _configuration;
+        private readonly IConfiguration _configuration; //TODO проверить можно без нее?
+
         private readonly IUploadService m_uploadService;
         private readonly string m_pathPrefix;
+        private readonly string m_folderName;
+        //private readonly ILogger<ExtraFileService> _logger; TODO обдумать возможно стоит добавить
 
         public MusicService(
             AppDbContext context,
@@ -23,7 +25,6 @@ namespace MusicServer.API.Services
             IUploadServiceFactory uploadServiceFactory)
         {
             _context = context;
-            _environment = environment;
             _configuration = configuration;
 
             string musicFolderFullSystemPath = _configuration.GetSection("MusicStorage:FullPath").Get<string>() ?? string.Empty; ;
@@ -31,6 +32,7 @@ namespace MusicServer.API.Services
             m_uploadService = uploadServiceFactory.Create(musicFolderFullSystemPath, allowedExtensions);
 
             m_pathPrefix = _configuration.GetSection("MusicStorage:PrefixPath").Get<string>() ?? string.Empty;
+            m_folderName = _configuration.GetSection("MusicStorage:Path").Value ?? string.Empty;
         }
 
 
@@ -54,8 +56,7 @@ namespace MusicServer.API.Services
             // 5. Сохраняем в БД 
             // TODO вынести в отдельный класс MusicFileDBHelper 
             //Подмена пути на короткий для сохранения в БД
-            string shortFolderName = _configuration.GetSection("MusicStorage:Path").Value ?? string.Empty;
-            musicFile.filepath = Path.Combine(shortFolderName, fileName) ?? ""; //в базу пишем только от папки MusicFiles, для кросплатформенности Linux
+            musicFile.filepath = Path.Combine(m_folderName, fileName) ?? ""; //в базу пишем только от папки MusicFiles, для кросплатформенности Linux
             _context.MusicFiles.Add(musicFile);
             await _context.SaveChangesAsync();
 
@@ -103,7 +104,9 @@ namespace MusicServer.API.Services
         // Получить MusicFile(карточку) из БД
         public async Task<MusicFile?> GetMusicFileAsync(int id)
         {
-            return await _context.MusicFiles.FindAsync(id);
+            return await _context.MusicFiles
+                .Include(mf => mf.ExtraFiles)// Включить связанные допфайлы
+                .FirstOrDefaultAsync(mf => mf.id == id);
         }
 
 
@@ -139,7 +142,6 @@ namespace MusicServer.API.Services
             m_uploadService.DeleteFile(filepath);
 
             // Удаляем запись из БД
-            // TODO Вынести 
             _context.MusicFiles.Remove(musicFile);
             await _context.SaveChangesAsync();
 

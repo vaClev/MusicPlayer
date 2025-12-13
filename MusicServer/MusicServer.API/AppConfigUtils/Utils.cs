@@ -35,5 +35,9 @@ namespace MusicServer.API
                 options.MemoryBufferThreshold = 52428800;
             });
         }
+        public static void RegistrateExtraService(WebApplicationBuilder builder)
+        {
+            builder.Services.AddScoped<IExtraFileService, ExtraFileService>();
+        }
     }
 }

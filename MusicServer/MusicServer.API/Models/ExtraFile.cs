@@ -19,7 +19,7 @@ namespace MusicServer.API.Models
         public int Id { get; set; }
 
         [Required]
-        public string OriginalFileName { get; set; }
+        public string OriginalFileName { get; set; } //для выдачи пользователю
 
         [Required]
         public string StoredFileName { get; set; }
@@ -36,10 +36,11 @@ namespace MusicServer.API.Models
 
         public DateTime UploadDate { get; set; } = DateTime.UtcNow;
 
+        // Любой доп файл связан с конкретным музыкальным файлом.
         // Внешний ключ для MusicFile (с какой песней связан)
         public int MusicFileId { get; set; }
 
-        // Навигационное свойство
+        // Навигационное свойство - внешний ключ.
         [ForeignKey("MusicFileId")]
         public virtual MusicFile MusicFile { get; set; }
     }

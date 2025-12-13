@@ -28,8 +28,9 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DevelopConnection")));
 
-// Регистрируем MusicService сервис в приложении
+// Регистрируем Services сервис в приложении
 AppConfigUtils.RegistrateMusicService(builder);
+AppConfigUtils.RegistrateExtraService(builder);
 
 // Регистрируем фабрику Upload
 builder.Services.AddSingleton<IUploadServiceFactory, UploadServiceFactory>();

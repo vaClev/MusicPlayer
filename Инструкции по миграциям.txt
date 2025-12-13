@@ -1,0 +1,9 @@
+Для работы через миграции открыть PackegeManagerConsole
+VisualStudio - "Вид" - "Другие окна" - "Консоль диспетчера пакетов"
+
+Основные команды:
+1. Добавить миграцию
+Add-Migration AddExtraFilesTable
+
+2. Обновить
+Update-Database
