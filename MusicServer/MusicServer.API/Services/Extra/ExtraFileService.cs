@@ -102,7 +102,7 @@ namespace MusicServer.API.Services
                 FileType = extraFile.FileType,
                 FileSize = extraFile.FileSize,
                 UploadDate = extraFile.UploadDate,
-                DownloadExtraUrl = $"/api/extrafiles/download/id{extraFile.Id}",
+                DownloadExtraUrl = $"download URL",
                 MusicFileId = extraFile.MusicFileId
             };
         }
@@ -112,16 +112,18 @@ namespace MusicServer.API.Services
         public async Task<ExtraFileDto> GetExtraFileAsync(int extraFileId)
         {
             var extraFile = await GetExtraFileEntityAsync(extraFileId);
-            if (extraFile == null)
+            if(extraFile ==null)
                 throw new ArgumentException($"Файла c id={extraFileId} не найдено");
 
             return MapToDto(extraFile);
         }
 
 
-        private async Task<ExtraFile?> GetExtraFileEntityAsync(int extraFileId)
+        public async Task<ExtraFile?> GetExtraFileEntityAsync(int extraFileId)
         {
-            return await _context.ExtraFiles.FindAsync(extraFileId);
+            return await _context.ExtraFiles
+                .Include(ef => ef.MusicFile)
+                .FirstOrDefaultAsync(ef => ef.Id == extraFileId);
         }
 
 

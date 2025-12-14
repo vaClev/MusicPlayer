@@ -17,6 +17,8 @@ namespace MusicServer.API.DTOs
         public int MusicFileId { get; set; }
     }
 
+    // используем  как карточку для загрузки.
+    // Это то что пришлет нам пользователь. Форма с полями + файл
     public class UploadExtraFileDto
     {
         [Required]

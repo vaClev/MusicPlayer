@@ -13,5 +13,18 @@
                 <input type="submit" value="Отправить" />
             </p>
         </form>
+
+
+        <form enctype="multipart/form-data" method="post" action="http://127.0.0.1:5098/api/extrafiles/upload">
+            <p>
+                <input type="number" name = "MusicFileId"/>
+                <input type="number" name = "FileType"/>
+                <input type="text" name = "Description"/>
+                <input type="file" name="file" />
+            </p>
+            <p>
+                <input type="submit" value="Отправить" />
+            </p>
+        </form>
     </body>
 </html>

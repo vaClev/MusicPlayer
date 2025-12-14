@@ -72,7 +72,8 @@ namespace MusicServer.API.Controllers
                     FileType = ef.FileType,
                     FileSize = ef.FileSize,
                     UploadDate = ef.UploadDate,
-                    DownloadExtraUrl = Url.Action("Download", "ExtraFiles", new { id = ef.Id }, Request.Scheme)
+                    DownloadExtraUrl = Url.Action("Download", "ExtraFiles", new { id = ef.Id }, Request.Scheme),
+                    MusicFileId = ef.MusicFileId
                 }).ToList()
             };
             return Ok(dto);

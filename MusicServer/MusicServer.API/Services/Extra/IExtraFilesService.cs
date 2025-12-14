@@ -8,6 +8,7 @@ namespace MusicServer.API.Services
         Task<ExtraFile> UploadExtraFileAsync(UploadExtraFileDto uploadDto);
         Task<IEnumerable<ExtraFileDto>> GetExtraFilesByMusicIdAsync(int musicFileId);
         Task<ExtraFileDto> GetExtraFileAsync(int extraFileId);
+        Task<ExtraFile?> GetExtraFileEntityAsync(int extraFileId);
         Task<string> GetExtraFilePathAsync(int extraFileId);
         Task<bool> DeleteExtraFileAsync(int extraFileId);
     }
