@@ -1,7 +1,11 @@
 ﻿
+using System;
+using System.Linq.Expressions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MusicServer.API.Database;
+using MusicServer.API.DTO;
+using MusicServer.API.DTOs;
 using MusicServer.API.Models;
 using MusicServer.API.Services.Upload;
 using TagLib;
@@ -38,10 +42,10 @@ namespace MusicServer.API.Services
 
         #region "Реализация интерфейса IMusicService"
         //Загрузка файла на сервер
-        public async Task<MusicFile> UploadMusicAsync([FromForm] IFormFile file)
+        public async Task<MusicFileResponseDto> UploadMusicAsync([FromForm] IFormFile file)
         {
             // 1. Проверяем расширение файла.
-            var extension = m_uploadService.GetExtensionWithCheck(file);
+            var extension = m_uploadService.GetExtensionWithCheck(file); //может выбросить исключение
 
             // 2. Создаем уникальное имя файла
             var fileName = Guid.NewGuid().ToString() + extension;
@@ -51,16 +55,16 @@ namespace MusicServer.API.Services
             await m_uploadService.SaveFile(file, filePath);
 
             // 4. Извлекаем метаданные из mp3
-            var musicFile = ExtractMetadataAsync(filePath, fileName, file);
+            MusicFile musicFile = ExtractMetadataAsync(filePath, fileName, file);
 
             // 5. Сохраняем в БД 
-            // TODO вынести в отдельный класс MusicFileDBHelper 
+            // TODO вынести в отдельный класс MusicFileDBHelper для возможности отвязаться от EntityFramework
             //Подмена пути на короткий для сохранения в БД
             musicFile.filepath = Path.Combine(m_folderName, fileName) ?? ""; //в базу пишем только от папки MusicFiles, для кросплатформенности Linux
             _context.MusicFiles.Add(musicFile);
             await _context.SaveChangesAsync();
 
-            return musicFile;
+            return ToResponseDto(musicFile);
         }
 
         // TODO создать класс обертку для этой функции.
@@ -101,18 +105,43 @@ namespace MusicServer.API.Services
             return musicFile;
         }
 
-        // Получить MusicFile(карточку) из БД
-        public async Task<MusicFile?> GetMusicFileAsync(int id)
+
+        // Получить MusicFile(карточку)
+        public async Task<MusicFileWithExtrasDto> GetMusicFileAsync(int id)
         {
-            return await _context.MusicFiles
-                .Include(mf => mf.ExtraFiles)// Включить связанные допфайлы
-                .FirstOrDefaultAsync(mf => mf.id == id);
+            MusicFile musicFile = await GetMusicFileEntityAsync(id);//пробросит исключение
+
+            return ToWithExtrasDto(musicFile);
         }
 
 
-        // Получить все музыкальные файлы(карточки) из библиотки
+        // Получить MusicFile(сущность) из БД
+        private async Task<MusicFile> GetMusicFileEntityAsync(int id)
+        {
+            var musicFile = await _context.MusicFiles
+                .Include(mf => mf.ExtraFiles)// Включить связанные допфайлы
+                .FirstOrDefaultAsync(mf => mf.id == id);
+
+            if (musicFile == null)
+                throw new ArgumentException($"Файла c id={id} не найдено");
+
+            musicFile.filepath = Path.Combine(m_pathPrefix, musicFile.filepath);
+            return musicFile;
+        }
+
+
+        // Получить все музыкальные файлы(карточки)
         // TODO продумать с учетом пагинации по 20 песен
-        public async Task<IEnumerable<MusicFile>> GetAllMusicFilesAsync()
+        public async Task<IEnumerable<MusicFileResponseDto>> GetAllMusicFilesAsync()
+        {
+            return (await GetAllMusicFilesEntitiesAsync())
+                .Select(mf => ToResponseDto(mf));
+        }
+
+
+        // TODO продумать с учетом пагинации по 20 песен
+        // Получить все музыкальные файлы(сущности) из БД
+        private async Task<IEnumerable<MusicFile>> GetAllMusicFilesEntitiesAsync()
         {
             return await _context.MusicFiles
                .OrderByDescending(m => m.uploadDate)
@@ -120,20 +149,18 @@ namespace MusicServer.API.Services
         }
 
 
-        // Получить путь к файлу
-        public async Task<string> GetMusicFilePathAsync(int id)
+        // Получить данные для скачивания MusicFile
+        public async Task<DownloadFileDto> GetMusicFileDownloadDataAsync(int id)
         {
-            var musicFile = await GetMusicFileAsync(id);
-            if (musicFile == null)
-                throw new ArgumentException($"Файла c id={id} не найдено");
-
-            return Path.Combine(m_pathPrefix, musicFile.filepath);
+            var musicFile = await GetMusicFileEntityAsync(id);// может пробросить исключение
+            return ToDownloadDto(musicFile);
         }
+
 
         // Удаление карточки и файла
         public async Task<bool> DeleteMusicFileAsync(int id)
         {
-            var musicFile = await GetMusicFileAsync(id);
+            var musicFile = await GetMusicFileEntityAsync(id);
             if (musicFile == null)
                 return false;
 
@@ -148,6 +175,7 @@ namespace MusicServer.API.Services
             return true;
         }
 
+        // Тестовый запрос
         public async Task<MusicFile> SaveToDbForTest(MusicFile musicFile)
         {
             _context.MusicFiles.Add(musicFile);
@@ -155,5 +183,62 @@ namespace MusicServer.API.Services
             return musicFile;
         }
         #endregion
+
+        //---- к перенесу
+        //Маппирование сущности в DTO //TODO создать class Mapper
+        private MusicFileResponseDto ToResponseDto(MusicFile musicFile)
+        {
+            return new MusicFileResponseDto
+            {
+                Id = musicFile.id,
+                Title = musicFile.title,
+                Artist = musicFile.artist,
+                Album = musicFile.album,
+                Genre = musicFile.genre,
+                Year = musicFile.year,
+                FileSize = musicFile.filesize,
+                Duration = musicFile.duration,
+                UploadDate = musicFile.uploadDate,
+                DownloadUrl = string.Empty //определяется контроллером // TODO маппером.
+            };
+        }
+
+        //Маппирование сущности в DTO
+        private MusicFileWithExtrasDto ToWithExtrasDto(MusicFile musicFile)
+        {
+            return new MusicFileWithExtrasDto
+            {
+                Id = musicFile.id,
+                Title = musicFile.title,
+                Artist = musicFile.artist,
+                Album = musicFile.album,
+                Genre = musicFile.genre,
+                Year = musicFile.year,
+                Duration = musicFile.duration,
+                UploadDate = musicFile.uploadDate,
+                DownloadMusicUrl = string.Empty, //определяется контроллером // TODO маппером.
+                ExtraFiles = musicFile.ExtraFiles.Select(ef => new ExtraFileDto
+                {
+                    Id = ef.Id,
+                    OriginalFileName = ef.OriginalFileName,
+                    Description = ef.Description,
+                    FileType = ef.FileType,
+                    FileSize = ef.FileSize,
+                    UploadDate = ef.UploadDate,
+                    DownloadExtraUrl = string.Empty, //определяется контроллером // TODO маппером.
+                    MusicFileId = ef.MusicFileId
+                }).ToList()
+            };
+        }
+
+        //Маппирование сущности в DTO
+        private DownloadFileDto ToDownloadDto(MusicFile musicFile)
+        {
+            return new DownloadFileDto
+            {
+                FilenameForSend = $"{musicFile.artist}-{musicFile.title}",
+                Filepath = musicFile.filepath
+            };
+        }
     }
 } //namespace MusicServer.API.Services

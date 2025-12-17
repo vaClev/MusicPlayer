@@ -3,6 +3,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MusicServer.API.Database;
+using MusicServer.API.DTO;
 using MusicServer.API.DTOs;
 using MusicServer.API.Models;
 using MusicServer.API.Services.Upload;
@@ -36,7 +37,7 @@ namespace MusicServer.API.Services
         }
 
         #region Upload
-        public async Task<ExtraFile> UploadExtraFileAsync(UploadExtraFileDto uploadDto)
+        public async Task<ExtraFileDto> UploadExtraFileAsync(UploadExtraFileDto uploadDto)
         {
             bool musicFileExists = await MusicFileExistsAsync(uploadDto.MusicFileId);
             if (!musicFileExists)
@@ -71,7 +72,7 @@ namespace MusicServer.API.Services
             _context.ExtraFiles.Add(extraFile);
             await _context.SaveChangesAsync();
 
-            return extraFile;
+            return MapToDto(extraFile);
         }
 
 
@@ -91,53 +92,42 @@ namespace MusicServer.API.Services
 
             return extraFiles.Select(ef => MapToDto(ef));
         }
-        private ExtraFileDto MapToDto(ExtraFile extraFile)
-        {
-            //TODO //Сделать аналогичную функцию для musicFile. Применять в контроллере.
-            return new ExtraFileDto
-            {
-                Id = extraFile.Id,
-                OriginalFileName = extraFile.OriginalFileName,
-                Description = extraFile.Description,
-                FileType = extraFile.FileType,
-                FileSize = extraFile.FileSize,
-                UploadDate = extraFile.UploadDate,
-                DownloadExtraUrl = $"download URL",
-                MusicFileId = extraFile.MusicFileId
-            };
-        }
         #endregion
 
-        #region GetExtraFile GetPathTofile
+        #region GetExtraFile
         public async Task<ExtraFileDto> GetExtraFileAsync(int extraFileId)
         {
-            var extraFile = await GetExtraFileEntityAsync(extraFileId);
-            if(extraFile ==null)
-                throw new ArgumentException($"Файла c id={extraFileId} не найдено");
-
+            var extraFile = await GetExtraFileEntityAsync(extraFileId); // может пробросить исключение
+            
             return MapToDto(extraFile);
         }
 
 
-        public async Task<ExtraFile?> GetExtraFileEntityAsync(int extraFileId)
+        private async Task<ExtraFile> GetExtraFileEntityAsync(int extraFileId)
         {
-            return await _context.ExtraFiles
+            var extraFile =  await _context.ExtraFiles
                 .Include(ef => ef.MusicFile)
                 .FirstOrDefaultAsync(ef => ef.Id == extraFileId);
-        }
 
-
-        public async Task<string> GetExtraFilePathAsync(int extraFileId)
-        {
-            var extraFile = await GetExtraFileEntityAsync(extraFileId);
             if (extraFile == null)
                 throw new ArgumentException($"Файла c id={extraFileId} не найдено");
 
-            return Path.Combine(m_pathPrefix, extraFile.FilePath);
+            extraFile.FilePath = Path.Combine(m_pathPrefix, extraFile.FilePath);
+
+            return extraFile;
         }
         #endregion
 
 
+        // Получить данные для скачивания ExtraFile
+        public async Task<DownloadFileDto> GetExtraFileDownloadDataAsync(int id)
+        {
+            var musicFile = await GetExtraFileEntityAsync(id); // может пробросить исключение
+            return ToDownloadDto(musicFile);
+        }
+
+
+        // Удалить доп файл из базы и с диска
         public async Task<bool> DeleteExtraFileAsync(int extraFileId)
         {
             var extraFile = await _context.ExtraFiles.FindAsync(extraFileId);
@@ -152,6 +142,36 @@ namespace MusicServer.API.Services
             await _context.SaveChangesAsync();
 
             return true;
+        }
+
+
+        //----------
+        // TODO вынести в другой класс.
+        //Маппирование сущности в DTO
+        private ExtraFileDto MapToDto(ExtraFile extraFile)
+        {
+            return new ExtraFileDto
+            {
+                Id = extraFile.Id,
+                OriginalFileName = extraFile.OriginalFileName,
+                Description = extraFile.Description,
+                FileType = extraFile.FileType,
+                FileSize = extraFile.FileSize,
+                UploadDate = extraFile.UploadDate,
+                DownloadExtraUrl = $"download URL",
+                MusicFileId = extraFile.MusicFileId
+            };
+        }
+
+
+        //Маппирование сущности в DTO
+        private DownloadFileDto ToDownloadDto(ExtraFile extraFile)
+        {
+            return new DownloadFileDto
+            {
+                FilenameForSend = $"{extraFile.MusicFile.artist}-{extraFile.MusicFile.title} - {extraFile.OriginalFileName}",
+                Filepath = extraFile.FilePath
+            };
         }
     }
 }

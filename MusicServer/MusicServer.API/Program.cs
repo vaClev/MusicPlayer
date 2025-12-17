@@ -11,7 +11,7 @@ using MusicServer.API.Services.Upload;
 var builder = WebApplication.CreateBuilder(args); //Построитель приложения по шаблону dotnetWebApi
 
 // Сохраняем путь к файлам в конфигурации
-builder.Configuration["MusicStorage:FullPath"] = AppConfigUtils.InitMusicFolder(builder.Configuration["MusicStorage:Path"]);
+builder.Configuration["MusicStorage:FullPath"] = AppConfigUtils.InitMusicFolder(builder.Configuration["MusicStorage:Path"] ?? "");
 
 // ВАЖНО: Настройка лимитов ДО добавления контроллеров
 builder.Services.Configure<FormOptions>(options =>

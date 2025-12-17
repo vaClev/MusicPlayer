@@ -24,9 +24,16 @@ namespace MusicServer.API.Controllers
         [HttpGet("music/id{musicFileId}")]
         public async Task<ActionResult<IEnumerable<ExtraFileDto>>> GetByMusicId(int musicFileId)
         {
-            var files = await m_extraFileService.GetExtraFilesByMusicIdAsync(musicFileId);
+            var files = (await m_extraFileService.GetExtraFilesByMusicIdAsync(musicFileId))
+                .Select(extraFile =>
+                { 
+                  extraFile.DownloadExtraUrl = Url.Action("Download", "ExtraFiles", new { id = extraFile.Id }, Request.Scheme);
+                  return extraFile;
+                })
+                .ToList();
+
             if (files.Count() == 0)
-                return NotFound($"Music file with id {musicFileId} not found");
+                return NotFound($"Music file with id {musicFileId} have not extras");
 
             return Ok(files);
         }
@@ -55,25 +62,15 @@ namespace MusicServer.API.Controllers
                     return BadRequest("File is required");
 
                 var extraFile = await m_extraFileService.UploadExtraFileAsync(uploadDto);
+                extraFile.DownloadExtraUrl = Url.Action("Download", "ExtraFiles", new { id = extraFile.Id }, Request.Scheme);
 
-                var dto = new ExtraFileDto
-                {
-                    Id = extraFile.Id,
-                    OriginalFileName = extraFile.OriginalFileName,
-                    Description = extraFile.Description,
-                    FileType = extraFile.FileType,
-                    FileSize = extraFile.FileSize,
-                    UploadDate = extraFile.UploadDate,
-                    DownloadExtraUrl = Url.Action("Download", "ExtraFiles", new { id = extraFile.Id }, Request.Scheme)
-                };
-
-                return CreatedAtAction(nameof(GetExtraFile), new { id = extraFile.Id }, dto);
+                return CreatedAtAction(nameof(GetExtraFile), new { id = extraFile.Id }, extraFile);
             }
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
             }
-            catch (Exception ex)
+            catch
             {
                 return StatusCode(500, "Internal server error");
             }
@@ -86,20 +83,13 @@ namespace MusicServer.API.Controllers
         {
             try
             {
-                // TODO подумать над созданием ExtraFileDownloadDTO  и для MusicFile тоже актуально
-                // а то тут 2 запроса в БД вместо одного
-                string filePath = await m_extraFileService.GetExtraFilePathAsync(id);
-                if (!System.IO.File.Exists(filePath))
-                    return NotFound();
+                var extraFile = await m_extraFileService.GetExtraFileDownloadDataAsync(id);
+                if (!System.IO.File.Exists(extraFile.Filepath))
+                    return NotFound($"файл id={id} не найден на диске");
 
-                var contentType = GetContentType(filePath);
+                var contentType = GetContentType(extraFile.Filepath);
 
-                var extraFile = await m_extraFileService.GetExtraFileEntityAsync(id);
-                var downloadName = $"{extraFile?.MusicFile?.artist ?? "Unknown"} - " +
-                             $"{extraFile?.MusicFile?.title ?? "Unknown"} - " +
-                             $"{extraFile?.OriginalFileName}";
-
-                return PhysicalFile(filePath, contentType, downloadName);
+                return PhysicalFile(extraFile.Filepath, contentType, extraFile.FilenameForSend);
             }
             catch (ArgumentException ex)
             {
@@ -122,11 +112,7 @@ namespace MusicServer.API.Controllers
                 ".jpg" or ".jpeg" => "image/jpeg",
                 ".png" => "image/png",
                 ".gif" => "image/gif",
-                ".gpx" => "application/xml",
-                ".gp" => "application/xml",
-                ".gp3" => "application/xml",
-                ".gp4" => "application/xml",
-                ".gp5" => "application/xml",
+                ".gpx" or ".gp" or ".gp3" or ".gp4" or ".gp5" => "application/xml",
                 ".doc" => "application/msword",
                 ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 _ => "application/octet-stream"
