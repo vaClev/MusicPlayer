@@ -20,7 +20,7 @@ namespace MusicServer.API.Controllers
             m_extraFileService = extraFileService;
         }
 
-        // GET: api/extrafiles/music/5
+        // GET: api/extrafiles/music/id5
         [HttpGet("music/id{musicFileId}")]
         public async Task<ActionResult<IEnumerable<ExtraFileDto>>> GetByMusicId(int musicFileId)
         {
@@ -38,7 +38,7 @@ namespace MusicServer.API.Controllers
             return Ok(files);
         }
 
-        // GET: api/extrafiles/5
+        // GET: api/extrafiles/id5
         [HttpGet("id{id}")]
         public async Task<ActionResult<ExtraFileDto>> GetExtraFile(int id)
         {

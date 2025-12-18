@@ -82,7 +82,7 @@ namespace MusicServer.API.Controllers
 
         #region Download
         // запрос скачивания файла
-        // GET: api/music/download/5
+        // GET: api/music/download/id5
         [HttpGet("download/id{id}")]
         public async Task<IActionResult> Download(int id)
         {
