@@ -1,11 +1,25 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http.Features;
+using Microsoft.EntityFrameworkCore;
+using MusicServer.API;
 using MusicServer.API.Database;
+using MusicServer.API.Services.Upload;
 
 /////////////////////////////////////////////////////
-/// конфигурация приложения
+/// конфигурация билдера
 ///
 ////////////////////////////////////////////////////
 var builder = WebApplication.CreateBuilder(args); //Построитель приложения по шаблону dotnetWebApi
+
+// Сохраняем путь к файлам в конфигурации
+builder.Configuration["MusicStorage:FullPath"] = AppConfigUtils.InitMusicFolder(builder.Configuration["MusicStorage:Path"] ?? "");
+
+// ВАЖНО: Настройка лимитов ДО добавления контроллеров
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.ValueLengthLimit = int.MaxValue;
+    options.MultipartBodyLengthLimit = 104857600; // 100MB
+    options.MemoryBufferThreshold = int.MaxValue;
+});
 
 // Добавляем контроллеры
 builder.Services.AddControllers();
@@ -13,6 +27,13 @@ builder.Services.AddControllers();
 // Настраиваем PostgreSQL - в рамках разработки курсовой подключение к локальноve серверу БД
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DevelopConnection")));
+
+// Регистрируем Services сервис в приложении
+AppConfigUtils.RegistrateMusicService(builder);
+AppConfigUtils.RegistrateExtraService(builder);
+
+// Регистрируем фабрику Upload
+builder.Services.AddSingleton<IUploadServiceFactory, UploadServiceFactory>();
 
 //#ifdef __DEBUG/////////////////////////////////////////////////////////////////////////////
 // Разрешаем CORS для клиента -- чтобы в целях тестирования отправлять запросы с одного компa
@@ -23,7 +44,8 @@ builder.Services.AddCors(options =>
         {
             policy.AllowAnyOrigin()     // Разрешить ВСЕ источники (опасно для продакшена!)
                   .AllowAnyMethod()
-                  .AllowAnyHeader();
+                  .AllowAnyHeader()
+                  .WithExposedHeaders("Content-Disposition"); // Важно для скачивания!
         });
 });
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -32,8 +54,18 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
+
+/////////////////////////////////////////////////////
+/// создание приложения
+///
+////////////////////////////////////////////////////
 var app = builder.Build();
 
+
+/////////////////////////////////////////////////////
+/// конфигурация приложения
+///
+////////////////////////////////////////////////////
 // Конфигурация middleware - для тестирования Post запроса
 if (app.Environment.IsDevelopment())
 {

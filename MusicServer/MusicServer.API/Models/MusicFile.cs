@@ -16,9 +16,9 @@ namespace MusicServer.API.Models
 
         public string title { get; set; }
         public string artist { get; set; }
-        public string album { get; set; }
+        public string? album { get; set; }
         public int? year { get; set; }
-        public string genre { get; set; }
+        public string? genre { get; set; }
 
         public long filesize { get; set; }
         public TimeSpan duration { get; set; }
@@ -27,5 +27,8 @@ namespace MusicServer.API.Models
 
         // Для будущих окружений, концертов (типо плейлистов)
         //public virtual ICollection<Tracklist> tracklists { get; set; }
+
+        // Навигационное свойство для ExtraFiles
+        public virtual ICollection<ExtraFile> ExtraFiles { get; set; } = new List<ExtraFile>();
     }
 }

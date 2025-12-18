@@ -11,14 +11,26 @@ namespace MusicServer.API.Database
         {
         }
 
-        /// Набор сущностей MusicServer.API.Models:::::MusicFile
-        public DbSet<MusicFile> MusicFiles
-        {
-            get; set;
-        }
+        /// Таблица сущностей MusicServer.API.Models:::::MusicFile
+        public DbSet<MusicFile> MusicFiles { get; set; }
+
+        /// Таблица сущностей MusicServer.API.Models:::::ExtraFile
+        public DbSet<ExtraFile> ExtraFiles { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // Настройка отношения один-ко - многим
+            modelBuilder.Entity<ExtraFile>()
+                .HasOne(ef => ef.MusicFile)
+                .WithMany(mf => mf.ExtraFiles)
+                .HasForeignKey(ef => ef.MusicFileId)
+                .OnDelete(DeleteBehavior.Cascade); // При удалении музыки удаляются и доп. файлы
+
+            // Индекс для быстрого поиска по MusicFileId
+            modelBuilder.Entity<ExtraFile>()
+                .HasIndex(ef => ef.MusicFileId);
 
             // TODO: Настройка отношений (когда будут окружения-треклисты)  1 песня:много треклистов
             //modelBuilder.Entity<MusicFile>()
