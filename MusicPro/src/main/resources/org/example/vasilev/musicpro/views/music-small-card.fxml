@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+
+<?import java.lang.String?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.vasilev.musicpro.controllers.MusicSmallCardController"
+      fx:id="root"
+      styleClass="song-card"
+      spacing="10" prefWidth="300" prefHeight="120">
+
+    <HBox spacing="15" alignment="CENTER_LEFT">
+        <!-- Обложка альбома TODO возможно потом добавлю
+        <ImageView fx:id="albumCover" fitWidth="80" fitHeight="80">
+            <Image url="@../images/default-album.png"/>
+        </ImageView>
+         -->
+
+        <!-- Информация о песне -->
+        <VBox spacing="5" HBox.hgrow="ALWAYS">
+            <Label fx:id="titleLabel" styleClass="song-title"/>
+            <Label fx:id="artistLabel" styleClass="song-artist"/>
+            <Label fx:id="albumLabel" styleClass="song-album"/>
+            <HBox spacing="10">
+                <Label fx:id="durationLabel" styleClass="song-duration"/>
+                <Label fx:id="statusLabel" styleClass="song-status" text="Не скачано"/>
+            </HBox>
+        </VBox>
+
+        <!-- Кнопка скачивания -->
+        <Button fx:id="downloadButton" text="Скачать"
+                onAction="#handleDownload" styleClass="download-btn"/>
+    </HBox>
+
+    <!-- Прогресс скачивания (скрыт по умолчанию) -->
+    <ProgressBar fx:id="progressBar" visible="false" prefWidth="280"/>
+</VBox>

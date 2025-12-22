@@ -16,7 +16,7 @@
         <artifactId>exec-maven-plugin</artifactId>
         <version>3.1.0</version>
         <configuration>
-          <mainClass>org.example.vasilev.musicpro.HelloApplication</mainClass>
+          <mainClass>org.example.vasilev.musicpro.MusicProApplication</mainClass>
           <arguments>
             <argument>--module-path</argument>
             <classpath />
@@ -37,7 +37,7 @@
             <configuration>
               <transformers>
                 <transformer>
-                  <mainClass>org.example.vasilev.musicpro.HelloApplication</mainClass>
+                  <mainClass>org.example.vasilev.musicpro.MusicProApplication</mainClass>
                 </transformer>
               </transformers>
               <filters>

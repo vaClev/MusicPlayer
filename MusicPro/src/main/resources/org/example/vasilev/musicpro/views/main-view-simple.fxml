@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.vasilev.musicpro.controllers.MainController"
+      spacing="20" prefWidth="1000" prefHeight="700">
+
+    <!-- Шапка приложения -->
+    <HBox styleClass="header" spacing="20" alignment="CENTER_LEFT">
+        <Label text="🎵 Музыкальный Плеер" styleClass="app-title"/>
+        <HBox spacing="10" HBox.hgrow="ALWAYS">
+            <Button text="Обновить список" onAction="#handleRefresh"/>
+            <Button text="Настройки" onAction="#handleSettings"/>
+        </HBox>
+        <Label fx:id="statusLabel" styleClass="status-label"/>
+    </HBox>
+
+    <!-- Контейнер для карточек песен -->
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+        <FlowPane fx:id="songsContainer" styleClass="songs-container"
+                  hgap="20" vgap="20" prefWrapLength="950"/>
+    </ScrollPane>
+
+    <!-- Статус бар -->
+    <Label text="Разработано с ❤️ | День 1: Конфигурация и интерфейс карточек"
+           styleClass="footer"/>
+
+</VBox>
