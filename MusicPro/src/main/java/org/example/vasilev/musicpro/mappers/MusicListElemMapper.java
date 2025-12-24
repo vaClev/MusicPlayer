@@ -20,11 +20,13 @@ public class MusicListElemMapper {
         );
     }*/
 
-    public static MusicFile toDomain(MusicFileDTO dto) {
+    public static MusicFile toDomain(MusicFileDTO dto)
+    {
         return dto.toDomainModel();
     }
 
-    public static MusicFile toDomain(MusicFileDTO dto, boolean downloaded) {
+    public static MusicFile toDomain(MusicFileDTO dto, boolean downloaded)
+    {
         MusicFile musicFile = dto.toDomainModel();
         musicFile.setDownloaded(downloaded);
         return musicFile;

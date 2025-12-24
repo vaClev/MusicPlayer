@@ -6,14 +6,14 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-public class MusicProApplication extends Application {
-
+public class MusicProApplication extends Application
+{
 
     @Override
-    public void start(Stage stage) {
-        try {
-            System.out.println("=== Запуск музыкального плеера ===");
-
+    public void start(Stage stage)
+    {
+        try
+        {
             // Загружаем главный FXML файл
             Parent root = FXMLLoader.load(
                     getClass().getResource("/org/example/vasilev/musicpro/views/main-view.fxml")
@@ -28,11 +28,9 @@ public class MusicProApplication extends Application {
             // Устанавливаем сцену и показываем окно
             stage.setScene(scene);
             stage.show();
-
-            System.out.println("✓ Приложение успешно запущено");
-
-        } catch (Exception e) {
-            // Если ошибка - показываем простой интерфейс
+        }
+        catch (Exception e)
+        {
             System.err.println("Ошибка загрузки FXML: " + e.getMessage());
             e.printStackTrace();
         }

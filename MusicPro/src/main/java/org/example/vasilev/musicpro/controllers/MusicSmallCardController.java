@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import org.example.vasilev.musicpro.models.MusicFile;
+import org.example.vasilev.musicpro.services.MusicFileDetailsService;
 
 import java.io.IOException;
 import java.net.URL;
@@ -126,6 +127,13 @@ public class MusicSmallCardController
                 e.printStackTrace();
             }
         }).start();
+    }
+
+    @FXML
+    private void handleDetails()
+    {
+        MusicFileDetailsService extraInfoService = new MusicFileDetailsService();
+        extraInfoService.getMusicFileDetails(musicFile.getId());
     }
 
     // Геттер для получения MusicFile. Будем использовать при переходе в "Подробнее..."

@@ -1,9 +1,13 @@
 package org.example.vasilev.musicpro.models;
 
 import javafx.beans.property.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class MusicFile
 {
@@ -19,7 +23,10 @@ public class MusicFile
     private final StringProperty downloadUrl;
     private final BooleanProperty downloaded;
 
-    // Конструктор для данных с сервера
+    // Список дополнительных файлов
+    private final ObservableList<ExtraFile> extraFiles = FXCollections.observableArrayList();
+
+    /// Конструктор для данных с сервера элемента "Списка песен"
     public MusicFile(Long id, String title, String artist, String album,
                      String genre, Integer year, Long fileSize,
                      String duration, LocalDateTime uploadDate,
@@ -38,25 +45,15 @@ public class MusicFile
         this.downloaded = new SimpleBooleanProperty(false);
     }
 
-    /// ////////////////////////////////////////////
-    /// TODO Удалить после тестирования
-    // Конструктор для тестовых данных (совместимость)
-    public MusicFile(String title, String artist, String album, int durationSeconds) {
-        this((long) (Math.random() * 1000), title, artist, album,
-                "Rock", 2024, 5000000L,
-                secondsToDurationString(durationSeconds),
-                LocalDateTime.now(),
-                "http://127.0.0.1:5098/api/Music/download/id" + (int)(Math.random() * 1000));
-    }
-    private static String secondsToDurationString(int seconds)
+    /// Конструктор для данных с сервера "Конкретная песня"
+    public MusicFile(Long id, String title, String artist, String album, String genre,
+                     Integer year, Long fileSize, String duration, LocalDateTime uploadDate,
+                     String downloadMusicUrl, List<ExtraFile> extraFiles)
     {
-        int hours = seconds / 3600;
-        int minutes = (seconds % 3600) / 60;
-        int secs = seconds % 60;
-        return String.format("%02d:%02d:%02d.0000000", hours, minutes, secs);
+        this(id, title, artist, album, genre, year, fileSize, duration, uploadDate, downloadMusicUrl);
+        if (extraFiles != null)
+            this.extraFiles.setAll(extraFiles);
     }
-    /// TODO Удалить после тестирования
-    /// ////////////////////////////////////////////
 
     /// JavaFX свойства (для binding)
     public LongProperty idProperty() { return id; }
@@ -145,5 +142,54 @@ public class MusicFile
     public String toString()
     {
         return String.format("%s - %s [%s]", artist.get(), title.get(), getFormattedDuration());
+    }
+
+    /// ////////////////////////////////////////////
+    /// Работа со списком ExtraFiles
+    public ObservableList<ExtraFile> getExtraFiles()
+    {
+        return extraFiles;
+    }
+
+    public List<ExtraFile> getSheetMusic()
+    {
+        return extraFiles.stream()
+                .filter(ef -> ef.getFileType() == ExtraFileType.SHEET_MUSIC)
+                .collect(Collectors.toList());
+    }
+
+    public List<ExtraFile> getTabs()
+    {
+        return extraFiles.stream()
+                .filter(ef -> ef.getFileType() == ExtraFileType.TABS)
+                .collect(Collectors.toList());
+    }
+
+    public List<ExtraFile> getLyrics()
+    {
+        return extraFiles.stream()
+                .filter(ef -> ef.getFileType() == ExtraFileType.LYRICS)
+                .collect(Collectors.toList());
+    }
+
+    public List<ExtraFile> getChords()
+    {
+        return extraFiles.stream()
+                .filter(ef -> ef.getFileType() == ExtraFileType.CHORDS)
+                .collect(Collectors.toList());
+    }
+
+    public List<ExtraFile> getImages()
+    {
+        return extraFiles.stream()
+                .filter(ef -> ef.getFileType() == ExtraFileType.IMAGE)
+                .collect(Collectors.toList());
+    }
+
+    public List<ExtraFile> getOtherFiles()
+    {
+        return extraFiles.stream()
+                .filter(ef -> ef.getFileType() == ExtraFileType.OTHER)
+                .collect(Collectors.toList());
     }
 }

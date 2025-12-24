@@ -41,9 +41,10 @@ public class MusicFileDTO
     public MusicFileDTO() {}
 
     /// Конструктор как в получаемом DTO элемента в списке
-    /*public MusicFileDTO(Long id, String title, String artist, String album,
+    public MusicFileDTO(Long id, String title, String artist, String album,
                         String genre, Integer year, Long fileSize,
-                        String duration, String uploadDate, String downloadUrl) {
+                        String duration, String uploadDate, String downloadUrl)
+    {
         this.id = id;
         this.title = title;
         this.artist = artist;
@@ -54,11 +55,10 @@ public class MusicFileDTO
         this.duration = duration;
         this.uploadDate = uploadDate;
         this.downloadUrl = downloadUrl;
-    }*/
+    }
 
     ///  Геттеры и сеттеры для всех полей DTO
     /// /////////////////////////////////////
-    // 2. ГЕТТЕРЫ И СЕТТЕРЫ ДЛЯ ВСЕХ ПОЛЕЙ:
 
     // id
     public Long getId() { return id; }

@@ -1,4 +1,5 @@
-module org.example.vasilev.musicpro {
+module org.example.vasilev.musicpro
+{
     requires javafx.controls;
     requires javafx.fxml;
     requires com.google.gson;

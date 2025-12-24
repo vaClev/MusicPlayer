@@ -33,6 +33,10 @@
         <!-- Кнопка скачивания -->
         <Button fx:id="downloadButton" text="Скачать"
                 onAction="#handleDownload" styleClass="download-btn"/>
+
+        <!-- Кнопка подробнее -->
+        <Button fx:id="detailsButton" text="Подробнее"
+                onAction="#handleDetails" styleClass="download-btn"/>
     </HBox>
 
     <!-- Прогресс скачивания (скрыт по умолчанию) -->
