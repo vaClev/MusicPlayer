@@ -8,9 +8,9 @@
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="org.example.vasilev.musicpro.controllers.MusicSmallCardController"
-      fx:id="root"
       styleClass="song-card"
-      spacing="10" prefWidth="300" prefHeight="120">
+      spacing="10" prefWidth="300" prefHeight="120"
+      fx:id="songCard">
 
     <HBox spacing="15" alignment="CENTER_LEFT">
         <!-- Обложка альбома TODO возможно потом добавлю
@@ -20,7 +20,7 @@
          -->
 
         <!-- Информация о песне -->
-        <VBox spacing="5" HBox.hgrow="ALWAYS">
+        <VBox spacing="2" HBox.hgrow="ALWAYS">
             <Label fx:id="titleLabel" styleClass="song-title"/>
             <Label fx:id="artistLabel" styleClass="song-artist"/>
             <Label fx:id="albumLabel" styleClass="song-album"/>

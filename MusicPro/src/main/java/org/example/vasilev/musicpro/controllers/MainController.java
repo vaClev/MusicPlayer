@@ -13,6 +13,8 @@ import org.example.vasilev.musicpro.dto.MusicFileDTO;
 import org.example.vasilev.musicpro.models.AppConfig;
 import org.example.vasilev.musicpro.models.MusicFile;
 import org.example.vasilev.musicpro.services.*;
+import org.example.vasilev.musicpro.services.music.IMusicClientService;
+import org.example.vasilev.musicpro.services.music.MusicClientService;
 import org.example.vasilev.musicpro.utils.LocalDateTimeAdapter;
 
 import java.io.BufferedReader;
@@ -26,27 +28,57 @@ import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 public class MainController implements Initializable {
-    @FXML private FlowPane songsContainer;
-    @FXML private Label statusLabel;
+    @FXML
+    private FlowPane songsContainer;
+    @FXML
+    private Label statusLabel;
 
     //private MockDataService mockDataService;
     //private DownloadService downloadService;
     private ConfigService configService;
 
+    private IMusicClientService musicClientService;
+
     @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    public void initialize(URL location, ResourceBundle resources)
+    {
         // Инициализация сервисов //TODO пока тут внедряются зависимости. Отрефакторить
         configService = new ConfigService(AppConfig.getInstance());
-        //mockDataService = new MockDataService();
-        //downloadService = new DownloadService(configService);
+        musicClientService = new MusicClientService();
 
         // Загрузка тестовых данных
-        loadMockSongs();
+        //loadMockSongs();
+        testLoadAllFromServer();
 
         // Показываем путь к папке загрузок
         statusLabel.setText("Папка загрузок: " + configService.getConfig().getDownloadDir());
     }
 
+    /// Тестовое получение данных с сервера при запуске
+    private void testLoadAllFromServer()
+    {
+        songsContainer.getChildren().clear();
+
+        musicClientService.getMusicFiles(1,100).thenAccept(
+                musicFiles->{
+                    for (MusicFile musicFile : musicFiles)
+                    {
+                        try
+                        {
+                            VBox card = createSongCard(musicFile);
+                            songsContainer.getChildren().add(card);
+                        }
+                        catch (IOException e)
+                        {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+        );
+    }
+
+
+    /// Загрузка и отображение  UI содержимого из файла.
     private void loadMockSongs()
     {
         try
@@ -76,6 +108,7 @@ public class MainController implements Initializable {
             e.printStackTrace();
         }
     }
+
     private VBox createSongCard(MusicFile musicFile) throws IOException
     {
         FXMLLoader loader = new FXMLLoader(
@@ -130,13 +163,15 @@ public class MainController implements Initializable {
 
 
     @FXML
-    private void handleRefresh() {
+    private void handleRefresh()
+    {
         loadMockSongs();
         statusLabel.setText("Список обновлен. Папка загрузок: " + configService.getConfig().getDownloadDir());
     }
 
     @FXML
-    private void handleSettings() {
+    private void handleSettings()
+    {
         // Откроем окно настроек (завтра)
         statusLabel.setText("Настройки пока недоступны. Будет реализовано завтра.");
     }

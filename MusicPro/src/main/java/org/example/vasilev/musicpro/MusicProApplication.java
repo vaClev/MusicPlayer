@@ -6,6 +6,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import java.net.URL;
+
 public class MusicProApplication extends Application
 {
 
@@ -24,6 +26,21 @@ public class MusicProApplication extends Application
 
             // Устанавливаем заголовок
             stage.setTitle("Музыкальный Плеер");
+
+
+            // Загружаем CSS напрямую в сцену
+            try {
+                URL cssUrl = getClass().getResource("/org/example/vasilev/musicpro/styles.css");
+                if (cssUrl != null)
+                {
+                    scene.getStylesheets().add(cssUrl.toExternalForm());
+                }
+            }
+            catch (Exception e)
+            {
+                System.err.println("CSS не загружен: " + e.getMessage());
+            }
+
 
             // Устанавливаем сцену и показываем окно
             stage.setScene(scene);

@@ -13,8 +13,6 @@ import java.net.URL;
 public class MusicSmallCardController
 {
     @FXML
-    private VBox root;           // Корневой элемент из FXML
-    @FXML
     private Label titleLabel;
     @FXML
     private Label artistLabel;
@@ -33,26 +31,11 @@ public class MusicSmallCardController
 
     public MusicSmallCardController()  {}
 
-    // Метод для получения View (VBox)
-    public VBox getView() {
-        return root;
-    }
-
     // Инициализация после загрузки FXML
     @FXML
     private void initialize()
     {
-        // Автоматически вызывается после загрузки FXML
-        // Загружаем CSS программно
-        try {
-            URL cssUrl = getClass().getResource("/org/example/vasilev/musicpro/styles.css");
-            if (cssUrl != null) {
-                root.getStylesheets().add(cssUrl.toExternalForm());
-            }
-        } catch (Exception e) {
-            // Игнорируем ошибку CSS
-            System.err.println("CSS не загружен, продолжаем без стилей");
-        }
+
     }
 
 
