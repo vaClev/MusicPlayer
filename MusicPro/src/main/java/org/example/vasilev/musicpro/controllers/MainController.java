@@ -1,13 +1,14 @@
 package org.example.vasilev.musicpro.controllers;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.example.vasilev.musicpro.dto.MusicFileDTO;
 import org.example.vasilev.musicpro.models.AppConfig;
@@ -23,13 +24,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 public class MainController implements Initializable {
     @FXML
-    private FlowPane songsContainer;
+    private VBox songsContainer;
     @FXML
     private Label statusLabel;
 
@@ -48,7 +50,7 @@ public class MainController implements Initializable {
 
         // Загрузка тестовых данных
         //loadMockSongs();
-        testLoadAllFromServer();
+        //testLoadAllFromServer();
 
         // Показываем путь к папке загрузок
         statusLabel.setText("Папка загрузок: " + configService.getConfig().getDownloadDir());
@@ -59,22 +61,40 @@ public class MainController implements Initializable {
     {
         songsContainer.getChildren().clear();
 
-        musicClientService.getMusicFiles(1,100).thenAccept(
-                musicFiles->{
-                    for (MusicFile musicFile : musicFiles)
-                    {
+        musicClientService.getMusicFiles(1,100).thenApplyAsync(
+                musicFiles->
+                {
+                    List<VBox> cards = new ArrayList<>();
+                    for (MusicFile musicFile : musicFiles) {
                         try
                         {
                             VBox card = createSongCard(musicFile);
-                            songsContainer.getChildren().add(card);
+                            cards.add(card);
                         }
                         catch (IOException e)
                         {
-                            throw new RuntimeException(e);
+                            // Логируем ошибку, но продолжаем создание других карточек
+                            System.err.println("Ошибка создания карточки: " + e.getMessage());
                         }
                     }
-                }
-        );
+                    return cards;
+                })
+                .thenAcceptAsync(cards -> {
+                    // Обновление UI только после создания всех карточек
+                    Platform.runLater(() -> {
+                        songsContainer.getChildren().addAll(cards);
+                        //showLoadingIndicator(false);
+                        //updateStatus("Загружено " + cards.size() + " песен");
+                    });
+                }, Platform::runLater) // Исполнять в UI потоке
+
+                .exceptionally(throwable -> {
+                    Platform.runLater(() -> {
+                        //showError("Ошибка загрузки", throwable.getMessage());
+                        //showLoadingIndicator(false);
+                    });
+                    return null;
+                });
     }
 
 
@@ -166,7 +186,14 @@ public class MainController implements Initializable {
     private void handleRefresh()
     {
         loadMockSongs();
-        statusLabel.setText("Список обновлен. Папка загрузок: " + configService.getConfig().getDownloadDir());
+        statusLabel.setText("Список обновлен из тест JSON. Папка загрузок: " + configService.getConfig().getDownloadDir());
+    }
+
+    @FXML
+    private void handleGetAll()
+    {
+        testLoadAllFromServer();
+        statusLabel.setText("Список обновлен с сервера. Папка загрузок: " + configService.getConfig().getDownloadDir());
     }
 
     @FXML

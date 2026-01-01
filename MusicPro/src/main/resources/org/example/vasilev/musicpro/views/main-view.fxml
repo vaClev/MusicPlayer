@@ -2,6 +2,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 
+<?import javafx.geometry.Insets?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="org.example.vasilev.musicpro.controllers.MainController"
@@ -12,16 +13,29 @@
     <HBox styleClass="header" spacing="20" alignment="CENTER_LEFT">
         <Label text="🎵 Музыкальный Плеер" styleClass="app-title"/>
         <HBox spacing="10" HBox.hgrow="ALWAYS">
-            <Button text="Обновить список" onAction="#handleRefresh"/>
+            <Button text="Обновить список из JSON" onAction="#handleRefresh"/>
+            <Button text="GET ALL с сервера" onAction="#handleGetAll"/>
             <Button text="Настройки" onAction="#handleSettings"/>
         </HBox>
         <Label fx:id="statusLabel" styleClass="status-label"/>
     </HBox>
 
-    <!-- Контейнер для карточек песен -->
-    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
-        <FlowPane fx:id="songsContainer" styleClass="songs-container"
-                  hgap="20" vgap="20" prefWrapLength="950"/>
+    <!-- Контейнер для карточек песен (вертикальный) -->
+    <ScrollPane fitToWidth="true"
+                hbarPolicy="NEVER"
+                vbarPolicy="AS_NEEDED"
+                VBox.vgrow="ALWAYS">
+
+        <VBox fx:id="songsContainer" styleClass="songs-container"
+              spacing="10"
+              alignment="TOP_CENTER">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+
+            <!-- Карточки песен будут добавляться сюда -->
+        </VBox>
+
     </ScrollPane>
 
     <!-- Статус бар -->

@@ -1,14 +1,9 @@
 package org.example.vasilev.musicpro.controllers;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
 import org.example.vasilev.musicpro.models.MusicFile;
 import org.example.vasilev.musicpro.services.MusicFileDetailsService;
-
-import java.io.IOException;
-import java.net.URL;
 
 public class MusicSmallCardController
 {
@@ -54,7 +49,7 @@ public class MusicSmallCardController
         if (musicFile == null) return;
 
         titleLabel.setText(musicFile.getTitle());
-        artistLabel.setText("Исполнитель: " + musicFile.getArtist());
+        artistLabel.setText(musicFile.getArtist());
         albumLabel.setText("Альбом: " + musicFile.getAlbum());
 
         // Форматированная длительность

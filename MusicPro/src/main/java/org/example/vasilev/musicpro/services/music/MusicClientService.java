@@ -27,6 +27,7 @@ public class MusicClientService implements IMusicClientService
     }
 
 
+    /// Получение с сервера списка музыкальных файлов
     @Override
     public CompletableFuture<List<MusicFile>> getMusicFiles(int page, int pageSize)
     {
@@ -55,6 +56,7 @@ public class MusicClientService implements IMusicClientService
         });
     }
 
+    /// Получение с сервера детальную информацию о музыкальном файле по его ID
     @Override
     public CompletableFuture<MusicFile> getMusicFileDetails(long musicFileId)
     {

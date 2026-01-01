@@ -6,41 +6,7 @@
     -fx-font-family: "Arial";
 }
 
-/* Карточка песни */
-.music-small-card {
-    -fx-background-color: white;
-    -fx-border-color: #e0e0e0;
-    -fx-border-width: 1px;
-    -fx-border-radius: 5px;
-    -fx-padding: 10px;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 3, 0, 0, 1);
-}
-
-.song-title-small {
-    -fx-font-size: 14px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #333333;
-}
-
-.song-artist-small {
-    -fx-font-size: 12px;
-    -fx-text-fill: #666666;
-}
-
-.song-duration-small {
-    -fx-font-size: 11px;
-    -fx-text-fill: #2196F3;
-    -fx-font-weight: bold;
-}
-
-.download-btn-small {
-    -fx-background-color: #4CAF50;
-    -fx-text-fill: white;
-    -fx-font-size: 11px;
-    -fx-padding: 3px 8px;
-}
-
-/* Для главного окна */
+/* ===== Главное  окно ===== */
 .header {
     -fx-background-color: linear-gradient(to right, #6a11cb, #2575fc);
     -fx-padding: 15px 20px;
@@ -55,4 +21,262 @@
 .status-label {
     -fx-font-size: 12px;
     -fx-text-fill: #e0e0e0;
+}
+
+/* ===== КАРТОЧКА ПЕСНИ (КОМПАКТНАЯ) ===== */
+.music-card {
+    -fx-background-color: linear-gradient(to right, #f8f4ff 0%, #ffffff 100%);
+    -fx-border-color: #e6e0ff;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 6px 10px;
+    -fx-effect: dropshadow(gaussian, rgba(106, 17, 203, 0.1), 6, 0.2, 0, 1);
+    -fx-min-height: 32px;
+    -fx-max-height: 32px;
+    -fx-pref-height: 32px;
+}
+
+/* Вторая строка карточки (компактная) */
+.card-second-row {
+    -fx-background-color: #f5f2ff;
+    -fx-border-color: #e6e0ff;
+    -fx-border-width: 0 1px 1px 1px;
+    -fx-border-radius: 0 0 8px 8px;
+    -fx-background-radius: 0 0 8px 8px;
+    -fx-padding: 4px 10px 6px 10px;
+    -fx-effect: dropshadow(gaussian, rgba(106, 17, 203, 0.05), 3, 0.2, 0, 1);
+    -fx-min-height: 26px;
+    -fx-max-height: 26px;
+    -fx-pref-height: 26px;
+}
+
+/* Эффекты при наведении */
+.music-card:hover, .card-second-row:hover {
+    -fx-background-color: linear-gradient(to right, #f0ebff 0%, #f8f4ff 100%);
+    -fx-border-color: #d4c7ff;
+    -fx-effect: dropshadow(gaussian, rgba(106, 17, 203, 0.15), 8, 0.3, 0, 2);
+    -fx-cursor: hand;
+}
+
+/* ===== ТЕКСТ ПЕРВОЙ СТРОКИ (КОМПАКТНЫЙ) ===== */
+/* Исполнитель (первая строка) */
+.song-artist-main {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #6a11cb;
+    -fx-effect: dropshadow(gaussian, rgba(106, 17, 203, 0.1), 1, 0.3, 0, 0);
+    -fx-padding: 0;
+    -fx-margin: 0;
+}
+
+/* Название песни (первая строка) */
+.song-title-main {
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #333333;
+    -fx-padding: 0;
+    -fx-margin: 0;
+}
+
+/* Разделитель тире */
+.separator-dash {
+    -fx-font-size: 12px;
+    -fx-text-fill: #999999;
+    -fx-font-weight: normal;
+    -fx-padding: 0 2px;
+}
+
+/* ===== ТЕКСТ ВТОРОЙ СТРОКИ (КОМПАКТНЫЙ) ===== */
+/* Альбом */
+.song-album {
+    -fx-font-size: 11px;
+    -fx-text-fill: #666666;
+    -fx-font-style: italic;
+    -fx-padding: 0;
+    -fx-margin: 0;
+}
+
+/* Жанр */
+.song-genre {
+    -fx-font-size: 11px;
+    -fx-text-fill: #666666;
+    -fx-padding: 0;
+    -fx-margin: 0;
+}
+
+/* Длительность */
+.song-duration {
+    -fx-font-size: 11px;
+    -fx-text-fill: #4a00e0;
+    -fx-font-weight: 500;
+    -fx-padding: 0;
+    -fx-margin: 0;
+}
+
+/* Год */
+.song-year {
+    -fx-font-size: 11px;
+    -fx-text-fill: #666666;
+    -fx-padding: 0;
+    -fx-margin: 0;
+}
+
+/* Иконки второй строки */
+.album-icon, .genre-icon, .duration-icon, .year-icon {
+    -fx-font-size: 10px;
+    -fx-text-fill: #9d4edd;
+    -fx-padding: 0;
+    -fx-margin: 0;
+}
+
+/* Разделители точек */
+.separator-dot {
+    -fx-font-size: 10px;
+    -fx-text-fill: #cccccc;
+    -fx-font-weight: bold;
+    -fx-padding: 0 2px;
+}
+
+/* ===== КНОПКИ (КОМПАКТНЫЕ) ===== */
+/* Кнопка подробнее */
+.details-btn {
+    -fx-background-color: rgba(106, 17, 203, 0.1);
+    -fx-text-fill: #6a11cb;
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
+    -fx-padding: 3px 8px;
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-border-color: rgba(106, 17, 203, 0.3);
+    -fx-border-width: 1px;
+    -fx-cursor: hand;
+    -fx-min-width: 80px;
+    -fx-min-height: 24px;
+    -fx-max-height: 24px;
+}
+
+.details-btn:hover {
+    -fx-background-color: rgba(106, 17, 203, 0.2);
+    -fx-text-fill: #4a00e0;
+    -fx-border-color: #6a11cb;
+    -fx-effect: dropshadow(gaussian, rgba(106, 17, 203, 0.2), 5, 0.3, 0, 1);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.details-btn:pressed {
+    -fx-background-color: rgba(74, 0, 224, 0.3);
+    -fx-scale-x: 0.95;
+    -fx-scale-y: 0.95;
+}
+
+/* Кнопка скачать */
+.download-btn {
+    -fx-background-color: linear-gradient(to right, #6a11cb 0%, #4a00e0 100%);
+    -fx-text-fill: white;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 4px 10px;
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-border-color: #ffffff;
+    -fx-border-width: 1px;
+    -fx-cursor: hand;
+    -fx-min-width: 80px;
+    -fx-min-height: 24px;
+    -fx-max-height: 24px;
+    -fx-effect: dropshadow(gaussian, rgba(106, 17, 203, 0.3), 5, 0.3, 0, 1);
+}
+
+.download-btn:hover {
+    -fx-background-color: linear-gradient(to right, #7c2be0 0%, #5a00ff 100%);
+    -fx-effect: dropshadow(gaussian, rgba(124, 43, 224, 0.4), 8, 0.4, 0, 2);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+    -fx-border-color: #ffd700;
+}
+
+.download-btn:pressed {
+    -fx-background-color: linear-gradient(to right, #5a00b5 0%, #3a00a0 100%);
+    -fx-scale-x: 0.95;
+    -fx-scale-y: 0.95;
+}
+
+/* Кнопка скачать (уже скачано) */
+.download-btn:downloaded {
+    -fx-background-color: linear-gradient(to right, #4CAF50 0%, #2E7D32 100%);
+    -fx-text-fill: white;
+}
+
+.download-btn:downloaded:hover {
+    -fx-background-color: linear-gradient(to right, #66BB6A 0%, #388E3C 100%);
+}
+
+/* Кнопка скачать (в процессе) */
+.download-btn:downloading {
+    -fx-background-color: linear-gradient(to right, #FF9800 0%, #F57C00 100%);
+    -fx-text-fill: white;
+}
+
+/* ===== СТАТУС (КОМПАКТНЫЙ) ===== */
+/* Статус скачивания */
+.song-status {
+    -fx-font-size: 10px;
+    -fx-padding: 1px 6px;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-min-height: 18px;
+    -fx-max-height: 18px;
+}
+
+/* Разные статусы */
+.song-status:not-downloaded {
+    -fx-text-fill: #f44336;
+    -fx-background-color: rgba(244, 67, 54, 0.08);
+    -fx-border-color: rgba(244, 67, 54, 0.2);
+    -fx-border-width: 1px;
+}
+
+.song-status:downloading {
+    -fx-text-fill: #FF9800;
+    -fx-background-color: rgba(255, 152, 0, 0.08);
+    -fx-border-color: rgba(255, 152, 0, 0.2);
+    -fx-border-width: 1px;
+}
+
+.song-status:downloaded {
+    -fx-text-fill: #4CAF50;
+    -fx-background-color: rgba(76, 175, 80, 0.08);
+    -fx-border-color: rgba(76, 175, 80, 0.2);
+    -fx-border-width: 1px;
+}
+
+/* ===== КОНТЕЙНЕР С КАРТОЧКАМИ ===== */
+.cards-container {
+    -fx-spacing: 6;
+    -fx-padding: 10px;
+    -fx-background-color: #f9f7ff;
+}
+
+/* ===== КОРНЕВОЙ КОНТЕЙНЕР ДЛЯ КАРТОЧКИ ===== */
+.full-music-card {
+    -fx-spacing: 0;
+    -fx-padding: 0;
+    -fx-margin: 0;
+    -fx-min-height: 58px; /* 32 + 26 = 58px */
+    -fx-max-height: 58px;
+    -fx-pref-height: 58px;
+}
+
+/* Эффект наведения на всю карточку */
+.full-music-card:hover .music-card {
+    -fx-background-color: linear-gradient(to right, #f0ebff 0%, #f8f4ff 100%);
+    -fx-border-color: #d4c7ff;
+    -fx-effect: dropshadow(gaussian, rgba(106, 17, 203, 0.15), 8, 0.3, 0, 2);
+}
+
+.full-music-card:hover .card-second-row {
+    -fx-background-color: #f0ebff;
+    -fx-border-color: #d4c7ff;
 }

@@ -2,7 +2,6 @@ package org.example.vasilev.musicpro.services.music;
 
 import org.example.vasilev.musicpro.models.MusicFile;
 
-import java.io.File;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -22,6 +21,7 @@ public interface IMusicClientService {
      * @param pageSize размер страницы
      * @return список музыкальных файлов
      */
+    /// TODO подумать о развитии функциональности
     //CompletableFuture<List<MusicFile>> getNextPage(int currentPage, int pageSize);
 
     /**
@@ -30,21 +30,6 @@ public interface IMusicClientService {
      * @return детальная информация о музыкальном файле
      */
     CompletableFuture<MusicFile> getMusicFileDetails(long musicFileId);
-
-    /**
-     * Скачать музыкальный файл с сервера
-     * @param musicFileId ID музыкального файла
-     * @param localFilePath путь для сохранения файла локально
-     * @return файл, сохраненный локально
-     */
-    //CompletableFuture<File> downloadMusicFile(long musicFileId, String localFilePath);
-
-    /**
-     * Скачать музыкальный файл с сервера в папку по умолчанию
-     * @param musicFileId ID музыкального файла
-     * @return файл, сохраненный локально
-     */
-    //CompletableFuture<File> downloadMusicFile(long musicFileId);
 
     /**
      * Поиск музыкальных файлов по запросу

@@ -9,34 +9,83 @@
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="org.example.vasilev.musicpro.controllers.MusicSmallCardController"
       styleClass="song-card"
-      spacing="10" prefWidth="300" prefHeight="120"
-      fx:id="songCard">
+      spacing="10"
+      fx:id="songCard"
+      maxWidth="Infinity"
+      minWidth="0"
+      fillWidth="true">
 
-    <HBox spacing="15" alignment="CENTER_LEFT">
-        <!-- Обложка альбома TODO возможно потом добавлю
-        <ImageView fx:id="albumCover" fitWidth="80" fitHeight="80">
-            <Image url="@../images/default-album.png"/>
-        </ImageView>
-         -->
+    <!-- Карточка песни -->
+    <HBox styleClass="music-card" spacing="15" alignment="CENTER_LEFT"
+          prefHeight="70" maxHeight="70" minHeight="70">
 
-        <!-- Информация о песне -->
-        <VBox spacing="2" HBox.hgrow="ALWAYS">
-            <Label fx:id="titleLabel" styleClass="song-title"/>
-            <Label fx:id="artistLabel" styleClass="song-artist"/>
-            <Label fx:id="albumLabel" styleClass="song-album"/>
-            <HBox spacing="10">
-                <Label fx:id="durationLabel" styleClass="song-duration"/>
-                <Label fx:id="statusLabel" styleClass="song-status" text="Не скачано"/>
+        <!-- Основная информация (первая строка) -->
+        <HBox alignment="CENTER_LEFT" spacing="10" HBox.hgrow="ALWAYS">
+            <!-- Исполнитель -->
+            <Label fx:id="artistLabel" styleClass="song-artist-main"
+                   text="Blur" wrapText="true"/>
+
+            <!-- Разделитель -->
+            <Label text="—" styleClass="separator-dash"/>
+
+            <!-- Название песни -->
+            <Label fx:id="titleLabel" styleClass="song-title-main"
+                   text="Coffee And TV" wrapText="true" HBox.hgrow="ALWAYS"/>
+
+            <!-- Кнопки действий -->
+            <HBox spacing="8" alignment="CENTER_RIGHT">
+                <!-- Кнопка подробнее -->
+                <Button fx:id="detailsButton" text="📄 Подробнее"
+                        onAction="#handleDetails" styleClass="details-btn"/>
+
+                <!-- Кнопка скачать -->
+                <Button fx:id="downloadButton" text="⬇ Скачать"
+                        onAction="#handleDownload" styleClass="download-btn"/>
             </HBox>
-        </VBox>
+        </HBox>
 
-        <!-- Кнопка скачивания -->
-        <Button fx:id="downloadButton" text="Скачать"
-                onAction="#handleDownload" styleClass="download-btn"/>
+    </HBox>
 
-        <!-- Кнопка подробнее -->
-        <Button fx:id="detailsButton" text="Подробнее"
-                onAction="#handleDetails" styleClass="download-btn"/>
+    <!-- Вторая строка: дополнительная информация -->
+    <HBox styleClass="card-second-row" spacing="15" alignment="CENTER_LEFT">
+
+        <!-- Альбом -->
+        <HBox spacing="5" alignment="CENTER_LEFT">
+            <Label text="📀" styleClass="album-icon"/>
+            <Label fx:id="albumLabel" styleClass="song-album" text="Blur: The Best Of"/>
+        </HBox>
+
+        <!-- Разделитель -->
+        <Label text="•" styleClass="separator-dot"/>
+
+        <!-- Жанр -->
+        <HBox spacing="5" alignment="CENTER_LEFT">
+            <Label text="🎵" styleClass="genre-icon"/>
+            <Label fx:id="genreLabel" styleClass="song-genre" text="Alternative Rock"/>
+        </HBox>
+
+        <!-- Разделитель -->
+        <Label text="•" styleClass="separator-dot"/>
+
+        <!-- Длительность -->
+        <HBox spacing="5" alignment="CENTER_LEFT">
+            <Label text="⏱️" styleClass="duration-icon"/>
+            <Label fx:id="durationLabel" styleClass="song-duration" text="5:18"/>
+        </HBox>
+
+        <!-- Разделитель -->
+        <Label text="•" styleClass="separator-dot"/>
+
+        <!-- Год -->
+        <HBox spacing="5" alignment="CENTER_LEFT">
+            <Label text="📅" styleClass="year-icon"/>
+            <Label fx:id="yearLabel" styleClass="song-year" text="2000"/>
+        </HBox>
+
+        <!-- Статус скачивания (справа) -->
+        <HBox HBox.hgrow="ALWAYS" alignment="CENTER_RIGHT">
+            <Label fx:id="statusLabel" styleClass="song-status" text="Не скачано"/>
+        </HBox>
     </HBox>
 
     <!-- Прогресс скачивания (скрыт по умолчанию) -->
