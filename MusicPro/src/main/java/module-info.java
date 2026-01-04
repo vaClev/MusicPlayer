@@ -3,6 +3,7 @@ module org.example.vasilev.musicpro
     requires javafx.controls;
     requires javafx.fxml;
     requires com.google.gson;
+    requires javafx.media;
 
     // РАЗРЕШАЕМ доступ к контроллерам
     exports org.example.vasilev.musicpro.controllers to javafx.fxml;
