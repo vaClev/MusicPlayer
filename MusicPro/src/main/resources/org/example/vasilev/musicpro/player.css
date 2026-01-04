@@ -1,0 +1,240 @@
+/* ===== ОСНОВНОЙ КОНТЕЙНЕР ПЛЕЕРА ===== */
+.player-container {
+    -fx-background-color: linear-gradient(to bottom, #1a0f3d, #2d1b69);
+    -fx-border-color: #6a11cb;
+    -fx-border-width: 1px 0 0 0;
+    -fx-padding: 15px 20px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0.5, 0, -2);
+}
+
+.player-area {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+/* ===== ВЕРХНЯЯ ПАНЕЛЬ ПЛЕЕРА ===== */
+.player-top-panel {
+    -fx-padding: 0 0 10px 0;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-width: 0 0 1px 0;
+}
+
+/* ===== КНОПКИ ПЛЕЕРА ===== */
+.player-btn {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-padding: 8px 12px;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-width: 1px;
+    -fx-cursor: hand;
+    -fx-min-height: 30px;
+}
+
+.player-btn:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+    -fx-effect: dropshadow(gaussian, rgba(106, 17, 203, 0.5), 5, 0.3, 0, 1);
+}
+
+.player-btn:pressed {
+    -fx-background-color: rgba(106, 17, 203, 0.5);
+    -fx-scale-x: 0.95;
+    -fx-scale-y: 0.95;
+}
+
+/* Кнопка Play */
+.play-btn {
+    -fx-background-color: linear-gradient(to right, #6a11cb, #4a00e0);
+    -fx-font-size: 14px;
+    -fx-min-width: 50px;
+    -fx-min-height: 40px;
+}
+
+.play-btn:hover {
+    -fx-background-color: linear-gradient(to right, #7c2be0, #5a00ff);
+    -fx-border-color: #ffd700;
+}
+
+/* Кнопки управления */
+.control-btn {
+    -fx-font-size: 16px;
+    -fx-min-width: 40px;
+}
+
+/* Кнопка файла */
+.file-btn {
+    -fx-background-color: rgba(0, 150, 255, 0.2);
+}
+
+/* Кнопка плейлиста */
+.playlist-btn {
+    -fx-background-color: rgba(50, 205, 50, 0.2);
+}
+
+/* Дополнительные кнопки */
+.extra-btn {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-font-size: 14px;
+    -fx-min-width: 30px;
+    -fx-min-height: 30px;
+    -fx-padding: 5px;
+}
+
+/* ===== СЛАЙДЕРЫ ===== */
+.progress-slider {
+    -fx-pref-width: 300px;
+    -fx-min-height: 10px;
+}
+
+.progress-slider .track {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-background-radius: 5px;
+}
+
+.progress-slider .thumb {
+    -fx-background-color: #6a11cb;
+    -fx-background-radius: 7px;
+    -fx-pref-height: 14px;
+    -fx-pref-width: 14px;
+}
+
+.progress-slider .thumb:hover {
+    -fx-background-color: #7c2be0;
+    -fx-scale-x: 1.2;
+    -fx-scale-y: 1.2;
+}
+
+.progress-slider .filled-track {
+    -fx-background-color: linear-gradient(to right, #6a11cb, #4a00e0);
+    -fx-background-radius: 5px;
+}
+
+/* Слайдер громкости */
+.volume-slider {
+    -fx-pref-width: 100px;
+}
+
+.volume-slider .track {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-background-radius: 3px;
+}
+
+.volume-slider .thumb {
+    -fx-background-color: white;
+    -fx-background-radius: 5px;
+    -fx-pref-height: 10px;
+    -fx-pref-width: 10px;
+}
+
+.volume-slider .filled-track {
+    -fx-background-color: linear-gradient(to right, #4CAF50, #2E7D32);
+}
+
+/* ===== МЕТКИ ВРЕМЕНИ ===== */
+.time-label {
+    -fx-text-fill: #e0c3ff;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-min-width: 40px;
+    -fx-alignment: center;
+}
+
+/* ===== ИНФОРМАЦИЯ О ТРЕКЕ ===== */
+.track-info {
+    -fx-padding: 0 15px;
+}
+
+.track-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 2, 0.3, 1, 1);
+}
+
+.track-artist {
+    -fx-font-size: 12px;
+    -fx-text-fill: #e0c3ff;
+    -fx-font-style: italic;
+}
+
+/* ===== КОНТРОЛЬ ГРОМКОСТИ ===== */
+.volume-control {
+    -fx-padding: 0 15px;
+}
+
+.volume-icon {
+    -fx-text-fill: #e0c3ff;
+    -fx-font-size: 12px;
+}
+
+.volume-label {
+    -fx-text-fill: #e0c3ff;
+    -fx-font-size: 11px;
+    -fx-min-width: 30px;
+}
+
+/* ===== СТАТУСНАЯ СТРОКА ПЛЕЕРА ===== */
+.player-status {
+    -fx-padding: 10px 0 0 0;
+    -fx-border-color: rgba(255, 255, 255, 0.05);
+    -fx-border-width: 1px 0 0 0;
+}
+
+.status-text {
+    -fx-text-fill: #a0a0a0;
+    -fx-font-size: 11px;
+}
+
+.player-loading {
+    -fx-progress-color: #6a11cb;
+    -fx-pref-width: 16px;
+    -fx-pref-height: 16px;
+}
+
+/* ===== НИЖНЯЯ ПАНЕЛЬ ПЛЕЕРА ===== */
+.player-bottom-panel {
+    -fx-padding: 10px 0 0 0;
+}
+
+/* ===== РАЗДЕЛИТЕЛЬ SPLITPANE ===== */
+.split-pane {
+    -fx-background-color: transparent;
+}
+
+.split-pane-divider {
+    -fx-background-color: #6a11cb;
+    -fx-padding: 0 1px 0 1px;
+}
+
+.split-pane-divider:hover {
+    -fx-background-color: #7c2be0;
+}
+
+/* ===== АКТИВНЫЕ СОСТОЯНИЯ ===== */
+/* Кнопка воспроизведения в состоянии "пауза" */
+.play-btn:paused {
+    -fx-text-fill: #ff9800;
+    -fx-background-color: rgba(255, 152, 0, 0.2);
+}
+
+/* Активный режим повтора */
+.player-btn:active {
+    -fx-background-color: rgba(106, 17, 203, 0.5);
+    -fx-text-fill: #ffd700;
+}
+
+/* Активный режим перемешивания */
+.player-btn:shuffle-active {
+    -fx-background-color: rgba(255, 215, 0, 0.3);
+}
+
+/* Состояние загрузки */
+.player-container:loading {
+    -fx-opacity: 0.7;
+    -fx-cursor: wait;
+}

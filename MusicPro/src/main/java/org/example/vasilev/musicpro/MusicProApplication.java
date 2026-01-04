@@ -25,12 +25,21 @@ public class MusicProApplication extends Application
             Scene scene = new Scene(root, 1000, 700);
 
             // Устанавливаем заголовок
-            stage.setTitle("Музыкальный Плеер");
+            stage.setTitle("MusicPro v.0.1");
 
 
-            // Загружаем CSS напрямую в сцену
-            try {
+            /// Загружаем CSS стили напрямую в сцену
+            try
+            {
+                /// Основные стили
                 URL cssUrl = getClass().getResource("/org/example/vasilev/musicpro/styles.css");
+                if (cssUrl != null)
+                {
+                    scene.getStylesheets().add(cssUrl.toExternalForm());
+                }
+
+                /// Стили кнопок плеера
+                cssUrl = getClass().getResource("/org/example/vasilev/musicpro/player.css");
                 if (cssUrl != null)
                 {
                     scene.getStylesheets().add(cssUrl.toExternalForm());

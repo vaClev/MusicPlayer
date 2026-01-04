@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.media.MediaView?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.vasilev.musicpro.controllers.PlayerController"
+      styleClass="player-container"
+      spacing="10"
+      prefHeight="200"
+      maxHeight="200"
+      minHeight="200">
+
+    <!-- Верхняя панель плеера -->
+    <HBox styleClass="player-top-panel" spacing="15" alignment="CENTER">
+
+        <!-- Кнопка выбора файла -->
+        <Button fx:id="selectFileButton" text="📁 Файл"
+                styleClass="player-btn file-btn"
+                onAction="#handleSelectFile"/>
+
+        <!-- Кнопка предыдущего трека -->
+        <Button fx:id="prevButton" text="⏮"
+                styleClass="player-btn control-btn"
+                onAction="#handlePrev"/>
+
+        <!-- Кнопка Play/Pause -->
+        <Button fx:id="playPauseButton" text="▶"
+                styleClass="player-btn play-btn"
+                onAction="#handlePlayPause"/>
+
+        <!-- Кнопка следующего трека -->
+        <Button fx:id="nextButton" text="⏭"
+                styleClass="player-btn control-btn"
+                onAction="#handleNext"/>
+
+        <!-- Текущее время -->
+        <Label fx:id="currentTimeLabel" text="00:00" styleClass="time-label"/>
+
+        <!-- Прогресс-бар -->
+        <Slider fx:id="progressSlider" styleClass="progress-slider"
+                min="0" max="100" value="0"
+                blockIncrement="5"/>
+
+        <!-- Общее время -->
+        <Label fx:id="totalTimeLabel" text="00:00" styleClass="time-label"/>
+
+        <!-- Кнопка плейлиста -->
+        <Button fx:id="playlistButton" text="📋 Плейлист"
+                styleClass="player-btn playlist-btn"
+                onAction="#handlePlaylist"/>
+    </HBox>
+
+    <!-- Нижняя панель плеера -->
+    <HBox styleClass="player-bottom-panel" spacing="15" alignment="CENTER">
+
+        <!-- Информация о текущем треке -->
+        <VBox styleClass="track-info" spacing="2" HBox.hgrow="ALWAYS">
+            <Label fx:id="trackTitleLabel" text="Не выбрано"
+                   styleClass="track-title"/>
+            <Label fx:id="trackArtistLabel" text="Выберите трек"
+                   styleClass="track-artist"/>
+        </VBox>
+
+        <!-- Громкость -->
+        <HBox styleClass="volume-control" spacing="5" alignment="CENTER">
+            <Label text="🔈" styleClass="volume-icon"/>
+            <Slider fx:id="volumeSlider" styleClass="volume-slider"
+                    min="0" max="100" value="50"
+                    blockIncrement="10"
+                    showTickLabels="true" showTickMarks="true"/>
+            <Label text="🔊" styleClass="volume-icon"/>
+            <Label fx:id="volumeLabel" text="50%" styleClass="volume-label"/>
+        </HBox>
+
+        <!-- Дополнительные кнопки //TODO после всего остального
+        <HBox styleClass="extra-controls" spacing="10">
+            <Button fx:id="repeatButton" text="🔁"
+                    styleClass="player-btn extra-btn"
+                    onAction="#handleRepeat"/>
+            <Button fx:id="shuffleButton" text="🔀"
+                    styleClass="player-btn extra-btn"
+                    onAction="#handleShuffle"/>
+            <Button fx:id="equalizerButton" text="🎚️"
+                    styleClass="player-btn extra-btn"
+                    onAction="#handleEqualizer"/>
+            <Button fx:id="fullscreenButton" text="⛶"
+                    styleClass="player-btn extra-btn"
+                    onAction="#handleFullscreen"/>
+        </HBox>
+        -->
+    </HBox>
+
+    <!-- Статусная строка -->
+    <HBox styleClass="player-status" spacing="10" alignment="CENTER">
+        <ProgressIndicator fx:id="loadingIndicator"
+                           styleClass="player-loading"
+                           visible="false"/>
+        <Label fx:id="playerStatusLabel" text="Готов к воспроизведению"
+               styleClass="status-text"/>
+    </HBox>
+
+</VBox>

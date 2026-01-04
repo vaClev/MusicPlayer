@@ -7,8 +7,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.example.vasilev.musicpro.dto.MusicFileDTO;
 import org.example.vasilev.musicpro.models.AppConfig;
@@ -16,22 +14,26 @@ import org.example.vasilev.musicpro.models.MusicFile;
 import org.example.vasilev.musicpro.services.*;
 import org.example.vasilev.musicpro.services.music.IMusicClientService;
 import org.example.vasilev.musicpro.services.music.MusicClientService;
-import org.example.vasilev.musicpro.utils.LocalDateTimeAdapter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 public class MainController implements Initializable {
+    /// Контейнер UI элементов списков песен
     @FXML
     private VBox songsContainer;
+
+    /// Контейнер UI элементов плеера
+    @FXML
+    private VBox playerContainer;
+
     @FXML
     private Label statusLabel;
 
@@ -48,13 +50,34 @@ public class MainController implements Initializable {
         configService = new ConfigService(AppConfig.getInstance());
         musicClientService = new MusicClientService();
 
-        // Загрузка тестовых данных
-        //loadMockSongs();
-        //testLoadAllFromServer();
+        // инициализация UI элементов плеера
+        loadPlayer();
 
         // Показываем путь к папке загрузок
         statusLabel.setText("Папка загрузок: " + configService.getConfig().getDownloadDir());
     }
+
+    /// Загрузка UI элементов кнопок плеера
+    private void loadPlayer()
+    {
+        try
+        {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/org/example/vasilev/musicpro/views/player.fxml")
+            );
+            VBox player = loader.load();
+            playerContainer.getChildren().add(player);
+
+            // Можно сохранить ссылку на контроллер плеера // понадобится?
+            // PlayerController playerController = loader.getController();
+
+        }
+        catch (IOException e)
+        {
+            System.err.println("Не удалось загрузить player.fxml: " + e.getMessage());
+        }
+    }
+
 
     /// Тестовое получение данных с сервера при запуске
     private void testLoadAllFromServer()
@@ -98,7 +121,7 @@ public class MainController implements Initializable {
     }
 
 
-    /// Загрузка и отображение  UI содержимого из файла.
+    /// Загрузка и отображение в UI содержимого из файла JSON
     private void loadMockSongs()
     {
         try
@@ -145,6 +168,7 @@ public class MainController implements Initializable {
         return card;
     }
 
+    /// TODO вынести в тесты
     private List<MusicFile> loadMusicFilesFromJson()
     {
         // Путь к файлу в ресурсах
@@ -182,6 +206,7 @@ public class MainController implements Initializable {
 
 
 
+    /// Обработчики нажатия кнопок
     @FXML
     private void handleRefresh()
     {
