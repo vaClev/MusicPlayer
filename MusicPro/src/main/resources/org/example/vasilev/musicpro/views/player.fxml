@@ -8,10 +8,7 @@
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="org.example.vasilev.musicpro.controllers.PlayerController"
       styleClass="player-container"
-      spacing="10"
-      prefHeight="200"
-      maxHeight="200"
-      minHeight="200">
+      spacing="10">
 
     <!-- Верхняя панель плеера -->
     <HBox styleClass="player-top-panel" spacing="15" alignment="CENTER">
@@ -112,10 +109,6 @@
         -->
     </HBox>
 
-
-
-
-
     <!-- Статусная строка -->
     <HBox styleClass="player-status" spacing="10" alignment="CENTER">
         <ProgressIndicator fx:id="loadingIndicator"
@@ -124,5 +117,4 @@
         <Label fx:id="playerStatusLabel" text="Готов к воспроизведению"
                styleClass="status-text"/>
     </HBox>
-
 </VBox>
