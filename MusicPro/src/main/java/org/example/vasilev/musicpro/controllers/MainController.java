@@ -43,6 +43,9 @@ public class MainController implements Initializable {
 
     private IMusicClientService musicClientService;
 
+    /// ссылка на контроллер плеера. Будем инжектить ее в карточки песен, чтобы добавлять их в плейлист
+    private IPlaylistOwner playlistOwner;
+
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
@@ -68,9 +71,8 @@ public class MainController implements Initializable {
             VBox player = loader.load();
             playerContainer.getChildren().add(player);
 
-            // Можно сохранить ссылку на контроллер плеера // понадобится?
-            // PlayerController playerController = loader.getController();
-
+            /// сохраняем ссылку на владельца плейлиста.
+            this.playlistOwner = loader.getController();
         }
         catch (IOException e)
         {
@@ -137,6 +139,8 @@ public class MainController implements Initializable {
             {
                 // Создаем карточку
                 VBox card = createSongCard(musicFile);
+                /// Показываем где лежит псевдо-скаченный файл
+                musicFile.setLocalFilePath("C:\\Users\\Олег\\MusicPlayer\\downloads\\kiss-detroit-rock-city.mp3");
 
                 // Добавляем View (VBox) в контейнер
                 songsContainer.getChildren().add(card);
@@ -164,6 +168,7 @@ public class MainController implements Initializable {
         // Получаем контроллер
         MusicSmallCardController controller = loader.getController();
         controller.setMusicFile(musicFile);
+        controller.setPlaylistOwner(playlistOwner);
 
         return card;
     }

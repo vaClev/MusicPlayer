@@ -41,6 +41,10 @@
                 <!-- Кнопка скачать -->
                 <Button fx:id="downloadButton" text="⬇ Скачать"
                         onAction="#handleDownload" styleClass="download-btn"/>
+
+                <!-- Кнопка добавить в список воспроизведения -->
+                <Button fx:id="addToPlaylistButton" text="+ добавить в список воспроизведения"
+                        onAction="#handleAddToPlaylist" styleClass="download-btn"/>
             </HBox>
         </HBox>
 

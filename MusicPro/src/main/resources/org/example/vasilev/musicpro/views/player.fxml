@@ -47,14 +47,33 @@
         <!-- Общее время -->
         <Label fx:id="totalTimeLabel" text="00:00" styleClass="time-label"/>
 
-        <!-- Кнопка плейлиста -->
-        <Button fx:id="playlistButton" text="📋 Плейлист"
-                styleClass="player-btn playlist-btn"
-                onAction="#handlePlaylist"/>
     </HBox>
 
     <!-- Нижняя панель плеера -->
     <HBox styleClass="player-bottom-panel" spacing="15" alignment="CENTER">
+
+        <!-- Контейнер плейлиста (слева) -->
+        <VBox styleClass="playlist-container" spacing="2" minWidth="250" maxWidth="350">
+            <HBox spacing="5" alignment="CENTER_LEFT" styleClass="playlist-header">
+                <Label text="🎵 Плейлист" styleClass="playlist-title"/>
+                <Label fx:id="playlistCountLabel" text="(0)" styleClass="playlist-count"/>
+            </HBox>
+
+            <!-- Список песен в плейлисте -->
+            <ScrollPane styleClass="playlist-scroll" fitToWidth="true" vbarPolicy="AS_NEEDED">
+                <VBox fx:id="playlistContainer" styleClass="playlist-items" spacing="1"/>
+            </ScrollPane>
+
+            <!-- Быстрое добавление файлов -->
+            <HBox spacing="5" alignment="CENTER_LEFT" styleClass="playlist-footer">
+                <Button fx:id="addFilesButton" text="➕ Добавить файлы"
+                        styleClass="playlist-add-btn" onAction="#handleAddFilesToPlaylist"
+                        HBox.hgrow="ALWAYS"/>
+                <Button fx:id="clearPlaylistButton" text="Очистить"
+                        styleClass="playlist-add-btn" onAction="#handleClearPlaylist"
+                        HBox.hgrow="ALWAYS"/>
+            </HBox>
+        </VBox>
 
         <!-- Информация о текущем треке -->
         <VBox styleClass="track-info" spacing="2" HBox.hgrow="ALWAYS">
@@ -92,6 +111,10 @@
         </HBox>
         -->
     </HBox>
+
+
+
+
 
     <!-- Статусная строка -->
     <HBox styleClass="player-status" spacing="10" alignment="CENTER">

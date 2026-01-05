@@ -1,5 +1,6 @@
 package org.example.vasilev.musicpro.controllers;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import org.example.vasilev.musicpro.models.MusicFile;
@@ -22,7 +23,8 @@ public class MusicSmallCardController
     @FXML
     private ProgressBar progressBar;
 
-    private MusicFile musicFile;
+    private MusicFile musicFile = null;
+    private IPlaylistOwner playlistOwner = null;
 
     public MusicSmallCardController()  {}
 
@@ -41,6 +43,12 @@ public class MusicSmallCardController
         //this.downloadService = downloadService;
         // TODO добавить возможность обращаться к сервису для загрузки указанного файла
         updateUI();
+    }
+
+    /// Метод установки списка воспроизведения
+    public void setPlaylistOwner(IPlaylistOwner owner)
+    {
+        this.playlistOwner = owner;
     }
 
     /// обновление отображения
@@ -118,5 +126,13 @@ public class MusicSmallCardController
     public MusicFile getMusicFile()
     {
         return musicFile;
+    }
+
+    public void handleAddToPlaylist(ActionEvent actionEvent)
+    {
+        if(musicFile==null || !musicFile.isDownloaded() || playlistOwner ==null )
+            return;
+
+        playlistOwner.addMusicFileToPlaylist(musicFile);
     }
 }

@@ -4,6 +4,7 @@ import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.stream.Collectors;
 
 public class MusicFile
 {
+    /// Информация получаемая с сервера
     private final LongProperty id;
     private final StringProperty title;
     private final StringProperty artist;
@@ -21,10 +23,16 @@ public class MusicFile
     private final StringProperty duration; // строка "00:03:56.9880000"
     private final ObjectProperty<LocalDateTime> uploadDate;
     private final StringProperty downloadUrl;
-    private final BooleanProperty downloaded;
-
     // Список дополнительных файлов
     private final ObservableList<ExtraFile> extraFiles = FXCollections.observableArrayList();
+
+    /// Информация используемая только в клиентском приложении
+    /// Скачан или еще нет?
+    private final BooleanProperty downloaded;
+    /// Путь к локальному файлу (если скачан)
+    private final StringProperty localFilePath;
+
+
 
     /// Конструктор для данных с сервера элемента "Списка песен"
     public MusicFile(Long id, String title, String artist, String album,
@@ -43,6 +51,7 @@ public class MusicFile
         this.uploadDate = new SimpleObjectProperty<>(uploadDate);
         this.downloadUrl = new SimpleStringProperty(downloadUrl);
         this.downloaded = new SimpleBooleanProperty(false);
+        this.localFilePath = new SimpleStringProperty();
     }
 
     /// Конструктор для данных с сервера "Конкретная песня"
@@ -67,7 +76,7 @@ public class MusicFile
     public ObjectProperty<LocalDateTime> uploadDateProperty() { return uploadDate; }
     public StringProperty downloadUrlProperty() { return downloadUrl; }
     public BooleanProperty downloadedProperty() { return downloaded; }
-
+    public StringProperty localFilePathProperty() { return localFilePath; }
 
     /// Геттеры
     public Long getId() { return id.get(); }
@@ -81,10 +90,11 @@ public class MusicFile
     public LocalDateTime getUploadDate() { return uploadDate.get(); }
     public String getDownloadUrl() { return downloadUrl.get(); }
     public boolean isDownloaded() { return downloaded.get(); }
+    public String getLocalFilePath() { return localFilePath.get(); }
 
     /// Сеттеры
     public void setDownloaded(boolean downloaded) { this.downloaded.set(downloaded); }
-
+    public void setLocalFilePath(String localFilePath) { this.localFilePath.set(localFilePath); }
     /// ////////////////////////////////////////////
     /// Геттеры для UI отображения - начало
     /// Форматированная строка продолжительности песни
@@ -135,8 +145,25 @@ public class MusicFile
         if (uploadDate.get() == null) return "Неизвестно";
         return uploadDate.get().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
     }
+
+
+
     /// Геттеры для UI отображения - конец
     /// ////////////////////////////////////////////
+
+    /// Вспомогательные методы для работы с файлом (после скачивания)
+    /// Получить File объект для локального файла
+    public File getLocalFile()
+    {
+        String path = getLocalFilePath();
+        return (path != null && !path.isEmpty()) ? new File(path) : null;
+    }
+    /// Установить локальный файл
+    public void setLocalFile(File file)
+    {
+        setLocalFilePath(file != null ? file.getAbsolutePath() : null);
+    }
+
 
     @Override
     public String toString()
