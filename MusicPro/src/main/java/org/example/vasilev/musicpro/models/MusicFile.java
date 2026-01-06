@@ -3,11 +3,13 @@ package org.example.vasilev.musicpro.models;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.util.Duration;
 
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 public class MusicFile
@@ -95,6 +97,29 @@ public class MusicFile
     /// Сеттеры
     public void setDownloaded(boolean downloaded) { this.downloaded.set(downloaded); }
     public void setLocalFilePath(String localFilePath) { this.localFilePath.set(localFilePath); }
+    public void setTitle(String newTitle) {this.title.set(newTitle);}
+    public void setArtist(String newArtist) {this.artist.set(newArtist);}
+    public void setDuration(Duration measuredDuration)
+    {
+        if (measuredDuration == null)
+        {
+            this.duration.set("00:00:00.0000000");
+            return;
+        }
+
+        long totalMillis = (long) measuredDuration.toMillis();
+
+        long hours = totalMillis / 3_600_000;
+        long minutes = (totalMillis % 3_600_000) / 60_000;
+        long seconds = (totalMillis % 60_000) / 1000;
+        long millis = totalMillis % 1000;
+
+        // Форматируем с точкой, гарантируя 7 знаков после запятой
+        this.duration.set(String.format(Locale.US,
+                "%02d:%02d:%02d.%04d%03d",
+                hours, minutes, seconds, millis, 0));
+        /// TODO подумать о смене формата ответа с сервера. Было бы удобно получать mm:ss сразу.
+    }
     /// ////////////////////////////////////////////
     /// Геттеры для UI отображения - начало
     /// Форматированная строка продолжительности песни

@@ -4,6 +4,7 @@ module org.example.vasilev.musicpro
     requires javafx.fxml;
     requires com.google.gson;
     requires javafx.media;
+    requires jaudiotagger;
 
     // РАЗРЕШАЕМ доступ к контроллерам
     exports org.example.vasilev.musicpro.controllers to javafx.fxml;
