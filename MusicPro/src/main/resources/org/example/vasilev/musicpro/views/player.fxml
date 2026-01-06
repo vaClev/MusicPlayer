@@ -14,7 +14,7 @@
     <HBox styleClass="player-top-panel" spacing="15" alignment="CENTER">
 
         <!-- Кнопка выбора файла -->
-        <Button fx:id="selectFileButton" text="📁 Файл"
+        <Button fx:id="selectFileButton" text="📁 открыть локальный файл"
                 styleClass="player-btn file-btn"
                 onAction="#handleSelectFile"/>
 

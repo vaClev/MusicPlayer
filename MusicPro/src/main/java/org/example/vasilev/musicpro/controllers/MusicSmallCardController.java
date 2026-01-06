@@ -128,6 +128,7 @@ public class MusicSmallCardController
         return musicFile;
     }
 
+    @FXML
     public void handleAddToPlaylist(ActionEvent actionEvent)
     {
         if(musicFile==null || !musicFile.isDownloaded() || playlistOwner ==null )

@@ -11,14 +11,17 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.media.Media;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.example.vasilev.musicpro.models.MusicFile;
+import org.example.vasilev.musicpro.services.music.MusicMetadataExtractService;
 import org.example.vasilev.musicpro.services.player.BasicPlayerService;
 import org.example.vasilev.musicpro.services.player.IPlayerService;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.stream.IntStream;
 
 public class PlayerController implements IPlaylistOwner
@@ -46,6 +49,9 @@ public class PlayerController implements IPlaylistOwner
     /// Сервис воспроизведения музыки
     private IPlayerService playerService;
 
+    /// Сервис извлечением метаданных из локального файла
+    private MusicMetadataExtractService extractService;
+
     /// Список элементов плейлиста //TODO выделить в отдельный класс?
     private final ObservableList<MusicFile> playlistItems = FXCollections.observableArrayList();
     private int currentPlaylistIndex = -1;
@@ -58,6 +64,9 @@ public class PlayerController implements IPlaylistOwner
 
         // Добавляем слушателей событий сервиса для реактивного обновления UI ///TODO
         //setupServiceListeners();
+
+        // используем при работе с локальными файлами (получены не с сервера)
+        this.extractService = new MusicMetadataExtractService();
     }
 
 
@@ -190,7 +199,6 @@ public class PlayerController implements IPlaylistOwner
     /// ////////////////////////////////////////////////
 
 
-    ///  TODO переделать так чтобы создавался MusicFile и он добалялся в локальный playlist
     public void handleSelectFile(ActionEvent actionEvent)
     {
         FileChooser fileChooser = new FileChooser();
@@ -203,13 +211,27 @@ public class PlayerController implements IPlaylistOwner
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Все файлы", "*.*"));
 
         Stage stage = (Stage) selectFileButton.getScene().getWindow();
-        File selectedFile = fileChooser.showOpenDialog(stage);
+        List<File> selectedFiles = fileChooser.showOpenMultipleDialog(stage);
 
-        if (selectedFile != null)
+        if (selectedFiles != null && !selectedFiles.isEmpty())
         {
-            loadAndPlayFile(selectedFile);
+            addFilesToPlaylist(selectedFiles);
         }
     }
+
+    private void addFilesToPlaylist(List<File> selectedFiles)
+    {
+        for (File file : selectedFiles)
+        {
+            MusicFile musicFile = extractService.createMusicFileFromLocalFile(file);
+            playlistItems.add(musicFile);
+        }
+        // Обновляем UI плейлиста
+        updatePlaylistUI();
+        // Показываем статус
+        playerStatusLabel.setText("Добавлено " + selectedFiles.size() + " треков в плейлист");
+    }
+
 
     private void loadAndPlayFile(File selectedFile)
     {
@@ -276,5 +298,6 @@ public class PlayerController implements IPlaylistOwner
 
     public void handleAddFilesToPlaylist(ActionEvent actionEvent)
     {
+        handleSelectFile(actionEvent);
     }
 }
