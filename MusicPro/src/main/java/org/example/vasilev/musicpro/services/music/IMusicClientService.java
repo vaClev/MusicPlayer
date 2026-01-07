@@ -5,8 +5,8 @@ import org.example.vasilev.musicpro.models.MusicFile;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public interface IMusicClientService {
-
+public interface IMusicClientService
+{
     /**
      * Получить порцию музыкальных файлов с сервера
      * @param page номер страницы (начиная с 0)

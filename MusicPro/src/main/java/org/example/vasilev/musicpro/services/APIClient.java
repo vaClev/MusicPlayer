@@ -1,4 +1,4 @@
-package org.example.vasilev.musicpro.services.music;
+package org.example.vasilev.musicpro.services;
 
 import com.google.gson.Gson;
 import org.example.vasilev.musicpro.utils.GsonFactory;
@@ -13,19 +13,13 @@ import java.util.concurrent.CompletableFuture;
 
 public class APIClient
 {
-    private final String baseUrl; // передам в конструктор из файла properties http://localhost:5098/api/
+    private final String baseUrl;
     private final Gson gson;
 
     public APIClient(String baseUrl)
     {
         this.baseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
         this.gson = GsonFactory.createSimpleGson();
-    }
-
-    /// Временно конструктор для отладки
-    public APIClient()
-    {
-        this("http://localhost:5098/");
     }
 
     /**

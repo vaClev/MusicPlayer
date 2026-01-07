@@ -13,20 +13,10 @@ import org.jaudiotagger.tag.Tag;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class MusicMetadataExtractService
 {
-    private boolean titleExtracted = false;
-    private boolean artistExtracted = false;
-    private boolean durationExtracted = false;
-
     /// Создать MusicFile из локального аудиофайла с извлечением метаданных
     public MusicFile createMusicFileFromLocalFile(File audioFile)
     {
@@ -97,76 +87,13 @@ public class MusicMetadataExtractService
 
     private void extractMetadataFromFile(File audioFile, MusicFile musicFile)
     {
+        extractMetadataWithJAudioTagger(musicFile.getLocalFilePath(), musicFile);
+    }
+
+    private void extractMetadataWithJAudioTagger(String filePath, MusicFile musicFile)
+    {
         try
         {
-            // Используем JavaFX Media для извлечения метаданных
-            //String fileUri = audioFile.toURI().toString();
-            //Media media = new Media(fileUri);
-
-            // Извлекаем метаданные из Media
-            //if(!extractWithJavaFXMedia(media, musicFile))
-              extractMetadataWithJAudioTagger(musicFile.getLocalFilePath(), musicFile);
-
-        }
-        catch (Exception e)
-        {
-            System.err.println("Ошибка извлечения метаданных из файла " +
-                    audioFile.getName() + ": " + e.getMessage());
-            // Продолжаем с минимальной информацией
-        }
-    }
-
-    private boolean extractWithJavaFXMedia(Media media, MusicFile musicFile) {
-        final CountDownLatch latch = new CountDownLatch(1);
-        final AtomicBoolean success = new AtomicBoolean(false);
-        final AtomicInteger extracted = new AtomicInteger(0);
-
-        MapChangeListener<String, Object> listener = change -> {
-            if (change.wasAdded()) {
-                String key = change.getKey();
-                Object value = change.getValueAdded();
-
-                if ("title".equals(key) && value != null) {
-                    musicFile.setTitle(value.toString().trim());
-                    extracted.set(extracted.get() | 1);
-                } else if ("artist".equals(key) && value != null) {
-                    musicFile.setArtist(value.toString().trim());
-                    extracted.set(extracted.get() | 2);
-                } else if ("duration".equals(key) && value instanceof Duration) {
-                    musicFile.setDuration((Duration) value);
-                    extracted.set(extracted.get() | 4);
-                }
-
-                if (extracted.get() == 7) {
-                    success.set(true);
-                    latch.countDown();
-                }
-            }
-        };
-
-        media.getMetadata().addListener(listener);
-
-        // Таймаут 2 секунды
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                latch.countDown();
-            }
-        }, 2000);
-
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-        media.getMetadata().removeListener(listener);
-
-        return success.get();
-    }
-
-    private void extractMetadataWithJAudioTagger(String filePath, MusicFile musicFile) {
-        try {
             File audioFile = new File(filePath);
             AudioFile audioFileObj = AudioFileIO.read(audioFile);
             Tag tag = audioFileObj.getTag();
@@ -196,5 +123,4 @@ public class MusicMetadataExtractService
             System.err.println("[ERROR] JAudioTagger failed: " + e.getMessage());
         }
     }
-
 }

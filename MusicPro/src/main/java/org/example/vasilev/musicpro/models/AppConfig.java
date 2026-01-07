@@ -12,6 +12,7 @@ public class AppConfig
     private static final String DEFAULT_DOWNLOAD_DIR = System.getProperty("user.home") + "\\MusicPlayer\\downloads";
     private static final String DEFAULT_CACHE_DIR = System.getProperty("user.home") + "\\MusicPlayer\\cache";
     private static final String DEFAULT_TEMP_DIR = System.getProperty("java.io.tmpdir") + "MusicPlayer";
+    private static final String DEFAULT_SERVER_URL = "http://127.0.0.1:5098/";
 
     private AppConfig()
     {
@@ -47,6 +48,7 @@ public class AppConfig
         properties.setProperty("download.dir", DEFAULT_DOWNLOAD_DIR);
         properties.setProperty("cache.dir", DEFAULT_CACHE_DIR);
         properties.setProperty("temp.dir", DEFAULT_TEMP_DIR);
+        properties.setProperty("server.url", DEFAULT_SERVER_URL);
         properties.setProperty("max.concurrent.downloads", "3");
         properties.setProperty("auto.create.dirs", "true");
     }
@@ -79,6 +81,8 @@ public class AppConfig
     {
         return properties.getProperty("temp.dir", DEFAULT_TEMP_DIR);
     }
+
+    public String getServerUrl() {return properties.getProperty("server.url", DEFAULT_SERVER_URL); }
 
     public int getMaxConcurrentDownloads()
     {

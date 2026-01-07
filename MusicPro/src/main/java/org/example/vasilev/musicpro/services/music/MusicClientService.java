@@ -3,6 +3,7 @@ package org.example.vasilev.musicpro.services.music;
 import com.google.gson.reflect.TypeToken;
 import org.example.vasilev.musicpro.dto.MusicFileDTO;
 import org.example.vasilev.musicpro.models.MusicFile;
+import org.example.vasilev.musicpro.services.APIClient;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -19,13 +20,6 @@ public class MusicClientService implements IMusicClientService
     {
         this.apiClient = apiClient;
     }
-
-    /// Конструктор для отладки
-    public MusicClientService()
-    {
-        this.apiClient = new APIClient();
-    }
-
 
     /// Получение с сервера списка музыкальных файлов
     @Override

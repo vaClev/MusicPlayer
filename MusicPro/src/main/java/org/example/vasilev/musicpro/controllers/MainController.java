@@ -12,6 +12,7 @@ import org.example.vasilev.musicpro.dto.MusicFileDTO;
 import org.example.vasilev.musicpro.models.AppConfig;
 import org.example.vasilev.musicpro.models.MusicFile;
 import org.example.vasilev.musicpro.services.*;
+import org.example.vasilev.musicpro.services.APIClient;
 import org.example.vasilev.musicpro.services.music.IMusicClientService;
 import org.example.vasilev.musicpro.services.music.MusicClientService;
 
@@ -51,7 +52,7 @@ public class MainController implements Initializable {
     {
         // Инициализация сервисов //TODO пока тут внедряются зависимости. Отрефакторить
         configService = new ConfigService(AppConfig.getInstance());
-        musicClientService = new MusicClientService();
+        musicClientService = new MusicClientService(new APIClient(configService.getConfig().getServerUrl()));
 
         // инициализация UI элементов плеера
         loadPlayer();

@@ -1,0 +1,145 @@
+@startuml
+package models #LightSkyBlue
+{
+    class MusicFile #aaffaa
+    {
+        /// Информация получаемая с сервера
+        - final LongProperty id;
+        - final StringProperty title;
+        - final StringProperty artist;
+        - final StringProperty album;
+        - final StringProperty genre;
+        - final IntegerProperty year;
+        - final LongProperty fileSize;
+        - final StringProperty duration;
+        - final ObjectProperty<LocalDateTime> uploadDate;
+        - final StringProperty downloadUrl;
+        - final ObservableList<ExtraFile> extraFiles;
+
+        /// Информация используемая только в клиентском приложении
+        - final BooleanProperty downloaded;
+        - final StringProperty localFilePath;
+        + void setDownloaded(boolean downloaded)
+        + void setLocalFilePath(String localFilePath)
+
+        + ObservableList<ExtraFile> getExtraFiles();
+        + getSheetMusic()
+        + getTabs()
+        + getLyrics()
+        + getChords()
+        + getImages()
+        + getOtherFiles()
+    }
+
+    enum ExtraFileType #aaffaa
+    {
+        SHEET_MUSIC(0, "Ноты"),
+        TABS(1, "Табулатуры"),
+        LYRICS(2, "Текст песни"),
+        CHORDS(3, "Аккорды"),
+        IMAGE(4, "Обложка/фото"),
+        OTHER(5, "Прочее");
+    }
+
+    class ExtraFile #aaffaa
+    {
+        - final LongProperty id;
+        - final StringProperty originalFileName;
+        - final StringProperty description;
+        - final ObjectProperty<ExtraFileType> fileType;
+        - final LongProperty fileSize;
+        - final ObjectProperty<LocalDateTime> uploadDate;
+        - final StringProperty downloadExtraUrl;
+        - final LongProperty musicFileId;
+        - MusicFile musicFile;
+
+        + Getter & Setters
+    }
+    ExtraFile o-- ExtraFileType
+    MusicFile o-- ExtraFile
+
+    class AppConfig #fcb8ff
+    {
+        - static final String CONFIG_FILE = "musicplayer.properties";
+        - static AppConfig instance;
+        - Properties properties;
+
+        + static AppConfig getInstance()
+        + getDownloadDir()
+        + getCacheDir()
+        + getTempDir()
+        + getServerUrl() 
+    }
+}
+
+
+package services #LightYellow
+{
+    class ConfigService #fcb8ff
+    {
+        - AppConfig config;
+        - void initializeDirectories();
+        + AppConfig getConfig();
+    }
+    models.AppConfig --o ConfigService
+
+    class APIClient
+    {
+        - final String baseUrl;
+        - final Gson gson;
+
+        + <T> CompletableFuture<T> getAsync(String endpoint, Class<T> responseType)
+        + <T> CompletableFuture<T> getAsync(String endpoint, java.lang.reflect.Type responseType)
+    }
+    note right of APIClient
+        /// простой запрос AllMusicFiles
+        String url = "api/music";
+
+        Type listType = new TypeToken<List<MusicFileDTO>>(){}.getType();
+        List<MusicFileDTO> dtoList = (List<MusicFileDTO>) apiClient.getAsync(url, listType).join();
+    end note
+
+
+
+    interface IDownloadService
+    {
+        // пока нет имплементации
+        CompletableFuture<File> downloadMusicFile(long musicFileId, String localFilePath);
+        CompletableFuture<File> downloadMusicFile(long musicFileId);
+    }
+
+
+    class MusicFileDetailsService
+    {
+        // пока моковый.
+        MusicFile getMusicFileDetails(long musicFileId);
+
+        //boolean PostNewExtraFile(long musicFileId, other info);
+    }
+
+    package music #LightGoldenRodYellow
+    {
+        interface IMusicClientService
+        {
+            CompletableFuture<List<MusicFile>> getMusicFiles(int page, int pageSize);
+            CompletableFuture<MusicFile> getMusicFileDetails(long musicFileId);
+        }
+        IMusicClientService -->models.MusicFile
+
+        class MusicClientService implements IMusicClientService
+        {
+            - final APIClient apiClient;
+
+            CompletableFuture<List<MusicFile>> getMusicFiles(int page, int pageSize);
+            // TODO реализовать второй метод для details
+        }
+        MusicClientService*--services.APIClient
+
+        class MusicMetadataExtractService
+        {
+            /// Создать MusicFile из локального аудиофайла с извлечением метаданных
+            + MusicFile createMusicFileFromLocalFile(File audioFile)
+        }
+    }
+}
+@enduml
