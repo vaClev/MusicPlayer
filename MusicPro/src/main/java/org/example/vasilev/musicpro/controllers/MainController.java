@@ -168,6 +168,7 @@ public class MainController implements Initializable {
 
         // Получаем контроллер
         MusicSmallCardController controller = loader.getController();
+        // Внедряем ему зависимости
         controller.setMusicFile(musicFile);
         controller.setPlaylistOwner(playlistOwner);
         controller.setMusicClientService(musicClientService);

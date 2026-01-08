@@ -209,5 +209,41 @@ package controllers #Orange
         /// ссылка на контроллер плеера.
         - IPlaylistOwner playlistOwner;
     }
+
+    class MusicSmallCardController
+    {
+        /// Элементы UI @FXML
+        - Label titleLabel;
+        - Label artistLabel;
+        - Label albumLabel;
+        - Label durationLabel;
+        - Label statusLabel;
+        - Button downloadButton;
+        - ProgressBar progressBar;
+
+        - MusicFile musicFile;
+        - IPlaylistOwner playlistOwner;
+        - IMusicClientService musicClientService;
+    }
+    note right of MusicSmallCardController
+    отвечает зо одну карточку в списке муз.файлов
+    кнопки подробнее, скачать, добавить в плейлист.
+
+    MainController - создает много карточекSmallCard, 
+    в контроллер каждой внедряет зависимости. 
+    musicFile - unique, 
+    playlistOwner - shared, 
+    musicClientService - shared.
+    end note
+
+    MainController *-- MusicSmallCardController
+    MainController *-- services.ConfigService
+    MainController *-- services.music.MusicClientService
+
+    class PlayerController implements IPlaylistOwner
+    {
+
+    }
+
 }
 @enduml

@@ -5,7 +5,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import org.example.vasilev.musicpro.models.MusicFile;
-import org.example.vasilev.musicpro.services.MusicFileDetailsService;
 import org.example.vasilev.musicpro.services.music.IMusicClientService;
 
 public class MusicSmallCardController
@@ -37,7 +36,6 @@ public class MusicSmallCardController
     @FXML
     private void initialize()
     {
-
     }
 
 
