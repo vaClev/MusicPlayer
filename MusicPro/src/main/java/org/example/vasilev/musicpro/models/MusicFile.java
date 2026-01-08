@@ -193,7 +193,7 @@ public class MusicFile
     @Override
     public String toString()
     {
-        return String.format("%s - %s [%s]", artist.get(), title.get(), getFormattedDuration());
+        return String.format("%s - %s [%s] {%s}", artist.get(), title.get(), getFormattedDuration(), extraFiles.toString());
     }
 
     /// ////////////////////////////////////////////

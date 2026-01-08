@@ -1,10 +1,12 @@
 package org.example.vasilev.musicpro.controllers;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import org.example.vasilev.musicpro.models.MusicFile;
 import org.example.vasilev.musicpro.services.MusicFileDetailsService;
+import org.example.vasilev.musicpro.services.music.IMusicClientService;
 
 public class MusicSmallCardController
 {
@@ -25,8 +27,11 @@ public class MusicSmallCardController
 
     private MusicFile musicFile = null;
     private IPlaylistOwner playlistOwner = null;
+    private IMusicClientService musicClientService = null;
 
-    public MusicSmallCardController()  {}
+    public MusicSmallCardController()
+    {
+    }
 
     // Инициализация после загрузки FXML
     @FXML
@@ -49,6 +54,12 @@ public class MusicSmallCardController
     public void setPlaylistOwner(IPlaylistOwner owner)
     {
         this.playlistOwner = owner;
+    }
+
+    /// Метод установки сервиса обращения к серверу
+    public void setMusicClientService(IMusicClientService musicClientService)
+    {
+        this.musicClientService = musicClientService;
     }
 
     /// обновление отображения
@@ -87,15 +98,18 @@ public class MusicSmallCardController
         statusLabel.setText("Скачивание...");
 
         /// Имитация скачивания в отдельном не UI потоке/// TODO реализовать
-        new Thread(() -> {
-            try {
+        new Thread(() ->
+        {
+            try
+            {
                 // Здесь будет реальное скачивание через downloadService
                 // downloadService.download(musicFile);
 
                 Thread.sleep(2000); // Имитация задержки
 
                 // Обновляем UI в UI-потоке
-                javafx.application.Platform.runLater(() -> {
+                javafx.application.Platform.runLater(() ->
+                {
                     musicFile.setDownloaded(true);
                     updateUI();
                     progressBar.setVisible(false);
@@ -107,8 +121,7 @@ public class MusicSmallCardController
                     alert.setContentText("Песня \"" + musicFile.getTitle() + "\" успешно скачана!");
                     alert.showAndWait();
                 });
-            }
-            catch (InterruptedException e)
+            } catch (InterruptedException e)
             {
                 e.printStackTrace();
             }
@@ -118,8 +131,36 @@ public class MusicSmallCardController
     @FXML
     private void handleDetails()
     {
-        MusicFileDetailsService extraInfoService = new MusicFileDetailsService();
-        extraInfoService.getMusicFileDetails(musicFile.getId());
+        musicClientService.getMusicFileDetails(musicFile.getId())
+                .thenAcceptAsync(musicFileFullInfo -> {
+                    if (musicFileFullInfo != null)
+                    {
+                        Platform.runLater(() -> {
+                            musicFile = musicFileFullInfo;
+                            System.out.println("Детали загружены успешно");
+
+                            /// TODO создать UI форму для просмотра доп файлов и всех полей musicFile
+                            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                            alert.setTitle("Информация");
+                            alert.setHeaderText("Детальная информация");
+                            alert.setContentText(musicFile.toString());
+                            alert.showAndWait();
+                        });
+                    }
+                    else
+                    {
+                        Platform.runLater(() -> {
+                            System.err.println("Сервис вернул null");
+                        });
+                    }
+                })
+                .exceptionally(throwable -> {
+                    System.err.println("Ошибка: " + throwable.getMessage());
+                    return null;
+                });
+
+
+
     }
 
     // Геттер для получения MusicFile. Будем использовать при переходе в "Подробнее..."
@@ -131,7 +172,7 @@ public class MusicSmallCardController
     @FXML
     public void handleAddToPlaylist(ActionEvent actionEvent)
     {
-        if(musicFile==null || !musicFile.isDownloaded() || playlistOwner ==null )
+        if (musicFile == null || !musicFile.isDownloaded() || playlistOwner == null)
             return;
 
         playlistOwner.addMusicFileToPlaylist(musicFile);

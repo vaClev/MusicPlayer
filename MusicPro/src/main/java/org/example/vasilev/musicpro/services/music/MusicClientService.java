@@ -2,6 +2,7 @@ package org.example.vasilev.musicpro.services.music;
 
 import com.google.gson.reflect.TypeToken;
 import org.example.vasilev.musicpro.dto.MusicFileDTO;
+import org.example.vasilev.musicpro.dto.MusicFileDetailDTO;
 import org.example.vasilev.musicpro.models.MusicFile;
 import org.example.vasilev.musicpro.services.APIClient;
 
@@ -25,7 +26,8 @@ public class MusicClientService implements IMusicClientService
     @Override
     public CompletableFuture<List<MusicFile>> getMusicFiles(int page, int pageSize)
     {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync(() ->
+        {
             try
             {
                 //Map<String, String> params = new HashMap<>();
@@ -35,15 +37,16 @@ public class MusicClientService implements IMusicClientService
                 ///пока игнорируем пагинацию. Отправим простой запрос All.
                 String url = "api/music";
 
-                Type listType = new TypeToken<List<MusicFileDTO>>(){}.getType();
+                Type listType = new TypeToken<List<MusicFileDTO>>()
+                {
+                }.getType();
                 List<MusicFileDTO> dtoList = (List<MusicFileDTO>) apiClient.getAsync(url, listType).join();
 
                 currentPage = page;
-                return  dtoList.stream()
+                return dtoList.stream()
                         .map(MusicFileDTO::toDomainModel)
                         .collect(Collectors.toList());
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 throw new RuntimeException("Failed to get music files", e);
             }
@@ -54,6 +57,19 @@ public class MusicClientService implements IMusicClientService
     @Override
     public CompletableFuture<MusicFile> getMusicFileDetails(long musicFileId)
     {
-        return null;
+        return CompletableFuture.supplyAsync(() ->
+        {
+            try
+            {
+                String url = String.format("api/music/id%d", musicFileId);
+                MusicFileDetailDTO dto = apiClient.getAsync(url, MusicFileDetailDTO.class).join();
+
+                return dto.toDomainModel();
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException("Failed to get music files", e);
+            }
+        });
     }
 }

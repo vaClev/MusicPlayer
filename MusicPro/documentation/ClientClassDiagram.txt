@@ -141,5 +141,73 @@ package services #LightYellow
             + MusicFile createMusicFileFromLocalFile(File audioFile)
         }
     }
+
+    package player #ffffaa
+    {
+        enum PlayerState
+        {
+            PLAYING,
+            PAUSED,
+            STOPPED
+        }
+
+        interface IPlayerService
+        {
+            boolean loadFile(File audioFile); //Загрузить аудиофайл для воспроизведения
+            void play();
+            void pause();
+            void stop();
+            void togglePlayPause();
+            void setVolume(double volume);
+            void seek(double seconds);
+            boolean isFileLoaded();
+
+            //списки подписчиков на события
+            void addStateChangeListener(Runnable listener);
+            void addTimeChangeListener(Runnable listener);
+            void addVolumeChangeListener(Runnable listener);
+        }
+
+        class BasicPlayerService implements IPlayerService
+        {
+            //Базовая реализация плеера на JavaFX MediaPlayer
+            - MediaPlayer mediaPlayer;
+            - Media currentMedia;
+            - File currentFile;
+
+            - PlayerState state = PlayerState.STOPPED;
+            - double volume = 0.5;
+
+            /// Списки подписчиков на события сервиса 
+            // (например чтобы ползунки UI ползли по ходу воспроизведения)
+            - final List<Runnable> stateChangeListeners
+            - final List<Runnable> timeChangeListeners
+            - final List<Runnable> volumeChangeListeners
+        }
+    }
+}
+
+package controllers #Orange
+{
+    interface IPlaylistOwner
+    {
+        void addMusicFileToPlaylist(MusicFile musicFile);
+        void removeMusicFile(long id);
+    }
+
+    class MainController 
+    {
+        /// Контейнеры UI @FXML
+        - VBox songsContainer;
+        - VBox playerContainer;
+        - Label statusLabel;
+
+        // Сервисы
+        - ConfigService configService;
+        - IMusicClientService musicClientService;
+
+        /// ссылка на контроллер плеера.
+        - IPlaylistOwner playlistOwner;
+    }
 }
 @enduml
