@@ -209,6 +209,7 @@ package controllers #Orange
         /// ссылка на контроллер плеера.
         - IPlaylistOwner playlistOwner;
     }
+    
 
     class MusicSmallCardController
     {
@@ -235,15 +236,33 @@ package controllers #Orange
     playlistOwner - shared, 
     musicClientService - shared.
     end note
-
+    MainController *-- IPlaylistOwner
     MainController *-- MusicSmallCardController
     MainController *-- services.ConfigService
-    MainController *-- services.music.MusicClientService
+    MainController *-- services.music.IMusicClientService
 
+    MusicSmallCardController *-- IPlaylistOwner
     class PlayerController implements IPlaylistOwner
     {
+        /// Плейлист
+        - VBox playlistContainer;
+        - Label playlistCountLabel;
+        - Button selectFileButton;
 
+        /// Кнопки воспроизведения и звука
+        - Button playPauseButton;
+
+        /// Сервис воспроизведения музыки
+        - IPlayerService playerService;
+
+        /// Сервис извлечением метаданных из локального файла
+        - MusicMetadataExtractService extractService;
+
+        /// Список элементов плейлиста //TODO выделить в отдельный класс?
+        - final ObservableList<MusicFile> playlistItems = FXCollections.observableArrayList();
+        - int currentPlaylistIndex = -1;
     }
-
+    PlayerController *--services.player.IPlayerService
+    PlayerController *--services.music.MusicMetadataExtractService
 }
 @enduml
