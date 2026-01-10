@@ -11,16 +11,14 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.media.Media;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.example.vasilev.musicpro.models.MusicFile;
-import org.example.vasilev.musicpro.services.music.MusicMetadataExtractService;
+import org.example.vasilev.musicpro.services.player.MusicMetadataExtractService;
 import org.example.vasilev.musicpro.services.player.BasicPlayerService;
 import org.example.vasilev.musicpro.services.player.IPlayerService;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.IntStream;
 

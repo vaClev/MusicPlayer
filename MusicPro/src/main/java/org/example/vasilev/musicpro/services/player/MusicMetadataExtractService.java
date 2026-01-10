@@ -1,8 +1,5 @@
-package org.example.vasilev.musicpro.services.music;
+package org.example.vasilev.musicpro.services.player;
 
-import javafx.application.Platform;
-import javafx.collections.MapChangeListener;
-import javafx.scene.media.Media;
 import javafx.util.Duration;
 import org.example.vasilev.musicpro.models.MusicFile;
 import org.jaudiotagger.audio.AudioFile;
@@ -13,7 +10,6 @@ import org.jaudiotagger.tag.Tag;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.util.concurrent.*;
 
 public class MusicMetadataExtractService
 {

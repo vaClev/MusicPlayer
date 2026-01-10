@@ -72,6 +72,59 @@ package models #LightSkyBlue
     }
 }
 
+package dto #LightSeaGreen
+{
+    class ExtraFileDTO
+    {
+        @SerializedName( json name)
+        - Long id;
+        - String originalFileName;
+        - String description;
+        - int fileTypeValue; // int из JSON
+        - String fileTypeName;
+        - Long fileSize;
+        - String uploadDate; 
+        - String downloadExtraUrl;
+        - Long musicFileId;
+        +seteers getters
+        + ExtraFile toDomainModel()
+    }
+
+    class MusicFileDTO
+    {
+        @SerializedName(json name)
+        - Long id;
+        - String title;
+        - String artist;
+        - String album;
+        - String genre;
+        - Integer year;
+        - Long fileSize;
+        - String duration;
+        - String uploadDate;
+        - String downloadUrl;
+        + seteers getters
+        + MusicFile toDomainModel()
+    }
+
+    class MusicFileDetailDTO
+    {
+        @SerializedName(json name)
+        - Long id;
+        - String title;
+        - String artist;
+        - String album;
+        - String genre;
+        - Integer year;
+        - String duration;
+        - String uploadDate;
+        - String downloadMusicUrl;
+        - List<ExtraFileDTO> extraFiles;
+        + seteers getters
+        + MusicFile toDomainModel()
+    }
+    MusicFileDetailDTO *--ExtraFileDTO
+}
 
 package services #LightYellow
 {
@@ -131,15 +184,11 @@ package services #LightYellow
             - final APIClient apiClient;
 
             CompletableFuture<List<MusicFile>> getMusicFiles(int page, int pageSize);
-            // TODO реализовать второй метод для details
+            CompletableFuture<MusicFile> getMusicFileDetails(long musicFileId);
         }
         MusicClientService*--services.APIClient
-
-        class MusicMetadataExtractService
-        {
-            /// Создать MusicFile из локального аудиофайла с извлечением метаданных
-            + MusicFile createMusicFileFromLocalFile(File audioFile)
-        }
+        MusicClientService-->dto.MusicFileDTO
+        MusicClientService-->dto.MusicFileDetailDTO
     }
 
     package player #ffffaa
@@ -184,6 +233,14 @@ package services #LightYellow
             - final List<Runnable> timeChangeListeners
             - final List<Runnable> volumeChangeListeners
         }
+        BasicPlayerService *-- PlayerState
+
+        class MusicMetadataExtractService
+        {
+            /// Создать MusicFile из локального аудиофайла с извлечением метаданных
+            + MusicFile createMusicFileFromLocalFile(File audioFile)
+        }
+        MusicMetadataExtractService --> models.MusicFile
     }
 }
 
@@ -263,6 +320,6 @@ package controllers #Orange
         - int currentPlaylistIndex = -1;
     }
     PlayerController *--services.player.IPlayerService
-    PlayerController *--services.music.MusicMetadataExtractService
+    PlayerController *--services.player.MusicMetadataExtractService
 }
 @enduml
