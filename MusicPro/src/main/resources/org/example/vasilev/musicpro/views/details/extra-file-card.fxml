@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<HBox fx:id="cardContainer" xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.vasilev.musicpro.controllers.details.ExtraFileCardController"
+      spacing="12" alignment="CENTER_LEFT">
+
+    <!-- Иконка файла (эмодзи из модели) -->
+    <Label fx:id="fileIconLabel" minWidth="40"/>
+
+    <!-- Основная информация о файле -->
+    <VBox spacing="4" HBox.hgrow="ALWAYS">
+        <!-- Имя файла (displayName) -->
+        <Label fx:id="fileNameLabel"/>
+
+        <!-- Дополнительная информация в строке -->
+        <HBox spacing="12">
+            <!-- Тип файла (fileTypeName) -->
+            <Label fx:id="fileTypeLabel"/>
+
+            <!-- Размер файла (formattedFileSize) -->
+            <Label fx:id="fileSizeLabel"/>
+
+            <!-- Дата загрузки -->
+            <Label fx:id="uploadDateLabel"/>
+        </HBox>
+
+        <!-- Описание файла (если есть) -->
+        <Label fx:id="descriptionLabel" visible="false"
+               wrapText="true" maxWidth="400"/>
+    </VBox>
+
+    <!-- Кнопка скачивания -->
+    <Button fx:id="downloadButton" text="Скачать" minWidth="80" onAction="#handleDownload"/>
+
+</HBox>

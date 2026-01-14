@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import org.example.vasilev.musicpro.controllers.details.TabManager;
 import org.example.vasilev.musicpro.models.MusicFile;
 import org.example.vasilev.musicpro.services.music.IMusicClientService;
 
@@ -137,12 +138,15 @@ public class MusicSmallCardController
                             musicFile = musicFileFullInfo;
                             System.out.println("Детали загружены успешно");
 
+                            TabManager tabManager = TabManager.getInstance();
+                            tabManager.showOrCreateTab(musicFileFullInfo);
+
                             /// TODO создать UI форму для просмотра доп файлов и всех полей musicFile
-                            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                            alert.setTitle("Информация");
-                            alert.setHeaderText("Детальная информация");
-                            alert.setContentText(musicFile.toString());
-                            alert.showAndWait();
+//                            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+//                            alert.setTitle("Информация");
+//                            alert.setHeaderText("Детальная информация");
+//                            alert.setContentText(musicFile.toString());
+//                            alert.showAndWait();
                         });
                     }
                     else
