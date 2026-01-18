@@ -4,6 +4,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TitledPane;
@@ -19,6 +20,8 @@ import java.util.List;
 /// При наличии списка ExtraFiles создает каждому карточку и внедряет в предусмотренный формой контейнер.
 public class MusicDetailsController
 {
+    @FXML
+    private Button downloadButton;
     // Главная секция
     @FXML
     private Label titleLabel;
@@ -52,7 +55,12 @@ public class MusicDetailsController
     @FXML private VBox otherFilesContainer;
 
     // Панели для группировки
-
+    @FXML private TitledPane sheetMusicPane;
+    @FXML private TitledPane tabsPane;
+    @FXML private TitledPane lyricsPane;
+    @FXML private TitledPane chordsPane;
+    @FXML private TitledPane imagesPane;
+    @FXML private TitledPane otherFilesPane;
     /// Модельный объект отображаемый этой формой
     private MusicFile currentMusicFile;
 
@@ -86,18 +94,20 @@ public class MusicDetailsController
 
     private void updateDownloadStatus()
     {
-        if (currentMusicFile.isDownloaded())
+        boolean isDownloaded = currentMusicFile.isDownloaded();
+        if (isDownloaded)
         {
             downloadStatusLabel.setText("✓ Загружено локально");
             downloadStatusLabel.setStyle("-fx-text-fill: #4CAF50;");
-            downloadProgress.setVisible(false);
         }
         else
         {
             downloadStatusLabel.setText("Доступно для загрузки");
             downloadStatusLabel.setStyle("-fx-text-fill: #FF9800;");
-            downloadProgress.setVisible(false);
         }
+        // Загреивание кнопки скачивания, если файл уже скачан
+        downloadButton.setDisable(isDownloaded);
+        downloadProgress.setVisible(false);
     }
 
 
@@ -152,23 +162,22 @@ public class MusicDetailsController
 
     private void hideEmptySections()
     {
-        /*sheetMusicPane.setVisible(!sheetMusicContainer.getChildren().isEmpty());
+        sheetMusicPane.setVisible(!sheetMusicContainer.getChildren().isEmpty());
         tabsPane.setVisible(!tabsContainer.getChildren().isEmpty());
         lyricsPane.setVisible(!lyricsContainer.getChildren().isEmpty());
         chordsPane.setVisible(!chordsContainer.getChildren().isEmpty());
         imagesPane.setVisible(!imagesContainer.getChildren().isEmpty());
-        otherFilesPane.setVisible(!otherFilesContainer.getChildren().isEmpty());*/
+        otherFilesPane.setVisible(!otherFilesContainer.getChildren().isEmpty());
     }
 
+    @FXML
     public void handleDownloadMusic(ActionEvent actionEvent)
     {
     }
 
-    public void handlePlayLocal(ActionEvent actionEvent)
+    @FXML
+    public void handleAddToPlaylist(ActionEvent actionEvent)
     {
     }
 
-    public void handleCloseTab(ActionEvent actionEvent)
-    {
-    }
 }

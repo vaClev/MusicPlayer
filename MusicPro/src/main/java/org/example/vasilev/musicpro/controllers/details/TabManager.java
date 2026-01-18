@@ -40,29 +40,30 @@ public class TabManager
     {
         // Инициализируем окно если оно еще не создано
         initializeWindowIfNeeded();
-        
+        // Показываем окно если оно скрыто
+        if (!isWindowOpen())
+        {
+            detailsStage.show();
+            detailsStage.toFront();
+        }
+
         // Проверяем, открыта ли уже вкладка для этого трека
         if (openTabs.containsKey(musicFile.getId()))
         {
             Tab existingTab = openTabs.get(musicFile.getId());
             tabPane.getSelectionModel().select(existingTab);
-            return;
         }
-
-        // Создаем новую вкладку
-        createNewTab(musicFile);
-
-        // Показываем окно если оно скрыто
-        if (detailsStage != null && !detailsStage.isShowing())
+        else
         {
-            detailsStage.show();
-            detailsStage.toFront();
+            // Создаем новую вкладку
+            createNewTab(musicFile);
         }
     }
 
     private void initializeWindowIfNeeded()
     {
-        if (detailsStage == null) {
+        if (detailsStage == null)
+        {
             detailsStage = new Stage();
             detailsStage.setTitle("Детали музыки");
             detailsStage.initStyle(StageStyle.DECORATED);
@@ -89,7 +90,8 @@ public class TabManager
 
     private void createNewTab(MusicFile musicFile)
     {
-        try {
+        try
+        {
             // Загружаем FXML
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/org/example/vasilev/musicpro/views/details/music-details.fxml")
@@ -107,7 +109,7 @@ public class TabManager
             tab.setClosable(true);
 
             // Иконка вкладки с эмодзи музыки
-            Label tabLabel = new Label(tab.getText());
+            Label tabLabel = new Label();
             tabLabel.setGraphic(new Label("🎵"));
             tab.setGraphic(tabLabel);
 
@@ -136,41 +138,12 @@ public class TabManager
 
     private String getTabTitle(MusicFile musicFile)
     {
-        String title = musicFile.getTitle();
-        if (title.length() > 15) {
+        String title = String.format("%s - %s", musicFile.getArtist(), musicFile.getTitle());
+        if (title.length() > 30)
+        {
             title = title.substring(0, 12) + "...";
         }
         return title;
-    }
-
-    private void initializeWindow() {
-        if (detailsStage == null) {
-            detailsStage = new Stage();
-            detailsStage.setTitle("Music Details - Browser");
-            detailsStage.initStyle(StageStyle.DECORATED);
-
-            // Создаем TabPane как в браузере
-            tabPane = new TabPane();
-            tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.ALL_TABS);
-            tabPane.setId("detailsTabPane");
-
-            // Стилизация под основной плеер
-            tabPane.setStyle(
-                    "-fx-background-color: #1e1e1e; " +
-                            "-fx-text-fill: white;"
-            );
-
-            Scene scene = new Scene(tabPane, 900, 700);
-            scene.getStylesheets().add(
-                    getClass().getResource("/org/example/vasilev/musicpro/details.css").toExternalForm()
-            ); ///TODO пока заглушка
-
-            detailsStage.setScene(scene);
-            detailsStage.setOnCloseRequest(e -> {
-                e.consume(); // Не закрывать окно полностью
-                detailsStage.hide(); // Только скрыть
-            });
-        }
     }
 
     private void showErrorDialog(String title, String message)

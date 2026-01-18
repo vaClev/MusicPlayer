@@ -228,11 +228,4 @@ public class MainController implements Initializable {
         testLoadAllFromServer();
         statusLabel.setText("Список обновлен с сервера. Папка загрузок: " + configService.getConfig().getDownloadDir());
     }
-
-    @FXML
-    private void handleSettings()
-    {
-        // Откроем окно настроек (завтра)
-        statusLabel.setText("Настройки пока недоступны. Будет реализовано завтра.");
-    }
 }

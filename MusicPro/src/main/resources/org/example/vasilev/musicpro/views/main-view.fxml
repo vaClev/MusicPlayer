@@ -15,7 +15,6 @@
         <HBox spacing="10" HBox.hgrow="ALWAYS">
             <Button text="Обновить список из JSON" onAction="#handleRefresh"/>
             <Button text="GET ALL с сервера" onAction="#handleGetAll"/>
-            <Button text="Настройки" onAction="#handleSettings"/>
         </HBox>
         <Label fx:id="statusLabel" styleClass="status-label"/>
     </HBox>

@@ -10,10 +10,9 @@
 
     <top>
         <ToolBar>
-            <Button text="Скачать" onAction="#handleDownloadMusic"/>
-            <Button text="Воспроизвести" onAction="#handlePlayLocal"/>
+            <Button fx:id="downloadButton" text="Скачать" onAction="#handleDownloadMusic"/>
+            <Button text="Добавить в список воспроизведения" onAction="#handleAddToPlaylist"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Button text="Закрыть" onAction="#handleCloseTab"/>
         </ToolBar>
     </top>
 
@@ -26,8 +25,8 @@
 
                 <!-- Главная секция -->
                 <HBox spacing="15">
-                    <!-- Блок с иконкой или заглушкой -->
-                    <Pane prefWidth="150" prefHeight="150" style="-fx-background-color: #2d2d2d;"/>
+                    <!-- TODO Блок с иконкой или изображением -->
+                    <!-- <Pane prefWidth="150" prefHeight="150" style="-fx-background-color: #2d2d2d;"/> -->
 
                     <VBox spacing="8">
                         <Label fx:id="titleLabel" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
@@ -139,7 +138,6 @@
                         </content>
                     </TitledPane>
                 </VBox>
-
             </VBox>
         </ScrollPane>
     </center>

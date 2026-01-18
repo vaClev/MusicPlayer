@@ -130,13 +130,19 @@ public class MusicSmallCardController
     @FXML
     private void handleDetails()
     {
+        //TODO оптимизировать. Перед тем как обращаться на сервер, проверить может он уже есть в открытых вкладках.
+
         musicClientService.getMusicFileDetails(musicFile.getId())
                 .thenAcceptAsync(musicFileFullInfo -> {
                     if (musicFileFullInfo != null)
                     {
-                        Platform.runLater(() -> {
-                            musicFile = musicFileFullInfo;
+                        Platform.runLater(() ->
+                        {
                             System.out.println("Детали загружены успешно");
+
+                            boolean downloadStatus = musicFile.isDownloaded();
+                            musicFile = musicFileFullInfo;
+                            musicFileFullInfo.setDownloaded(downloadStatus);
 
                             TabManager tabManager = TabManager.getInstance();
                             tabManager.showOrCreateTab(musicFileFullInfo);

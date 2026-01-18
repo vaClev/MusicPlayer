@@ -69,7 +69,7 @@ public class MusicFile
     /// JavaFX свойства (для binding)
     public LongProperty idProperty() { return id; }
     public StringProperty titleProperty() { return title; }
-    public StringProperty artistProperty() { return title; }
+    public StringProperty artistProperty() { return artist; }
     public StringProperty albumProperty() { return album; }
     public StringProperty genreProperty() { return genre; }
     public IntegerProperty yearProperty() { return year; }
