@@ -25,4 +25,5 @@ module org.example.vasilev.musicpro
 
     // Открываем пакет dto для Gson (и для javafx.fxml)
     opens org.example.vasilev.musicpro.dto to com.google.gson, javafx.fxml;
+    exports org.example.vasilev.musicpro.services.download;
 }

@@ -24,30 +24,28 @@
                dividerPositions="0.75"
     VBox.vgrow="ALWAYS">
 
-    <!-- Верхняя область (75%): Контейнер для карточек песен (вертикальный) -->
-    <ScrollPane fitToWidth="true"
-                hbarPolicy="NEVER"
-                vbarPolicy="AS_NEEDED"
-                VBox.vgrow="ALWAYS">
+        <!-- Верхняя область (75%): Контейнер для карточек песен (вертикальный) -->
+        <ScrollPane fitToWidth="true"
+                    hbarPolicy="NEVER"
+                    vbarPolicy="AS_NEEDED"
+                    VBox.vgrow="ALWAYS">
 
-        <VBox fx:id="songsContainer" styleClass="songs-container"
-              spacing="10"
-              alignment="TOP_CENTER">
-            <padding>
-                <Insets top="10" right="10" bottom="10" left="10"/>
-            </padding>
+            <VBox fx:id="songsContainer" styleClass="songs-container"
+                  spacing="10"
+                  alignment="TOP_CENTER">
+                <padding>
+                    <Insets top="10" right="10" bottom="10" left="10"/>
+                </padding>
 
-            <!-- Карточки песен будут добавляться сюда -->
+                <!-- Карточки песен будут добавляться сюда -->
+            </VBox>
+        </ScrollPane>
+
+        <!-- Нижняя область (25%): Плеер -->
+        <VBox fx:id="playerContainer" styleClass="player-area">
+            <!-- Плеер будет загружен сюда программно -->
         </VBox>
-
-    </ScrollPane>
-
-    <!-- Нижняя область (25%): Плеер -->
-    <VBox fx:id="playerContainer" styleClass="player-area">
-        <!-- Плеер будет загружен сюда программно -->
-    </VBox>
-
-</SplitPane>
+    </SplitPane>
 
     <!-- Статус бар -->
     <Label text="Разработано с ❤️ | День 3: Кое-что тянем с сервера"

@@ -13,6 +13,8 @@ import org.example.vasilev.musicpro.models.AppConfig;
 import org.example.vasilev.musicpro.models.MusicFile;
 import org.example.vasilev.musicpro.services.*;
 import org.example.vasilev.musicpro.services.APIClient;
+import org.example.vasilev.musicpro.services.download.DownloadService;
+import org.example.vasilev.musicpro.services.download.IDownloadService;
 import org.example.vasilev.musicpro.services.music.IMusicClientService;
 import org.example.vasilev.musicpro.services.music.MusicClientService;
 
@@ -38,10 +40,8 @@ public class MainController implements Initializable {
     @FXML
     private Label statusLabel;
 
-    //private MockDataService mockDataService;
-    //private DownloadService downloadService;
     private ConfigService configService;
-
+    private IDownloadService downloadService;
     private IMusicClientService musicClientService;
 
     /// ссылка на контроллер плеера. Будем инжектить ее в карточки песен, чтобы добавлять их в плейлист
@@ -52,7 +52,10 @@ public class MainController implements Initializable {
     {
         // Инициализация сервисов //TODO пока тут внедряются зависимости. Отрефакторить
         configService = new ConfigService(AppConfig.getInstance());
-        musicClientService = new MusicClientService(new APIClient(configService.getConfig().getServerUrl()));
+
+        var apiClient = new APIClient(configService.getConfig().getServerUrl(), configService.getConfig().getMaxConcurrentDownloads());
+        musicClientService = new MusicClientService(apiClient);
+        downloadService = new DownloadService(apiClient, configService.getConfig().getDownloadDir());
 
         // инициализация UI элементов плеера
         loadPlayer();
@@ -82,7 +85,7 @@ public class MainController implements Initializable {
     }
 
 
-    /// Тестовое получение данных с сервера при запуске
+    /// Тестовое получение данных с сервера
     private void testLoadAllFromServer()
     {
         songsContainer.getChildren().clear();
@@ -169,7 +172,7 @@ public class MainController implements Initializable {
         // Получаем контроллер
         MusicSmallCardController controller = loader.getController();
         // Внедряем ему зависимости
-        controller.setMusicFile(musicFile);
+        controller.setMusicFile(musicFile, downloadService);
         controller.setPlaylistOwner(playlistOwner);
         controller.setMusicClientService(musicClientService);
 

@@ -10,7 +10,6 @@ import java.net.URL;
 
 public class MusicProApplication extends Application
 {
-
     @Override
     public void start(Stage stage)
     {
@@ -26,6 +25,15 @@ public class MusicProApplication extends Application
 
             // Устанавливаем заголовок
             stage.setTitle("MusicPro v.0.1");
+
+            /// TODO Создать все сервисы
+            startServices();
+            ///Внедрить зависимости
+
+            // Обработчик закрытия приложения
+            stage.setOnCloseRequest(event -> {
+                shutdownServices();
+            });
 
 
             /// Загружаем CSS стили напрямую в сцену
@@ -50,7 +58,7 @@ public class MusicProApplication extends Application
                 System.err.println("CSS не загружен: " + e.getMessage());
             }
 
-
+            
             // Устанавливаем сцену и показываем окно
             stage.setScene(scene);
             stage.show();
@@ -60,5 +68,17 @@ public class MusicProApplication extends Application
             System.err.println("Ошибка загрузки FXML: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    //TODO
+    private void startServices()
+    {
+        System.out.println("Сервисы запущены");
+    }
+
+    //TODO
+    private void shutdownServices()
+    {
+        System.out.println("Сервисы остановлены");
     }
 }

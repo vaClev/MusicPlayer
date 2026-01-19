@@ -6,7 +6,11 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import org.example.vasilev.musicpro.controllers.details.TabManager;
 import org.example.vasilev.musicpro.models.MusicFile;
+import org.example.vasilev.musicpro.services.download.IDownloadService;
 import org.example.vasilev.musicpro.services.music.IMusicClientService;
+
+import java.io.File;
+import java.util.concurrent.CompletableFuture;
 
 public class MusicSmallCardController
 {
@@ -28,6 +32,7 @@ public class MusicSmallCardController
     private MusicFile musicFile = null;
     private IPlaylistOwner playlistOwner = null;
     private IMusicClientService musicClientService = null;
+    private IDownloadService downloadService = null;
 
     public MusicSmallCardController()
     {
@@ -39,13 +44,12 @@ public class MusicSmallCardController
     {
     }
 
-
-    // Метод установки MusicFile
-    public void setMusicFile(MusicFile musicFile /*DownloadService downloadService*/)
+    // Метод установки MusicFile и внедрение сервиса скачивания
+    public void setMusicFile(MusicFile musicFile, IDownloadService downloadService)
     {
         this.musicFile = musicFile;
-        //this.downloadService = downloadService;
-        // TODO добавить возможность обращаться к сервису для загрузки указанного файла
+        this.downloadService = downloadService;
+
         updateUI();
     }
 
@@ -61,6 +65,7 @@ public class MusicSmallCardController
         this.musicClientService = musicClientService;
     }
 
+
     /// обновление отображения
     private void updateUI()
     {
@@ -74,12 +79,17 @@ public class MusicSmallCardController
         durationLabel.setText("Длительность: " + musicFile.getFormattedDuration());
 
         // Статус скачивания
+        updateDownloadStatusUI();
+    }
+    private void updateDownloadStatusUI()
+    {
         if (musicFile.isDownloaded())
         {
             statusLabel.setText("✓ Скачано");
             downloadButton.setDisable(true);
             downloadButton.setText("Скачано");
-        } else
+        }
+        else
         {
             statusLabel.setText("Не скачано");
             downloadButton.setDisable(false);
@@ -90,41 +100,49 @@ public class MusicSmallCardController
     @FXML
     private void handleDownload()
     {
-        if (musicFile == null /*|| downloadService == null*/) return;
+        if (musicFile == null || downloadService == null)
+            return;
 
+        // Проверяем, не загружен ли файл уже
+        if (musicFile.isDownloaded())
+            return;
+
+        // Блокируем кнопку, чтобы избежать двойного нажатия
         downloadButton.setDisable(true);
         progressBar.setVisible(true);
         statusLabel.setText("Скачивание...");
 
-        /// Имитация скачивания в отдельном не UI потоке/// TODO реализовать
-        new Thread(() ->
-        {
-            try
-            {
-                // Здесь будет реальное скачивание через downloadService
-                // downloadService.download(musicFile);
+        //Consumer<DownloadEvent> progressListener = event ->
+        // Временно подписываем прогресс бар
+        // downloadService.subscribe(progressListener);
 
-                Thread.sleep(2000); // Имитация задержки
+        //String filepath = "норм имя с расширением"??
+        // Запускаем загрузку
+        CompletableFuture<File> downloadFuture = downloadService.downloadMusicFile(musicFile.getId());
+        downloadFuture.thenAccept(file -> {
+            Platform.runLater(() -> {
+                progressBar.setVisible(false);
+                downloadButton.setDisable(false);
+                musicFile.setDownloaded(true);
+                musicFile.setLocalFilePath(file.getPath());
+                // Обновляем UI с информацией о локальном файле
+                updateDownloadStatusUI();
 
-                // Обновляем UI в UI-потоке
-                javafx.application.Platform.runLater(() ->
-                {
-                    musicFile.setDownloaded(true);
-                    updateUI();
-                    progressBar.setVisible(false);
+                // Отписываемся от событий
+                //downloadService.unsubscribe(progressListener);
+            });
 
-                    // Показать уведомление
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Скачивание завершено");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Песня \"" + musicFile.getTitle() + "\" успешно скачана!");
-                    alert.showAndWait();
-                });
-            } catch (InterruptedException e)
-            {
-                e.printStackTrace();
-            }
-        }).start();
+        }).exceptionally(throwable -> {
+            Platform.runLater(() -> {
+                progressBar.setVisible(false);
+                downloadButton.setDisable(false);
+                statusLabel.setText("Ошибка");
+
+                // Отписываемся от событий
+                //downloadService.unsubscribe(progressListener);
+            });
+            return null;
+        });
     }
 
     @FXML
