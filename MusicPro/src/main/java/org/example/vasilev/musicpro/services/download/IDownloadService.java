@@ -3,7 +3,7 @@ package org.example.vasilev.musicpro.services.download;
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
 
-public interface IDownloadService
+public interface IDownloadService extends IDownloadObservable
 {
     /**
      * Скачать музыкальный файл с сервера

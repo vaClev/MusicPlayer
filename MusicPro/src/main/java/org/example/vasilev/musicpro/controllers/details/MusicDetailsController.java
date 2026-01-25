@@ -1,5 +1,6 @@
 package org.example.vasilev.musicpro.controllers.details;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -11,9 +12,14 @@ import javafx.scene.control.TitledPane;
 import javafx.scene.layout.VBox;
 import org.example.vasilev.musicpro.models.ExtraFile;
 import org.example.vasilev.musicpro.models.MusicFile;
+import org.example.vasilev.musicpro.services.download.DownloadEvent;
+import org.example.vasilev.musicpro.services.download.IDownloadService;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 ///
 ///Этот контроллер для одной карточки полной информации MusicFile.
@@ -61,14 +67,48 @@ public class MusicDetailsController
     @FXML private TitledPane chordsPane;
     @FXML private TitledPane imagesPane;
     @FXML private TitledPane otherFilesPane;
+
     /// Модельный объект отображаемый этой формой
     private MusicFile currentMusicFile;
+    private IDownloadService downloadService;
+    Consumer<DownloadEvent> detailsCardSubscriber = null;
 
-    public void setMusicFile(MusicFile musicFile) 
+    public void setMusicFile(MusicFile musicFile, IDownloadService downloadService)
     {
         this.currentMusicFile = musicFile;
+        this.downloadService = downloadService;
+        subscribeToDownloadEvent();
         updateUI();
         loadExtraFiles();
+    }
+
+    private void subscribeToDownloadEvent()
+    {
+        if(downloadService== null)
+            return;
+
+        detailsCardSubscriber = event -> {
+            if(event.getFileId() != currentMusicFile.getId())
+                return;
+
+            switch (event.getType()) {
+                case PROGRESS:
+                    Platform.runLater(()->{
+                        downloadProgress.setProgress(event.getProgress());
+                    });
+                    break;
+                case COMPLETED:
+                    currentMusicFile.setDownloaded(true);
+                    Platform.runLater(this::updateDownloadStatus);
+                    //showNotification("Файл загружен", event.getFileName());
+                    break;
+                case ERROR:
+                    //showErrorAlert(event.getMessage());
+                    break;
+            }
+        };
+
+        downloadService.subscribe(detailsCardSubscriber);
     }
 
     private void updateUI()
@@ -99,6 +139,7 @@ public class MusicDetailsController
         {
             downloadStatusLabel.setText("✓ Загружено локально");
             downloadStatusLabel.setStyle("-fx-text-fill: #4CAF50;");
+            downloadService.unsubscribe(detailsCardSubscriber);
         }
         else
         {
@@ -173,6 +214,35 @@ public class MusicDetailsController
     @FXML
     public void handleDownloadMusic(ActionEvent actionEvent)
     {
+        if (currentMusicFile == null || downloadService == null)
+          return;
+
+        if(currentMusicFile.isDownloaded())
+          return;
+
+        // Блокируем кнопку, чтобы избежать двойного нажатия
+        downloadButton.setDisable(true);
+        downloadProgress.setVisible(true);
+        downloadStatusLabel.setText("Скачивание...");
+
+        // Запускаем загрузку
+        CompletableFuture<File> downloadFuture = downloadService.downloadMusicFile(currentMusicFile.getId());
+        downloadFuture.thenAccept(file ->
+        {
+            Platform.runLater(() ->
+            {
+                currentMusicFile.setDownloaded(true);
+                currentMusicFile.setLocalFilePath(file.getPath());
+            });
+        }).exceptionally(throwable -> {
+            Platform.runLater(() -> {
+                downloadProgress.setVisible(false);
+                downloadButton.setDisable(false);
+                downloadStatusLabel.setText("Ошибка");
+            });
+            return null;
+        });
+
     }
 
     @FXML

@@ -8,6 +8,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.example.vasilev.musicpro.dto.MusicFileDTO;
 import org.example.vasilev.musicpro.models.AppConfig;
 import org.example.vasilev.musicpro.models.MusicFile;
@@ -29,6 +31,7 @@ import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 public class MainController implements Initializable {
+    public VBox root;
     /// Контейнер UI элементов списков песен
     @FXML
     private VBox songsContainer;
@@ -40,9 +43,9 @@ public class MainController implements Initializable {
     @FXML
     private Label statusLabel;
 
-    private ConfigService configService;
-    private IDownloadService downloadService;
-    private IMusicClientService musicClientService;
+    private ConfigService configService = null;
+    private IDownloadService downloadService = null;
+    private IMusicClientService musicClientService = null;
 
     /// ссылка на контроллер плеера. Будем инжектить ее в карточки песен, чтобы добавлять их в плейлист
     private IPlaylistOwner playlistOwner;
@@ -50,15 +53,15 @@ public class MainController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        // Инициализация сервисов //TODO пока тут внедряются зависимости. Отрефакторить
-        configService = new ConfigService(AppConfig.getInstance());
-
-        var apiClient = new APIClient(configService.getConfig().getServerUrl(), configService.getConfig().getMaxConcurrentDownloads());
-        musicClientService = new MusicClientService(apiClient);
-        downloadService = new DownloadService(apiClient, configService.getConfig().getDownloadDir());
-
         // инициализация UI элементов плеера
         loadPlayer();
+    }
+
+    public void setServices(ConfigService configService, IDownloadService downloadService,  IMusicClientService musicClientService)
+    {
+       this.configService = configService;
+       this.downloadService = downloadService;
+       this.musicClientService = musicClientService;
 
         // Показываем путь к папке загрузок
         statusLabel.setText("Папка загрузок: " + configService.getConfig().getDownloadDir());

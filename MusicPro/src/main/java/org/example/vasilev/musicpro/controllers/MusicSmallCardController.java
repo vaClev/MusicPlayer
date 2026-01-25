@@ -6,11 +6,13 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import org.example.vasilev.musicpro.controllers.details.TabManager;
 import org.example.vasilev.musicpro.models.MusicFile;
+import org.example.vasilev.musicpro.services.download.DownloadEvent;
 import org.example.vasilev.musicpro.services.download.IDownloadService;
 import org.example.vasilev.musicpro.services.music.IMusicClientService;
 
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 public class MusicSmallCardController
 {
@@ -33,6 +35,7 @@ public class MusicSmallCardController
     private IPlaylistOwner playlistOwner = null;
     private IMusicClientService musicClientService = null;
     private IDownloadService downloadService = null;
+    Consumer<DownloadEvent> smallCardSubscriber = null;
 
     public MusicSmallCardController()
     {
@@ -50,9 +53,39 @@ public class MusicSmallCardController
         this.musicFile = musicFile;
         this.downloadService = downloadService;
 
+        subscribeToDownloadEvent();
         updateUI();
     }
 
+    private void subscribeToDownloadEvent()
+    {
+        if(downloadService== null)
+            return;
+
+        // Подписка на события сервиса скачивания (реализация IObservable)
+        smallCardSubscriber = event -> {
+            if(event.getFileId() != musicFile.getId())
+                return;
+
+            switch (event.getType()) {
+                case PROGRESS:
+                    Platform.runLater(()->{
+                        progressBar.setProgress(event.getProgress());
+                    });
+                    break;
+                case COMPLETED:
+                    musicFile.setDownloaded(true);
+                    Platform.runLater(this::updateDownloadStatusUI);
+                    //showNotification("Файл загружен", event.getFileName());
+                    break;
+                case ERROR:
+                    //showErrorAlert(event.getMessage());
+                    break;
+            }
+        };
+
+        downloadService.subscribe(smallCardSubscriber);
+    }
     /// Метод установки списка воспроизведения
     public void setPlaylistOwner(IPlaylistOwner owner)
     {
@@ -86,8 +119,12 @@ public class MusicSmallCardController
         if (musicFile.isDownloaded())
         {
             statusLabel.setText("✓ Скачано");
+            progressBar.setVisible(false);
             downloadButton.setDisable(true);
             downloadButton.setText("Скачано");
+
+            //отписка от событий скачивания
+            downloadService.unsubscribe(smallCardSubscriber);
         }
         else
         {
@@ -112,34 +149,19 @@ public class MusicSmallCardController
         progressBar.setVisible(true);
         statusLabel.setText("Скачивание...");
 
-        //Consumer<DownloadEvent> progressListener = event ->
-        // Временно подписываем прогресс бар
-        // downloadService.subscribe(progressListener);
-
         //String filepath = "норм имя с расширением"??
         // Запускаем загрузку
         CompletableFuture<File> downloadFuture = downloadService.downloadMusicFile(musicFile.getId());
         downloadFuture.thenAccept(file -> {
             Platform.runLater(() -> {
-                progressBar.setVisible(false);
-                downloadButton.setDisable(false);
                 musicFile.setDownloaded(true);
                 musicFile.setLocalFilePath(file.getPath());
-                // Обновляем UI с информацией о локальном файле
-                updateDownloadStatusUI();
-
-                // Отписываемся от событий
-                //downloadService.unsubscribe(progressListener);
             });
-
         }).exceptionally(throwable -> {
             Platform.runLater(() -> {
                 progressBar.setVisible(false);
                 downloadButton.setDisable(false);
                 statusLabel.setText("Ошибка");
-
-                // Отписываемся от событий
-                //downloadService.unsubscribe(progressListener);
             });
             return null;
         });
@@ -163,7 +185,7 @@ public class MusicSmallCardController
                             musicFileFullInfo.setDownloaded(downloadStatus);
 
                             TabManager tabManager = TabManager.getInstance();
-                            tabManager.showOrCreateTab(musicFileFullInfo);
+                            tabManager.showOrCreateTab(musicFileFullInfo, downloadService);
 
                             /// TODO создать UI форму для просмотра доп файлов и всех полей musicFile
 //                            Alert alert = new Alert(Alert.AlertType.INFORMATION);
