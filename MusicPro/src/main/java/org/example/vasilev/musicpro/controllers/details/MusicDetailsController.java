@@ -10,6 +10,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.VBox;
+import org.example.vasilev.musicpro.controllers.IPlaylistOwner;
 import org.example.vasilev.musicpro.models.ExtraFile;
 import org.example.vasilev.musicpro.models.MusicFile;
 import org.example.vasilev.musicpro.services.download.DownloadEvent;
@@ -72,6 +73,13 @@ public class MusicDetailsController
     private MusicFile currentMusicFile;
     private IDownloadService downloadService;
     Consumer<DownloadEvent> detailsCardSubscriber = null;
+    private IPlaylistOwner playlistOwner = null;
+
+    /// Метод установки списка воспроизведения
+    public void setPlaylistOwner(IPlaylistOwner owner)
+    {
+        this.playlistOwner = owner;
+    }
 
     public void setMusicFile(MusicFile musicFile, IDownloadService downloadService)
     {
@@ -248,6 +256,10 @@ public class MusicDetailsController
     @FXML
     public void handleAddToPlaylist(ActionEvent actionEvent)
     {
+        if (currentMusicFile == null || !currentMusicFile.isDownloaded() || playlistOwner == null)
+            return;
+
+        playlistOwner.addMusicFileToPlaylist(currentMusicFile);
     }
 
 }

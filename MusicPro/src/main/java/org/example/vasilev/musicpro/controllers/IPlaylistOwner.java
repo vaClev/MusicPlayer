@@ -6,4 +6,6 @@ public interface IPlaylistOwner
 {
     void addMusicFileToPlaylist(MusicFile musicFile);
     void removeMusicFile(long id);
+
+    void setAsCurrent(long id);
 }

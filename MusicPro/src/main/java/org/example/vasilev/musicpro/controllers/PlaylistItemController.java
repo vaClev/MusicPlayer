@@ -18,6 +18,7 @@ public class PlaylistItemController
 
     private MusicFile musicFile;
 
+
     /// TODO можно по индексу
     public void handleRemove(ActionEvent actionEvent)
     {

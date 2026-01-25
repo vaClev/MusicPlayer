@@ -1,6 +1,7 @@
 package org.example.vasilev.musicpro.services.player;
 import javafx.util.Duration;
 import java.io.File;
+import java.util.function.Consumer;
 
 /**
  * Интерфейс сервиса воспроизведения аудио
@@ -16,7 +17,8 @@ public interface IPlayerService
     {
         PLAYING,
         PAUSED,
-        STOPPED
+        STOPPED,
+        END_OF_TRACK
     }
 
     /**
@@ -134,83 +136,40 @@ public interface IPlayerService
      * Добавить слушателя изменения состояния
      * @param listener слушатель
      */
-    void addStateChangeListener(Runnable listener);
+    void addStateChangeListener(Consumer<PlayerState> listener);
 
     /**
      * Удалить слушателя изменения состояния
      * @param listener слушатель
      */
-    void removeStateChangeListener(Runnable listener);
+    void removeStateChangeListener(Consumer<PlayerState> listener);
 
     /**
      * Добавить слушателя изменения времени
      * @param listener слушатель
      */
-    void addTimeChangeListener(Runnable listener);
+    void addTimeChangeListener(Consumer<Duration> listener);
 
     /**
      * Удалить слушателя изменения времени
      * @param listener слушатель
      */
-    void removeTimeChangeListener(Runnable listener);
+    void removeTimeChangeListener(Consumer<Duration> listener);
 
     /**
      * Добавить слушателя изменения громкости
      * @param listener слушатель
      */
-    void addVolumeChangeListener(Runnable listener);
+    void addVolumeChangeListener(Consumer<Double> listener);
 
     /**
      * Удалить слушателя изменения громкости
      * @param listener слушатель
      */
-    void removeVolumeChangeListener(Runnable listener);
+    void removeVolumeChangeListener(Consumer<Double> listener);
 
     /**
      * Освободить ресурсы плеера
      */
     void dispose();
-
-
-    /// TODO обдумать возможно потребуется
-    /**
-     * Получить метаданные трека (если доступны)
-     * @return метаданные или null
-     */
-    /*default AudioMetadata getMetadata()
-    {
-        return null;
-    }*/
-
-    /**
-     * Класс для хранения метаданных аудио
-     */
-    /*class AudioMetadata
-    {
-        private String title;
-        private String artist;
-        private String album;
-        private String genre;
-        private Integer year;
-        private Integer trackNumber;
-
-        // Геттеры и сеттеры
-        public String getTitle() { return title; }
-        public void setTitle(String title) { this.title = title; }
-
-        public String getArtist() { return artist; }
-        public void setArtist(String artist) { this.artist = artist; }
-
-        public String getAlbum() { return album; }
-        public void setAlbum(String album) { this.album = album; }
-
-        public String getGenre() { return genre; }
-        public void setGenre(String genre) { this.genre = genre; }
-
-        public Integer getYear() { return year; }
-        public void setYear(Integer year) { this.year = year; }
-
-        public Integer getTrackNumber() { return trackNumber; }
-        public void setTrackNumber(Integer trackNumber) { this.trackNumber = trackNumber; }
-    }*/
 }

@@ -185,7 +185,7 @@ public class MusicSmallCardController
                             musicFileFullInfo.setDownloaded(downloadStatus);
 
                             TabManager tabManager = TabManager.getInstance();
-                            tabManager.showOrCreateTab(musicFileFullInfo, downloadService);
+                            tabManager.showOrCreateTab(musicFileFullInfo, downloadService, playlistOwner);
 
                             /// TODO создать UI форму для просмотра доп файлов и всех полей musicFile
 //                            Alert alert = new Alert(Alert.AlertType.INFORMATION);

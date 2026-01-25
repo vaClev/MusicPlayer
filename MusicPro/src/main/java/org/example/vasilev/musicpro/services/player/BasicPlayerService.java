@@ -5,6 +5,9 @@ import javafx.scene.media.MediaPlayer;
 import javafx.util.Duration;
 
 import java.io.File;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 
 /**
  * Базовая реализация плеера на JavaFX MediaPlayer
@@ -20,10 +23,9 @@ public class BasicPlayerService implements IPlayerService
     private double volume = 0.5;
 
     /// Списки подписчиков на события сервиса (например чтобы ползунки UI ползли по ходу воспроизведения)
-    //private final List<Runnable> stateChangeListeners = new ArrayList<>();
-    //private final List<Runnable> timeChangeListeners = new ArrayList<>();
-    //private final List<Runnable> volumeChangeListeners = new ArrayList<>();
-    /// Пока примитивно без них
+    private final List<Consumer<PlayerState>> stateListeners = new CopyOnWriteArrayList<>();
+    private final List<Consumer<Duration>> timeListeners = new CopyOnWriteArrayList<>();
+    private final List<Consumer<Double>> volumeListeners = new CopyOnWriteArrayList<>();
 
     @Override
     public boolean loadFile(File audioFile)
@@ -47,14 +49,19 @@ public class BasicPlayerService implements IPlayerService
             });
 
             mediaPlayer.setOnEndOfMedia(() -> {
-                setState(PlayerState.STOPPED);
+                setState(PlayerState.END_OF_TRACK);
                 mediaPlayer.stop();
             });
 
-            // Слушатель изменения времени ///TODO
-            //mediaPlayer.currentTimeProperty().addListener((obs, oldVal, newVal) -> {
-            //    notifyTimeChangeListeners();
-            //});
+            // Слушатель изменения времени
+            mediaPlayer.currentTimeProperty().addListener((obs, oldVal, newVal) -> {
+                if(state == PlayerState.PLAYING)
+                {
+                    timeListeners.forEach(listener -> listener.accept(newVal));
+                }
+            });
+
+            setState(PlayerState.STOPPED);
         }
         catch (Exception e)
         {
@@ -77,6 +84,7 @@ public class BasicPlayerService implements IPlayerService
     private void setState(PlayerState state)
     {
         this.state = state;
+        notifyStateListeners();
     }
 
 
@@ -121,10 +129,9 @@ public class BasicPlayerService implements IPlayerService
     {
         this.volume = Math.max(0.0, Math.min(1.0, volume));
         if (mediaPlayer != null)
-        {
             mediaPlayer.setVolume(this.volume);
-        }
-        //notifyVolumeChangeListeners(); TODO
+
+        notifyVolumeChangeListeners();
     }
 
     @Override
@@ -220,40 +227,51 @@ public class BasicPlayerService implements IPlayerService
 
     /// Добавление подписчиков на события
     @Override
-    public void addStateChangeListener(Runnable listener)
+    public void addStateChangeListener(Consumer<PlayerState> listener)
     {
-        //TODO
+        stateListeners.add(listener);
     }
 
     @Override
-    public void removeStateChangeListener(Runnable listener)
+    public void removeStateChangeListener(Consumer<PlayerState> listener)
     {
-       //TODO
+       stateListeners.remove(listener);
+    }
+
+    private void notifyStateListeners()
+    {
+        stateListeners.forEach(l -> l.accept(state));
     }
 
     @Override
-    public void addTimeChangeListener(Runnable listener)
+    public void addTimeChangeListener(Consumer<Duration> listener)
     {
-        //TODO
+        timeListeners.add(listener);
     }
 
     @Override
-    public void removeTimeChangeListener(Runnable listener)
+    public void removeTimeChangeListener(Consumer<Duration> listener)
     {
-        //TODO
+        timeListeners.remove(listener);
     }
 
     @Override
-    public void addVolumeChangeListener(Runnable listener)
+    public void addVolumeChangeListener(Consumer<Double> listener)
     {
-        //TODO
+        volumeListeners.add(listener);
     }
 
     @Override
-    public void removeVolumeChangeListener(Runnable listener)
+    public void removeVolumeChangeListener(Consumer<Double> listener)
     {
-        //TODO
+        volumeListeners.remove(listener);
     }
+
+    private void notifyVolumeChangeListeners()
+    {
+        volumeListeners.forEach(l -> l.accept(volume));
+    }
+
 
     /// По сути RAII деструктор
     @Override

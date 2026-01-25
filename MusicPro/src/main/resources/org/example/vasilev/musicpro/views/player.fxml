@@ -16,7 +16,7 @@
         <!-- Кнопка выбора файла -->
         <Button fx:id="selectFileButton" text="📁 открыть локальный файл"
                 styleClass="player-btn file-btn"
-                onAction="#handleSelectFile"/>
+                onAction="#handleAddFilesToPlaylist"/>
 
         <!-- Кнопка предыдущего трека -->
         <Button fx:id="prevButton" text="⏮"

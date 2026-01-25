@@ -9,6 +9,7 @@ import javafx.scene.control.TabPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import org.example.vasilev.musicpro.controllers.IPlaylistOwner;
 import org.example.vasilev.musicpro.models.ExtraFile;
 import org.example.vasilev.musicpro.models.MusicFile;
 import org.example.vasilev.musicpro.services.download.IDownloadService;
@@ -37,7 +38,7 @@ public class TabManager
         return instance;
     }
 
-    public void showOrCreateTab(MusicFile musicFile, IDownloadService downloadService)
+    public void showOrCreateTab(MusicFile musicFile, IDownloadService downloadService, IPlaylistOwner playlistOwner)
     {
         // Инициализируем окно если оно еще не создано
         initializeWindowIfNeeded();
@@ -57,7 +58,7 @@ public class TabManager
         else
         {
             // Создаем новую вкладку
-            createNewTab(musicFile, downloadService);
+            createNewTab(musicFile, downloadService, playlistOwner);
         }
     }
 
@@ -89,7 +90,7 @@ public class TabManager
         }
     }
 
-    private void createNewTab(MusicFile musicFile, IDownloadService downloadService)
+    private void createNewTab(MusicFile musicFile, IDownloadService downloadService, IPlaylistOwner playlistOwner)
     {
         try
         {
@@ -102,6 +103,7 @@ public class TabManager
 
             // Настраиваем контроллер
             controller.setMusicFile(musicFile, downloadService);
+            controller.setPlaylistOwner(playlistOwner);
 
             // Создаем вкладку
             Tab tab = new Tab();
