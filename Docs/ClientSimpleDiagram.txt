@@ -1,0 +1,188 @@
+@startuml
+' === КОМПАКТНЫЕ НАСТРОЙКИ ===
+!pragma layout smetana
+skinparam compress true
+skinparam roundcorner 15
+
+skinparam package {
+    Padding 8
+    Margin 3
+    BackgroundColor White
+    BorderColor #333
+    BorderThickness 1
+    FontSize 10
+    RoundCorner 10
+}
+
+skinparam class {
+    BackgroundColor White
+    BorderColor #2E3436
+    ArrowColor #2E3436
+    Margin 1
+    Padding 2
+}
+
+skinparam arrow {
+    Thickness 1
+    FontSize 8
+    Color #2E3436
+}
+
+skinparam nodesep 0.5
+skinparam ranksep 0.5
+
+' === МОДЕЛИ ===
+package models #ddffdd {
+    class MusicFile {
+        - id, title, artist
+        - downloaded, localFilePath
+        + getExtraFiles()
+    }
+    
+    class ExtraFile {
+        - id, originalFileName
+        - fileType, musicFileId
+    }
+    
+    enum ExtraFileType {
+        SHEET_MUSIC, TABS, LYRICS
+        CHORDS, IMAGE, OTHER
+    }
+    
+    class AppConfig {
+        + getInstance()
+        + getServerUrl()
+    }
+}
+
+' === DTO ===
+package dto #LightSeaGreen {
+    class MusicFileDTO {
+        - id, title, artist
+        + toDomainModel()
+    }
+    
+    class MusicFileDetailDTO {
+        - extraFiles
+        + toDomainModel()
+    }
+    
+    class ExtraFileDTO {
+        - id, fileType
+        + toDomainModel()
+    }
+}
+
+' === СЕРВИСЫ ===
+package services #ddddff {
+    class ConfigService {
+        + getConfig()
+    }
+    
+    class APIClient {
+        + getAsync()
+        + downloadAsync()
+    }
+    
+    ' --- Музыкальные сервисы ---
+    package music #5C9DF5 {
+        interface IMusicClientService {
+            + getMusicFiles()
+            + getMusicFileDetails()
+        }
+        
+        class MusicClientService implements IMusicClientService
+    }
+    
+    ' --- Плеер ---
+    package player #8AB8F7 {
+        interface IPlayerService {
+            + play(), pause(), stop()
+        }
+        
+        class BasicPlayerService implements IPlayerService
+        
+        class MusicMetadataExtractService
+    }
+    
+    ' --- Загрузка ---
+    package download #4285F4 {
+        interface IDownloadService {
+            + downloadMusicFile()
+            + downloadExtraFile()
+        }
+        
+        class DownloadService implements IDownloadService
+    }
+}
+
+' === КОНТРОЛЛЕРЫ ===
+package controllers #Orange {
+    interface IPlaylistOwner {
+        + addMusicFileToPlaylist()
+        + removeMusicFile()
+    }
+    
+    class MainController {
+        - configService
+        - downloadService
+        - musicClientService
+        - playlistOwner
+    }
+    
+    class MusicSmallCardController {
+        - musicFile
+        - playlistOwner
+    }
+    
+    class PlayerController implements IPlaylistOwner {
+        - playerService
+        - playlistItems
+    }
+    
+    ' --- Детали ---
+    package details #Orange {
+        class TabManager
+        class MusicDetailsController
+    }
+}
+
+' === КЛЮЧЕВЫЕ СВЯЗИ ===
+' Модели
+MusicFile "1" --o{ "0..*" ExtraFile
+ExtraFile o-- ExtraFileType
+AppConfig --o ConfigService
+
+' DTO преобразования
+MusicFile <-- MusicFileDTO : toDomainModel()
+MusicFile <-- MusicFileDetailDTO : toDomainModel()
+ExtraFile <-- ExtraFileDTO : toDomainModel()
+MusicFileDetailDTO o-- ExtraFileDTO
+
+' Сервисные зависимости
+ConfigService --> AppConfig
+MusicClientService *-- APIClient
+MusicClientService --> MusicFileDTO
+MusicClientService --> MusicFileDetailDTO
+DownloadService *-- APIClient
+
+' Контроллерные зависимости
+MainController o-- IPlaylistOwner
+MainController o-- MusicSmallCardController
+MainController o-- ConfigService
+MainController o-- IMusicClientService
+MainController o-- IDownloadService
+
+MusicSmallCardController o--> IPlaylistOwner
+PlayerController *-- IPlayerService
+PlayerController *-- MusicMetadataExtractService
+
+' UI навигация
+MusicSmallCardController --> TabManager
+TabManager o--> MusicDetailsController
+
+' Сервисные внедрения в контроллеры
+MusicSmallCardController ..> IDownloadService : использует
+MusicDetailsController ..> IDownloadService : использует
+MusicMetadataExtractService --> MusicFile : создает
+@enduml

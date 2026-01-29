@@ -1,5 +1,38 @@
 @startuml
-package models #LightSkyBlue
+' === КОМПАКТНЫЕ НАСТРОЙКИ ===
+!pragma layout smetana  ' Более компактный алгоритм размещения
+skinparam compress true
+skinparam roundcorner 15
+
+skinparam package {
+    Padding 8
+    Margin 3
+    BackgroundColor White
+    BorderColor #333
+    BorderThickness 1
+    FontSize 10
+    RoundCorner 10
+}
+
+skinparam class {
+    BackgroundColor White
+    BorderColor #2E3436
+    ArrowColor #2E3436
+    Margin 1
+    Padding 2
+}
+
+skinparam arrow {
+    Thickness 1
+    FontSize 9
+    Color #2E3436
+}
+
+skinparam nodesep 0.7
+skinparam ranksep 0.7
+
+
+package models #ddffdd
 {
     class MusicFile #aaffaa
     {
@@ -123,10 +156,10 @@ package dto #LightSeaGreen
         + seteers getters
         + MusicFile toDomainModel()
     }
-    MusicFileDetailDTO *--ExtraFileDTO
+    MusicFileDetailDTO o--ExtraFileDTO
 }
 
-package services #LightYellow
+package services #ddddff
 {
     class ConfigService #fcb8ff
     {
@@ -141,10 +174,10 @@ package services #LightYellow
         - final String baseUrl;
         - final Gson gson;
 
-        + <T> CompletableFuture<T> getAsync(String endpoint, Class<T> responseType)
-        + <T> CompletableFuture<T> getAsync(String endpoint, java.lang.reflect.Type responseType)
+        + <T> CompletableFuture<T> getAsync(params)
+        + CompletableFuture<File> downloadAsync(params)
     }
-    note right of APIClient
+    note bottom of APIClient
         /// простой запрос AllMusicFiles
         String url = "api/music";
 
@@ -152,25 +185,7 @@ package services #LightYellow
         List<MusicFileDTO> dtoList = (List<MusicFileDTO>) apiClient.getAsync(url, listType).join();
     end note
 
-
-
-    interface IDownloadService
-    {
-        // пока нет имплементации
-        CompletableFuture<File> downloadMusicFile(long musicFileId, String localFilePath);
-        CompletableFuture<File> downloadMusicFile(long musicFileId);
-    }
-
-
-    class MusicFileDetailsService
-    {
-        // пока моковый.
-        MusicFile getMusicFileDetails(long musicFileId);
-
-        //boolean PostNewExtraFile(long musicFileId, other info);
-    }
-
-    package music #LightGoldenRodYellow
+    package music #5C9DF5
     {
         interface IMusicClientService
         {
@@ -191,7 +206,7 @@ package services #LightYellow
         MusicClientService-->dto.MusicFileDetailDTO
     }
 
-    package player #ffffaa
+    package player #8AB8F7
     {
         enum PlayerState
         {
@@ -202,19 +217,18 @@ package services #LightYellow
 
         interface IPlayerService
         {
-            boolean loadFile(File audioFile); //Загрузить аудиофайл для воспроизведения
-            void play();
-            void pause();
-            void stop();
-            void togglePlayPause();
+            boolean loadFile(File audioFile)
+            void play()
+            void pause()
+            void stop()
+            void togglePlayPause()
             void setVolume(double volume);
             void seek(double seconds);
-            boolean isFileLoaded();
 
-            //списки подписчиков на события
-            void addStateChangeListener(Runnable listener);
-            void addTimeChangeListener(Runnable listener);
-            void addVolumeChangeListener(Runnable listener);
+            // подписки на события
+            void addStateChangeListener(listener);
+            void addTimeChangeListener(listener);
+            void addVolumeChangeListener(listener);
         }
 
         class BasicPlayerService implements IPlayerService
@@ -242,6 +256,58 @@ package services #LightYellow
         }
         MusicMetadataExtractService --> models.MusicFile
     }
+
+    interface IObservable<T> 
+    {
+        +void subscribe(T subscriber);
+        +void unsubscribe(T subscriber);
+        +List<T> getSubscribers();
+        +void clearSubscribers();
+    }
+    package download #4285F4
+    {
+        enum EventType
+        {
+            STARTED,    // Начало загрузки
+            PROGRESS,   // Прогресс загрузки
+            COMPLETED,  // Загрузка завершена
+            ERROR       // Ошибка загрузки
+        }
+        class DownloadEvent
+        {
+        - EventType type;
+        - long fileId;
+        - String fileType; // "music" или "extra"
+        - String fileName;
+        - String filePath;
+        - double progress; // 0-100
+        - String message;
+        - LocalDateTime timestamp; 
+        }
+        DownloadEvent *-- EventType
+        interface IDownloadObservable extends services.IObservable<Consumer<DownloadEvent>>
+        {
+        + subscribe(Consumer<DownloadEvent> subscriber);
+        + unsubscribe(Consumer<DownloadEvent> subscriber);
+        }
+        IDownloadObservable -- DownloadEvent
+        interface IDownloadService extends IDownloadObservable
+        {
+            CompletableFuture<File> downloadMusicFile(long musicFileId, String localFilePath);
+            CompletableFuture<File> downloadMusicFile(long musicFileId);
+            CompletableFuture<File> downloadExtraFile(long extraFileId, String localFilePath);
+            CompletableFuture<File> downloadExtraFile(long extraFileId);
+        }
+        class DownloadService implements IDownloadService
+        {
+            -APIClient apiClient;
+            - ExecutorService notificationExecutor;
+            - String endpointDownloadMusic;
+            - String endpointDownloadExtras;
+            - List<Consumer<DownloadEvent>> subscribers;
+        }
+        DownloadService *--services.APIClient
+    }
 }
 
 package controllers #Orange
@@ -252,36 +318,33 @@ package controllers #Orange
         void removeMusicFile(long id);
     }
 
-    class MainController 
+    class MainController #ffbbbb
     {
-        /// Контейнеры UI @FXML
         - VBox songsContainer;
         - VBox playerContainer;
         - Label statusLabel;
 
         // Сервисы
         - ConfigService configService;
+        - IDownloadService downloadService
         - IMusicClientService musicClientService;
 
         /// ссылка на контроллер плеера.
         - IPlaylistOwner playlistOwner;
     }
-    
 
     class MusicSmallCardController
     {
         /// Элементы UI @FXML
         - Label titleLabel;
-        - Label artistLabel;
-        - Label albumLabel;
-        - Label durationLabel;
-        - Label statusLabel;
-        - Button downloadButton;
-        - ProgressBar progressBar;
-
         - MusicFile musicFile;
+
         - IPlaylistOwner playlistOwner;
         - IMusicClientService musicClientService;
+        - IDownloadService downloadService
+
+        +handleDownloadMusic
+        +handleAddToPlaylist
     }
     note right of MusicSmallCardController
     отвечает зо одну карточку в списке муз.файлов
@@ -293,33 +356,55 @@ package controllers #Orange
     playlistOwner - shared, 
     musicClientService - shared.
     end note
-    MainController *-- IPlaylistOwner
-    MainController *-- MusicSmallCardController
-    MainController *-- services.ConfigService
-    MainController *-- services.music.IMusicClientService
+    MainController o-- IPlaylistOwner
+    MainController o-- MusicSmallCardController
+    MainController o-- services.ConfigService
+    MainController o-- services.music.IMusicClientService
+    MainController o-- services.download.IDownloadService
 
-    MusicSmallCardController *-- IPlaylistOwner
+    MusicSmallCardController o--> IPlaylistOwner
     class PlayerController implements IPlaylistOwner
     {
         /// Плейлист
         - VBox playlistContainer;
-        - Label playlistCountLabel;
-        - Button selectFileButton;
-
         /// Кнопки воспроизведения и звука
         - Button playPauseButton;
 
-        /// Сервис воспроизведения музыки
         - IPlayerService playerService;
-
-        /// Сервис извлечением метаданных из локального файла
         - MusicMetadataExtractService extractService;
 
-        /// Список элементов плейлиста //TODO выделить в отдельный класс?
-        - final ObservableList<MusicFile> playlistItems = FXCollections.observableArrayList();
+        /// Список элементов плейлиста
+        - final ObservableList<MusicFile> playlistItems
         - int currentPlaylistIndex = -1;
     }
     PlayerController *--services.player.IPlayerService
     PlayerController *--services.player.MusicMetadataExtractService
+
+
+
+    package details #Orange
+    {
+        class TabManager
+        {
+            - static TabManager instance;
+            - Stage detailsStage;
+            - TabPane tabPane;
+            - Map<Long, Tab> openTabs;
+
+            + void showOrCreateTab();
+        }
+        class MusicDetailsController
+        {
+            - MusicFile currentMusicFile;
+            - IDownloadService downloadService;
+            - Consumer<DownloadEvent> detailsCardSubscriber = null;
+            - IPlaylistOwner playlistOwner = null;
+
+            +handleDownloadMusic
+            +handleAddToPlaylist
+        }
+        TabManager o--> MusicDetailsController
+    }
+    MusicSmallCardController -->details.TabManager
 }
 @enduml

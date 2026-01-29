@@ -72,7 +72,7 @@ public class MusicDetailsController
     /// Модельный объект отображаемый этой формой
     private MusicFile currentMusicFile;
     private IDownloadService downloadService;
-    Consumer<DownloadEvent> detailsCardSubscriber = null;
+    private Consumer<DownloadEvent> detailsCardSubscriber = null;
     private IPlaylistOwner playlistOwner = null;
 
     /// Метод установки списка воспроизведения

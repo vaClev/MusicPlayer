@@ -1,34 +1,22 @@
 package org.example.vasilev.musicpro.controllers;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
-import org.example.vasilev.musicpro.dto.MusicFileDTO;
-import org.example.vasilev.musicpro.models.AppConfig;
 import org.example.vasilev.musicpro.models.MusicFile;
 import org.example.vasilev.musicpro.services.*;
-import org.example.vasilev.musicpro.services.APIClient;
-import org.example.vasilev.musicpro.services.download.DownloadService;
 import org.example.vasilev.musicpro.services.download.IDownloadService;
 import org.example.vasilev.musicpro.services.music.IMusicClientService;
-import org.example.vasilev.musicpro.services.music.MusicClientService;
+import org.example.vasilev.musicpro.utils.Tests;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 public class MainController implements Initializable {
     public VBox root;
@@ -130,13 +118,53 @@ public class MainController implements Initializable {
     }
 
 
+    private VBox createSongCard(MusicFile musicFile) throws IOException
+    {
+        FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/org/example/vasilev/musicpro/views/music-small-card.fxml")
+        );
+
+        // Загружаем View
+        VBox card = loader.load();
+
+        // Получаем контроллер
+        MusicSmallCardController controller = loader.getController();
+        // Внедряем ему зависимости
+        controller.setMusicFile(musicFile, downloadService);
+        controller.setPlaylistOwner(playlistOwner);
+        controller.setMusicClientService(musicClientService);
+
+        return card;
+    }
+
+
+    /// Обработчики нажатия кнопок
+    @FXML
+    private void handleGetAll()
+    {
+        testLoadAllFromServer();
+        statusLabel.setText("Список обновлен с сервера. Папка загрузок: " + configService.getConfig().getDownloadDir());
+    }
+
+
+    /// //////////////////////////////////////////////////////
+    /// //////////////////////////////////////////////////////
+    ///  отладка UI
+    /// //////////////////////////////////////////////////////
+    @FXML
+    private void handleRefresh()
+    {
+        loadMockSongs();
+        statusLabel.setText("Список обновлен из тест JSON. Папка загрузок: " + configService.getConfig().getDownloadDir());
+    }
     /// Загрузка и отображение в UI содержимого из файла JSON
     private void loadMockSongs()
     {
         try
         {
+            Tests util = new Tests();
             // 1. Чтение JSON файла из ресурсов
-            List<MusicFile> musicFiles = loadMusicFilesFromJson();
+            List<MusicFile> musicFiles = util.loadMusicFilesFromJson();
 
             // 2. Очищаем контейнер
             songsContainer.getChildren().clear();
@@ -161,77 +189,5 @@ public class MainController implements Initializable {
             statusLabel.setText("Ошибка загрузки: " + e.getMessage());
             e.printStackTrace();
         }
-    }
-
-    private VBox createSongCard(MusicFile musicFile) throws IOException
-    {
-        FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/org/example/vasilev/musicpro/views/music-small-card.fxml")
-        );
-
-        // Загружаем View
-        VBox card = loader.load();
-
-        // Получаем контроллер
-        MusicSmallCardController controller = loader.getController();
-        // Внедряем ему зависимости
-        controller.setMusicFile(musicFile, downloadService);
-        controller.setPlaylistOwner(playlistOwner);
-        controller.setMusicClientService(musicClientService);
-
-        return card;
-    }
-
-    /// TODO вынести в тесты
-    private List<MusicFile> loadMusicFilesFromJson()
-    {
-        // Путь к файлу в ресурсах
-        String jsonPath = "/org/example/vasilev/musicpro/test.json";
-        // Создаем Gson с адаптером для LocalDateTime
-        Gson gson = new Gson();
-
-        try (InputStream inputStream = getClass().getResourceAsStream(jsonPath);
-             InputStreamReader reader = new InputStreamReader(inputStream))
-        {
-            // Проверка, что файл найден
-            if (inputStream == null) {
-                throw new RuntimeException("Файл не найден: " + jsonPath);
-            }
-
-            // Читаем весь JSON в строку для отладки
-            String json = new BufferedReader(reader).lines().collect(Collectors.joining("\n"));
-            System.out.println("JSON содержимое:\n" + json);
-
-            // Десериализация
-            List<MusicFileDTO> dtos = gson.fromJson(json,
-                    new TypeToken<List<MusicFileDTO>>(){}.getType());
-
-            System.out.println("Успешно прочитано DTO: " + dtos.size());
-
-            return dtos.stream()
-                    .map(MusicFileDTO::toDomainModel)
-                    .collect(Collectors.toList());
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException("Ошибка при чтении JSON: " + e.getMessage(), e);
-        }
-    }
-
-
-
-    /// Обработчики нажатия кнопок
-    @FXML
-    private void handleRefresh()
-    {
-        loadMockSongs();
-        statusLabel.setText("Список обновлен из тест JSON. Папка загрузок: " + configService.getConfig().getDownloadDir());
-    }
-
-    @FXML
-    private void handleGetAll()
-    {
-        testLoadAllFromServer();
-        statusLabel.setText("Список обновлен с сервера. Папка загрузок: " + configService.getConfig().getDownloadDir());
     }
 }
