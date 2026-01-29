@@ -1,0 +1,181 @@
+@startuml MusicServer.API Class Diagram
+
+' Настройки для лучшей читаемости
+skinparam class {
+    BackgroundColor White
+    ArrowColor #2E3436
+    BorderColor #2E3436
+}
+skinparam shadowing true
+'left to right direction
+
+' Глобальные отступы между элементами
+skinparam package {
+    Padding 10         ' Внутренние отступы пакета (по умолчанию 12)
+    Margin 5           ' Внешние отступы пакета (по умолчанию 10)
+}
+
+' Отступы вокруг текста в классах
+skinparam class {
+    Margin 1           ' Отступ внутри класса (по умолчанию 2)
+    Padding 3          ' Отступ текста от границ (по умолчанию 4)
+}
+skinparam linetype polyline
+
+' === 1. МОДЕЛИ ДАННЫХ (Entities) ===
+package "Models" #ccccff{
+    class MusicFile {
+        +int Id {pk}
+        +string Filename
+        +string Filepath
+        +string Title
+        +string Artist
+        +string Album
+        +int? Year
+        +string Genre
+        +long Filesize
+        +TimeSpan Duration
+        +DateTime UploadDate
+        +ICollection<ExtraFile> ExtraFiles
+    }
+
+    class ExtraFile {
+        +int Id {pk}
+        +string OriginalFileName
+        +string StoredFileName
+        +string FilePath
+        +string Description
+        +ExtraFileType FileType {enum}
+        +long FileSize
+        +DateTime UploadDate
+        +int MusicFileId {fk}
+        +MusicFile MusicFile {nav}
+    }
+
+    enum ExtraFileType {
+        SheetMusic,     // Ноты
+        Tabs,           // Табулатуры
+        Lyrics,         // Текст песни
+        Chords,         // Аккорды
+        Image,          // Обложка/фото
+        Other           // Прочее
+    }
+    ExtraFile *--ExtraFileType
+    ' Связь между моделями
+    MusicFile "1" --o{ "0..*" ExtraFile : содержит >
+}
+
+' === 2. DTO (Data Transfer Objects) ===
+package "DTOs" #ddddff {
+
+}
+
+' === 3. СЛОЙ ДАННЫХ (Data Layer) ===
+package "Database" {
+    class AppDbContext {
+        +DbSet<MusicFile> MusicFiles
+        +DbSet<ExtraFile> ExtraFiles
+        +OnConfiguring(DbContextOptionsBuilder)
+        +OnModelCreating(ModelBuilder)
+    }
+
+    class DbContext {
+        #SaveChanges()
+        #DbSet<T> Set<T>()
+    }
+
+    AppDbContext --|> DbContext : наследует
+    AppDbContext --> MusicFile : возвращает
+    AppDbContext --> ExtraFile : возвращает
+}
+
+' === 4. СЛОЙ СЕРВИСОВ (Business Logic) ===
+package "Services" #ffdddd{
+    interface IMusicService {
+        +UploadAsync(CreateMusicFileDTO)
+        +GetAllAsync()
+        +GetMusicFileAsync(int)
+        +DeleteMusicFileAsync(int)
+    }
+
+    class MusicService {
+        -AppDbContext _context
+        -IUploadServiceFactory _uploadFactory
+        +MusicService(AppDbContext, IUploadServiceFactory)
+        +UploadAsync(CreateMusicFileDTO) : Task<MusicFileDTO>
+        +GetAllAsync() : Task<List<MusicFileDTO>>
+        +GetMusicFileAsync(int) : Task<MusicFileDTO?>
+        +DeleteMusicFileAsync(int) : Task<bool>
+        -ConvertToDTOs
+    }
+
+    interface IExtraFileService {
+        +UploadExtraFileAsync(int, UploadExtraFileDTO)
+        +GetByMusicFileIdAsync(int)
+        +DeleteExtraFileAsync(int)
+    }
+
+    class ExtraFileService {
+        -AppDbContext _context
+        -IUploadServiceFactory _uploadFactory
+        +ExtraFileService(AppDbContext, IUploadServiceFactory)
+        +UploadExtraFileAsync(int, UploadExtraFileDTO) : Task<ExtraFileDTO>
+        +GetByMusicFileIdAsync(int) : Task<List<ExtraFileDTO>>
+        +DeleteExtraFileAsync(int) : Task<bool>
+        -ConvertToDTOs
+    }
+    DTOs -- ExtraFileService : возвращает
+    DTOs -- MusicService  : возвращает
+    interface IUploadServiceFactory {
+        +CreateUploadService(string) : IUploadService
+    }
+
+    class UploadServiceFactory {
+        +CreateUploadService(string) : IUploadService
+    }
+
+    IMusicService <|.. MusicService : реализует
+    IExtraFileService <|.. ExtraFileService : реализует
+    IUploadServiceFactory <|.. UploadServiceFactory : реализует
+
+    MusicService o--> AppDbContext
+    ExtraFileService o--> AppDbContext
+    MusicService --> IUploadServiceFactory : использует
+    ExtraFileService --> IUploadServiceFactory : использует
+    
+    ' Связи с DTO
+
+}
+
+' === 5. СЛОЙ КОНТРОЛЛЕРОВ (API Layer) ===
+package "Controllers" #ddffdd {
+    class MusicController {
+        -IMusicService _musicService
+        +MusicController(IMusicService)
+        +GetAll()
+        +GetById(int)
+        +Upload([FromForm]CreateMusicFileDTO)
+        +Update(int, UpdateMusicFileDTO) 
+        +Delete(int)
+    }
+
+    class ExtraFilesController {
+        -IExtraFileService _extraFileService
+        +ExtraFilesController(IExtraFileService)
+        +UploadExtraFile(int, [FromForm]UploadExtraFileDTO)
+        +GetByMusicFile(int)
+        +Delete(int)
+    }
+
+    MusicController --> IMusicService : зависит от
+    ExtraFilesController --> IExtraFileService : зависит от
+    
+    ' Связи контроллеров с DTO
+
+}
+
+
+' === ПРЕОБРАЗОВАНИЯ МЕЖДУ СУЩНОСТЯМИ И DTO ===
+
+
+@enduml

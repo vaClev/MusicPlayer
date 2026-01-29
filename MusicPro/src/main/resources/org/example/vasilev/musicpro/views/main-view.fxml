@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<?import javafx.geometry.Insets?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.vasilev.musicpro.controllers.MainController"
+      spacing="20" prefWidth="1000" prefHeight="700"
+      fx:id="root">
+
+    <!-- Шапка приложения -->
+    <HBox styleClass="header" spacing="20" alignment="CENTER_LEFT">
+        <Label text="🎵 MusicPro v0.1" styleClass="app-title"/>
+        <HBox spacing="10" HBox.hgrow="ALWAYS">
+            <Button text="Обновить список из JSON" onAction="#handleRefresh"/>
+            <Button text="GET ALL с сервера" onAction="#handleGetAll"/>
+        </HBox>
+        <Label fx:id="statusLabel" styleClass="status-label"/>
+    </HBox>
+
+    <!-- Разделитель на 2 зоны -->
+    <SplitPane orientation="VERTICAL"
+               dividerPositions="0.75"
+    VBox.vgrow="ALWAYS">
+
+        <!-- Верхняя область (75%): Контейнер для карточек песен (вертикальный) -->
+        <ScrollPane fitToWidth="true"
+                    hbarPolicy="NEVER"
+                    vbarPolicy="AS_NEEDED"
+                    VBox.vgrow="ALWAYS">
+
+            <VBox fx:id="songsContainer" styleClass="songs-container"
+                  spacing="10"
+                  alignment="TOP_CENTER">
+                <padding>
+                    <Insets top="10" right="10" bottom="10" left="10"/>
+                </padding>
+
+                <!-- Карточки песен будут добавляться сюда -->
+            </VBox>
+        </ScrollPane>
+
+        <!-- Нижняя область (25%): Плеер -->
+        <VBox fx:id="playerContainer" styleClass="player-area">
+            <!-- Плеер будет загружен сюда программно -->
+        </VBox>
+    </SplitPane>
+
+    <!-- Статус бар -->
+    <Label text="Разработано с ❤️ | День 3: Кое-что тянем с сервера"
+           styleClass="footer"/>
+
+</VBox>

@@ -1,0 +1,84 @@
+@startuml MusicDatabaseSchema
+
+' Настройки отображения
+hide circle
+skinparam linetype ortho
+skinparam packageStyle rectangle
+left to right direction
+
+' Основная сущность: музыкальный файл
+entity MusicFile {
+  * id : INT <<PK>>
+  --
+  * filename : TEXT
+  * filepath : TEXT
+  * title : TEXT
+  * artist : TEXT
+  album : TEXT
+  year : INT
+  genre : TEXT
+  * filesize : BIGINT
+  * duration : INTERVAL
+  * uploadDate : TIMESTAMP WITH TIME ZONE
+}
+
+' Сущность дополнительных файлов
+entity ExtraFile {
+  * Id : INT <<PK>>
+  --
+  * OriginalFileName : TEXT
+  * StoredFileName : TEXT
+  * FilePath : TEXT
+  * Description : TEXT
+  * FileType : INT
+  * FileSize : BIGINT
+  * UploadDate : TIMESTAMP WITH TIME ZONE
+  * MusicFileId : INT <<FK>>
+}
+
+' Определение связи один-ко-многим
+MusicFile ||--o{ ExtraFile : "имеет"
+
+' Примечания и пояснения
+note top of MusicFile
+  Основная сущность - аудиофайл
+  * - обязательные поля
+  PK - первичный ключ
+end note
+
+note top of ExtraFile
+  Дополнительные файлы (ноты, тексты)
+  FK - внешний ключ к MusicFile.id
+  Связь: один MusicFile → много ExtraFile
+end note
+
+' Блок с примерами данных
+package "Пример данных" {
+  entity "MusicFile #1" as MF1 {
+    Bohemian Rhapsody
+    --
+    Queen
+    A Night at the Opera
+    1975
+  }
+  
+  entity "ExtraFile #1" as EF1 {
+    Ноты для фортепиано
+    --
+    piano.pdf
+    SheetMusic (0)
+  }
+  
+  entity "ExtraFile #2" as EF2 {
+    Текст песни
+    --
+    lyrics.txt
+    Lyrics (2)
+  }
+}
+
+' Показать связи с примерами
+MF1 --> EF1 : содержит
+MF1 --> EF2 : содержит
+
+@enduml

@@ -221,6 +221,9 @@ project.lock.json
 # UWP Projects
 AppPackages/
 
+#Директория c раскакованным JDK
+*/javafx-sdk-21.0.9/*
 #####
 # End of core ignore list, below put you custom 'per project' settings (patterns or path)
 #####
+Windows\ BUILD/OpenJDK21U-jdk_x64_windows_hotspot_21.0.9_10.msi
