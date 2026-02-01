@@ -46,6 +46,11 @@ namespace MusicServer.API.Services
         {
             // 1. Проверяем расширение файла.
             var extension = m_uploadService.GetExtensionWithCheck(file); //может выбросить исключение
+            var fileExtension = await _context.FileExtensions
+                .FirstOrDefaultAsync(e => e.Extension == extension);
+            // 1.1 Проверка расширения. Что оно есть в таблице сервера. 
+            if (fileExtension == null)
+              throw new ArgumentException($"Неизвесное расширение файла, такие загружать на сервер нельзя {extension}");
 
             // 2. Создаем уникальное имя файла
             var fileName = Guid.NewGuid().ToString() + extension;
@@ -56,7 +61,8 @@ namespace MusicServer.API.Services
 
             // 4. Извлекаем метаданные из mp3
             MusicFile musicFile = ExtractMetadataAsync(filePath, fileName, file);
-
+            musicFile.FileExtensionId = fileExtension.Id;
+            
             // 5. Сохраняем в БД 
             // TODO вынести в отдельный класс MusicFileDBHelper для возможности отвязаться от EntityFramework
             //Подмена пути на короткий для сохранения в БД
@@ -119,6 +125,7 @@ namespace MusicServer.API.Services
         private async Task<MusicFile> GetMusicFileEntityAsync(int id)
         {
             var musicFile = await _context.MusicFiles
+                .Include(mf => mf.FileExtension)// Включить объект расширение
                 .Include(mf => mf.ExtraFiles)// Включить связанные допфайлы
                 .FirstOrDefaultAsync(mf => mf.id == id);
 
@@ -144,6 +151,7 @@ namespace MusicServer.API.Services
         private async Task<IEnumerable<MusicFile>> GetAllMusicFilesEntitiesAsync()
         {
             return await _context.MusicFiles
+               .Include(mf => mf.FileExtension)// Включить объект расширение
                .OrderByDescending(m => m.uploadDate)
                .ToListAsync();
         }
@@ -193,6 +201,7 @@ namespace MusicServer.API.Services
                 Id = musicFile.id,
                 Title = musicFile.title,
                 Artist = musicFile.artist,
+                Extension = musicFile.FileExtension.Extension,
                 Album = musicFile.album,
                 Genre = musicFile.genre,
                 Year = musicFile.year,
@@ -211,6 +220,7 @@ namespace MusicServer.API.Services
                 Id = musicFile.id,
                 Title = musicFile.title,
                 Artist = musicFile.artist,
+                Extension = musicFile.FileExtension.Extension,
                 Album = musicFile.album,
                 Genre = musicFile.genre,
                 Year = musicFile.year,
@@ -237,7 +247,8 @@ namespace MusicServer.API.Services
             return new DownloadFileDto
             {
                 FilenameForSend = $"{musicFile.artist}-{musicFile.title}",
-                Filepath = musicFile.filepath
+                Filepath = musicFile.filepath,
+                Extension = musicFile.FileExtension
             };
         }
     }

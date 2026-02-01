@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using MusicServer.API.Models;
 
 namespace MusicServer.API.DTO
 {
@@ -10,6 +11,9 @@ namespace MusicServer.API.DTO
 
         [Required]
         public string Filepath { get; set; }
+
+        [Required]
+        public FileExtension Extension { get; set; }
 
     }
 } // namespace MusicServer.API.DTO

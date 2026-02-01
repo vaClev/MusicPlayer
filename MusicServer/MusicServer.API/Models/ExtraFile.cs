@@ -43,5 +43,14 @@ namespace MusicServer.API.Models
         // Навигационное свойство - внешний ключ.
         [ForeignKey("MusicFileId")]
         public virtual MusicFile MusicFile { get; set; }
+
+
+        // Любой файл имеет конкретное расширение
+        // Внешний ключ для расширения файла
+        public int? FileExtensionId { get; set; }
+
+        // Навигационное свойство
+        [ForeignKey("FileExtensionId")]
+        public virtual FileExtension FileExtension { get; set; }
     }
 }

@@ -82,6 +82,10 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     dbContext.Database.EnsureCreated(); // Создает БД если её нет
+
+    // ЗАПУСК СИДИНГА
+    SeedFileExtensions.Seed(dbContext);
+
 }
 
 app.Run();
