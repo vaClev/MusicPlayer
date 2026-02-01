@@ -45,6 +45,11 @@ namespace MusicServer.API.Services
 
             // 1. Проверяем расширение файла.
             var extension = m_uploadService.GetExtensionWithCheck(uploadDto.File);
+            var fileExtension = await _context.FileExtensions
+                .FirstOrDefaultAsync(e => e.Extension == extension);
+            // 1.1 Проверка расширения. Что оно есть в таблице сервера. 
+            if (fileExtension == null)
+                throw new ArgumentException($"Неизвесное расширение файла, такие загружать на сервер нельзя {extension}");
 
             // 2. Создаем уникальное имя файла
             var fileName = Guid.NewGuid().ToString() + extension;
@@ -66,8 +71,9 @@ namespace MusicServer.API.Services
                 Description = uploadDto.Description,
                 FileType = uploadDto.FileType,
                 FileSize = uploadDto.File.Length,
+                UploadDate = DateTime.UtcNow,
                 MusicFileId = uploadDto.MusicFileId,
-                UploadDate = DateTime.UtcNow
+                FileExtensionId = fileExtension.Id
             };
             _context.ExtraFiles.Add(extraFile);
             await _context.SaveChangesAsync();
@@ -106,6 +112,7 @@ namespace MusicServer.API.Services
         private async Task<ExtraFile> GetExtraFileEntityAsync(int extraFileId)
         {
             var extraFile =  await _context.ExtraFiles
+                .Include(ef => ef.FileExtension)
                 .Include(ef => ef.MusicFile)
                 .FirstOrDefaultAsync(ef => ef.Id == extraFileId);
 
@@ -154,6 +161,7 @@ namespace MusicServer.API.Services
             {
                 Id = extraFile.Id,
                 OriginalFileName = extraFile.OriginalFileName,
+                Extension = extraFile.FileExtension.Extension,
                 Description = extraFile.Description,
                 FileType = extraFile.FileType,
                 FileSize = extraFile.FileSize,
@@ -170,7 +178,8 @@ namespace MusicServer.API.Services
             return new DownloadFileDto
             {
                 FilenameForSend = $"{extraFile.MusicFile.artist}-{extraFile.MusicFile.title} - {extraFile.OriginalFileName}",
-                Filepath = extraFile.FilePath
+                Filepath = extraFile.FilePath,
+                Extension = extraFile.FileExtension
             };
         }
     }

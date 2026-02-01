@@ -168,7 +168,8 @@ public class PlayerController implements IPlaylistOwner
                    PlaylistItemController controller = loader.getController();
                    controller.setPlaylistItem(item);
                    //controller.setOnPlayListener(this::playFromPlaylist);
-                   //controller.setOnRemoveListener(this::removeFromPlaylist);
+                   // Передаем callback с ID
+                   controller.setOnRemoveListener(() -> removeMusicFile(item.getId()));
 
                    // Помечаем текущий трек
                    if (i == currentPlaylistIndex)

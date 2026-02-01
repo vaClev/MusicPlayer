@@ -8,10 +8,13 @@
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="org.example.vasilev.musicpro.controllers.PlayerController"
       styleClass="player-container"
-      spacing="10">
+      spacing="10"
+      VBox.vgrow="ALWAYS"
+      maxHeight="Infinity">
 
     <!-- Верхняя панель плеера -->
-    <HBox styleClass="player-top-panel" spacing="15" alignment="CENTER">
+    <HBox styleClass="player-top-panel" spacing="15" alignment="CENTER"
+          minHeight="60"  prefHeight="60"  maxHeight="60">
 
         <!-- Кнопка выбора файла -->
         <Button fx:id="selectFileButton" text="📁 открыть локальный файл"
@@ -47,7 +50,8 @@
     </HBox>
 
     <!-- Нижняя панель плеера -->
-    <HBox styleClass="player-bottom-panel" spacing="15" alignment="CENTER">
+    <HBox styleClass="player-bottom-panel" spacing="15" alignment="CENTER"
+          VBox.vgrow="ALWAYS" maxHeight="Infinity">
 
         <!-- Контейнер плейлиста (слева) -->
         <VBox styleClass="playlist-container" spacing="2" minWidth="250" maxWidth="350">
@@ -57,7 +61,11 @@
             </HBox>
 
             <!-- Список песен в плейлисте -->
-            <ScrollPane styleClass="playlist-scroll" fitToWidth="true" vbarPolicy="AS_NEEDED">
+            <ScrollPane styleClass="playlist-scroll"
+                        fitToWidth="true"
+                        vbarPolicy="AS_NEEDED"
+                        maxHeight="Infinity"
+                        VBox.vgrow="ALWAYS">
                 <VBox fx:id="playlistContainer" styleClass="playlist-items" spacing="1"/>
             </ScrollPane>
 

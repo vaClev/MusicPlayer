@@ -101,6 +101,12 @@ public class DownloadService implements IDownloadService, AutoCloseable
         return null;
     }
 
+    @Override
+    public String getDefaultDownloadsFolder()
+    {
+        return defaultDownloadPath;
+    }
+
     /// //////////////////////////////////////////////////////////////
     /// Реализация IObservable
     /// /////////////////////////////////////////////////////////////

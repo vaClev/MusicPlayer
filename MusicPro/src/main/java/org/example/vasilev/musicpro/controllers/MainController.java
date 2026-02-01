@@ -1,15 +1,18 @@
 package org.example.vasilev.musicpro.controllers;
 
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import org.example.vasilev.musicpro.models.MusicFile;
 import org.example.vasilev.musicpro.services.*;
 import org.example.vasilev.musicpro.services.download.IDownloadService;
 import org.example.vasilev.musicpro.services.music.IMusicClientService;
+import org.example.vasilev.musicpro.utils.FolderOpener;
 import org.example.vasilev.musicpro.utils.Tests;
 
 import java.io.IOException;
@@ -189,5 +192,26 @@ public class MainController implements Initializable {
             statusLabel.setText("Ошибка загрузки: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    public void openFolder(ActionEvent actionEvent)
+    {
+        boolean success = FolderOpener.openFolder(
+                downloadService.getDefaultDownloadsFolder()
+        );
+
+        if (!success)
+            // Показываем путь для ручного открытия
+            showAlert("Не удалось открыть проводник",
+                    "откройте папку"+ downloadService.getDefaultDownloadsFolder());
+    }
+    private void showAlert(String title, String content) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.setContentText(content);
+            alert.showAndWait();
+        });
     }
 }

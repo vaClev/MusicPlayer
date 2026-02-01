@@ -87,7 +87,7 @@ namespace MusicServer.API.Controllers
                 if (!System.IO.File.Exists(extraFile.Filepath))
                     return NotFound($"файл id={id} не найден на диске");
 
-                var contentType = GetContentType(extraFile.Filepath);
+                var contentType = extraFile.Extension.MimeType;
 
                 return PhysicalFile(extraFile.Filepath, contentType, extraFile.FilenameForSend);
             }
@@ -99,24 +99,6 @@ namespace MusicServer.API.Controllers
             {
                 return StatusCode(500, "Internal server error");
             }
-        }
-
-        private string GetContentType(string filePath)
-        {
-            var extension = Path.GetExtension(filePath).ToLowerInvariant();
-
-            return extension switch
-            {
-                ".pdf" => "application/pdf",
-                ".txt" => "text/plain",
-                ".jpg" or ".jpeg" => "image/jpeg",
-                ".png" => "image/png",
-                ".gif" => "image/gif",
-                ".gpx" or ".gp" or ".gp3" or ".gp4" or ".gp5" => "application/xml",
-                ".doc" => "application/msword",
-                ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                _ => "application/octet-stream"
-            };
         }
     }
 }
