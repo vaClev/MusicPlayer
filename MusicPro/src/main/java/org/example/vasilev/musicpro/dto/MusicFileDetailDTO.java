@@ -19,6 +19,9 @@ public class MusicFileDetailDTO
     @SerializedName("artist")
     private String artist;
 
+    @SerializedName("extension")
+    private String extension;
+
     @SerializedName("album")
     private String album;
 
@@ -44,12 +47,13 @@ public class MusicFileDetailDTO
     public MusicFileDetailDTO() {
     }
 
-    public MusicFileDetailDTO(Long id, String title, String artist, String album, String genre,
+    public MusicFileDetailDTO(Long id, String title, String artist, String extension, String album, String genre,
                               Integer year, String duration, String uploadDate,
                               String downloadMusicUrl, List<ExtraFileDTO> extraFiles) {
         this.id = id;
         this.title = title;
         this.artist = artist;
+        this.extension = extension;
         this.album = album;
         this.genre = genre;
         this.year = year;
@@ -160,7 +164,7 @@ public class MusicFileDetailDTO
         }
 
         return new MusicFile(
-                id, title, artist, album, genre, year,
+                id, title, artist, album, extension, genre, year,
                 100L/*заглушка решить на сервере ошибку*/, duration, parsedDate, downloadMusicUrl,extractedExtraFiles);
     }
 

@@ -37,4 +37,7 @@ public interface IDownloadService extends IDownloadObservable
      * @return файл, сохраненный локально
      */
     CompletableFuture<File> downloadExtraFile(long extraFileId);
+
+    /// Вернуть путь к папке загрузок
+    String getDefaultDownloadsFolder();
 }

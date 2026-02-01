@@ -18,6 +18,7 @@ public class MusicFile
     private final LongProperty id;
     private final StringProperty title;
     private final StringProperty artist;
+    private final StringProperty extension;
     private final StringProperty album;
     private final StringProperty genre;
     private final IntegerProperty year;
@@ -37,7 +38,7 @@ public class MusicFile
 
 
     /// Конструктор для данных с сервера элемента "Списка песен"
-    public MusicFile(Long id, String title, String artist, String album,
+    public MusicFile(Long id, String title, String artist, String extension, String album,
                      String genre, Integer year, Long fileSize,
                      String duration, LocalDateTime uploadDate,
                      String downloadUrl)
@@ -45,6 +46,7 @@ public class MusicFile
         this.id = new SimpleLongProperty(id);
         this.title = new SimpleStringProperty(title);
         this.artist = new SimpleStringProperty(artist);
+        this.extension = new SimpleStringProperty(extension);
         this.album = new SimpleStringProperty(album != null ? album : "Unknown Album");
         this.genre = new SimpleStringProperty(genre != null ? genre : "Unknown");
         this.year = new SimpleIntegerProperty(year != null ? year : 0);
@@ -57,11 +59,11 @@ public class MusicFile
     }
 
     /// Конструктор для данных с сервера "Конкретная песня"
-    public MusicFile(Long id, String title, String artist, String album, String genre,
+    public MusicFile(Long id, String title, String artist, String extension, String album, String genre,
                      Integer year, Long fileSize, String duration, LocalDateTime uploadDate,
                      String downloadMusicUrl, List<ExtraFile> extraFiles)
     {
-        this(id, title, artist, album, genre, year, fileSize, duration, uploadDate, downloadMusicUrl);
+        this(id, title, artist, extension, album, genre, year, fileSize, duration, uploadDate, downloadMusicUrl);
         if (extraFiles != null)
             this.extraFiles.setAll(extraFiles);
     }
@@ -84,6 +86,7 @@ public class MusicFile
     public Long getId() { return id.get(); }
     public String getTitle() { return title.get(); }
     public String getArtist() { return artist.get(); }
+    public String getExtension() { return extension.get(); }
     public String getAlbum() { return album.get(); }
     public String getGenre() { return genre.get(); }
     public Integer getYear() { return year.get(); }

@@ -199,6 +199,9 @@
 /* ===== НИЖНЯЯ ПАНЕЛЬ ПЛЕЕРА ===== */
 .player-bottom-panel {
     -fx-padding: 10px 0 0 0;
+    -fx-vgrow: ALWAYS;         /* ДОБАВИТЬ: растягиваться */
+    -fx-min-height: 100px;     /* Минимальная высота */
+    -fx-max-height: Infinity;  /* Может расти */
 }
 
 /* ===== РАЗДЕЛИТЕЛЬ SPLITPANE ===== */
@@ -248,8 +251,11 @@
     -fx-border-radius: 8px;
     -fx-background-radius: 8px;
     -fx-padding: 8px;
-    -fx-min-height: 120px;
-    -fx-max-height: 120px;
+
+    -fx-min-height: 80px;      /* Минимальная высота */
+    -fx-pref-height: 120px;    /* Предпочтительная */
+    -fx-max-height: Infinity;  /* Может расти бесконечно */
+    -fx-vgrow: ALWAYS;         /* Растягиваться по вертикали */
 }
 
 .playlist-header {
@@ -315,8 +321,8 @@
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-padding: 0;
-    -fx-min-height: 70px;
-    -fx-max-height: 70px;
+    -fx-vgrow: ALWAYS;
+    -fx-max-height: Infinity;
 }
 
 .playlist-scroll .viewport {

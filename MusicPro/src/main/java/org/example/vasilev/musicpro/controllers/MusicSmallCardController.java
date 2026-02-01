@@ -11,6 +11,8 @@ import org.example.vasilev.musicpro.services.download.IDownloadService;
 import org.example.vasilev.musicpro.services.music.IMusicClientService;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -149,9 +151,17 @@ public class MusicSmallCardController
         progressBar.setVisible(true);
         statusLabel.setText("Скачивание...");
 
-        //String filepath = "норм имя с расширением"??
+        // Формируем полный путь к создаваемому файлу
+        Path filepathToSave = Paths.get(
+                downloadService.getDefaultDownloadsFolder(),
+                String.format("%s - %s%s",
+                        musicFile.getArtist(),
+                        musicFile.getTitle(),
+                        musicFile.getExtension())
+        );
+
         // Запускаем загрузку
-        CompletableFuture<File> downloadFuture = downloadService.downloadMusicFile(musicFile.getId());
+        CompletableFuture<File> downloadFuture = downloadService.downloadMusicFile(musicFile.getId(), filepathToSave.toString());
         downloadFuture.thenAccept(file -> {
             Platform.runLater(() -> {
                 musicFile.setDownloaded(true);

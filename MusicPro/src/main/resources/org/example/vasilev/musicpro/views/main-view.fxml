@@ -10,19 +10,23 @@
       fx:id="root">
 
     <!-- Шапка приложения -->
-    <HBox styleClass="header" spacing="20" alignment="CENTER_LEFT">
+    <VBox styleClass="header" spacing="20" alignment="CENTER_LEFT">
         <Label text="🎵 MusicPro v0.1" styleClass="app-title"/>
         <HBox spacing="10" HBox.hgrow="ALWAYS">
-            <Button text="Обновить список из JSON" onAction="#handleRefresh"/>
-            <Button text="GET ALL с сервера" onAction="#handleGetAll"/>
+            <Button text="JSON TEST" onAction="#handleRefresh"/>
+            <Button text="GET ALL" onAction="#handleGetAll"/>
+            <Button text="Открыть папку загрузок" onAction="#openFolder"/>
         </HBox>
         <Label fx:id="statusLabel" styleClass="status-label"/>
-    </HBox>
+    </VBox>
 
     <!-- Разделитель на 2 зоны -->
     <SplitPane orientation="VERTICAL"
                dividerPositions="0.75"
-    VBox.vgrow="ALWAYS">
+               VBox.vgrow="ALWAYS"
+               HBox.hgrow="ALWAYS"
+               maxWidth="Infinity"
+               maxHeight="Infinity">
 
         <!-- Верхняя область (75%): Контейнер для карточек песен (вертикальный) -->
         <ScrollPane fitToWidth="true"
@@ -42,13 +46,17 @@
         </ScrollPane>
 
         <!-- Нижняя область (25%): Плеер -->
-        <VBox fx:id="playerContainer" styleClass="player-area">
+        <VBox fx:id="playerContainer" styleClass="player-area"
+              VBox.vgrow="ALWAYS"
+              HBox.hgrow="ALWAYS"
+              maxWidth="Infinity"
+              maxHeight="Infinity">
             <!-- Плеер будет загружен сюда программно -->
         </VBox>
     </SplitPane>
 
     <!-- Статус бар -->
-    <Label text="Разработано с ❤️ | День 3: Кое-что тянем с сервера"
+    <Label text="Разработано с ❤️ | Oleg Vasilev"
            styleClass="footer"/>
 
 </VBox>
