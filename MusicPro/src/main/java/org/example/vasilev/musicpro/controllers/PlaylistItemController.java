@@ -18,11 +18,13 @@ public class PlaylistItemController
 
     private MusicFile musicFile;
 
+    private Runnable onRemoveListener;
 
     /// TODO можно по индексу
     public void handleRemove(ActionEvent actionEvent)
     {
-
+        if(onRemoveListener!=null)
+            onRemoveListener.run();
     }
 
     public void setPlaylistItem(MusicFile item)
@@ -36,5 +38,11 @@ public class PlaylistItemController
     public void setAsCurrent(boolean show)
     {
         currentIndicator.setVisible(show);
+    }
+
+    /// Установка callback для самоудаления из плейлиста
+    public void setOnRemoveListener(Runnable listener)
+    {
+        this.onRemoveListener = listener;
     }
 }
