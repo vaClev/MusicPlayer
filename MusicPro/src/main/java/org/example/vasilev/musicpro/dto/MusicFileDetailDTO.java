@@ -164,7 +164,7 @@ public class MusicFileDetailDTO
         }
 
         return new MusicFile(
-                id, title, artist, album, extension, genre, year,
+                id, title, artist, extension, album, genre, year,
                 100L/*заглушка решить на сервере ошибку*/, duration, parsedDate, downloadMusicUrl,extractedExtraFiles);
     }
 
