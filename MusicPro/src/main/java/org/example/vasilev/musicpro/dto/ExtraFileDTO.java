@@ -14,6 +14,9 @@ public class ExtraFileDTO
     @SerializedName("originalFileName")
     private String originalFileName;
 
+    @SerializedName("extension")
+    private String extension;
+
     @SerializedName("description")
     private String description;
 

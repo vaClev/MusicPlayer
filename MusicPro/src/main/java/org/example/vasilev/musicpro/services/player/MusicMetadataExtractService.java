@@ -34,7 +34,8 @@ public class MusicMetadataExtractService
                 fileId,
                 baseTitle,
                 "Неизвестный исполнитель",  // Временное значение
-                "",                          // Альбом
+                ".mp3",
+                "",                    // Альбом
                 "",                          // Жанр
                 0,                           // Год
                 audioFile.length(),          // размер файла

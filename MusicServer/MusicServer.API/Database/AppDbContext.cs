@@ -11,6 +11,9 @@ namespace MusicServer.API.Database
         {
         }
 
+        /// Таблица сущностей MusicServer.API.Models:::::FileExtensions - расширения файлов
+        public DbSet<FileExtension> FileExtensions { get; set; }
+
         /// Таблица сущностей MusicServer.API.Models:::::MusicFile
         public DbSet<MusicFile> MusicFiles { get; set; }
 
@@ -20,6 +23,20 @@ namespace MusicServer.API.Database
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // Настройка отношения одно расширение - ко многоим муз файлам
+            modelBuilder.Entity<MusicFile>()
+                .HasOne(m => m.FileExtension)
+                .WithMany(e => e.MusicFiles)
+                .HasForeignKey(m => m.FileExtensionId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Настройка отношения одно расширение - ко многоих доп файлам
+            modelBuilder.Entity<ExtraFile>()
+                .HasOne(e => e.FileExtension)
+                .WithMany(f => f.ExtraFiles)
+                .HasForeignKey(e => e.FileExtensionId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Настройка отношения один-ко - многим
             modelBuilder.Entity<ExtraFile>()

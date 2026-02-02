@@ -16,6 +16,9 @@ public class MusicFileDTO
     @SerializedName("artist")
     private String artist;
 
+    @SerializedName("extension")
+    private String extension;
+
     @SerializedName("album")
     private String album;
 
@@ -116,7 +119,7 @@ public class MusicFileDTO
             System.err.println("Ошибка парсинга даты: " + uploadDate);
         }
         return new MusicFile(
-                id, title, artist, album, genre, year,
+                id, title, artist, extension, album, genre, year,
                 fileSize, duration, parsedDate, downloadUrl
         );
     }

@@ -18,6 +18,8 @@ import org.example.vasilev.musicpro.services.download.IDownloadService;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -233,8 +235,17 @@ public class MusicDetailsController
         downloadProgress.setVisible(true);
         downloadStatusLabel.setText("Скачивание...");
 
+        // Формируем полный путь к создаваемому файлу
+        Path filepathToSave = Paths.get(
+                downloadService.getDefaultDownloadsFolder(),
+                String.format("%s - %s%s",
+                        currentMusicFile.getArtist(),
+                        currentMusicFile.getTitle(),
+                        currentMusicFile.getExtension())
+        );
+
         // Запускаем загрузку
-        CompletableFuture<File> downloadFuture = downloadService.downloadMusicFile(currentMusicFile.getId());
+        CompletableFuture<File> downloadFuture = downloadService.downloadMusicFile(currentMusicFile.getId(), filepathToSave.toString());
         downloadFuture.thenAccept(file ->
         {
             Platform.runLater(() ->

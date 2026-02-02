@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MusicServer.API.Models
 {
@@ -25,10 +26,14 @@ namespace MusicServer.API.Models
 
         public DateTime uploadDate { get; set; } = DateTime.UtcNow;
 
-        // Для будущих окружений, концертов (типо плейлистов)
-        //public virtual ICollection<Tracklist> tracklists { get; set; }
-
         // Навигационное свойство для ExtraFiles
         public virtual ICollection<ExtraFile> ExtraFiles { get; set; } = new List<ExtraFile>();
+
+        // Любой файл имеет конкретное расширение
+        // Внешний ключ для расширения файла
+        public int? FileExtensionId { get; set; }
+        // Навигационное свойство
+        [ForeignKey("FileExtensionId")]
+        public virtual FileExtension FileExtension { get; set; }
     }
 }

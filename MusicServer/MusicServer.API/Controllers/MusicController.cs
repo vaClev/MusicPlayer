@@ -99,22 +99,10 @@ namespace MusicServer.API.Controllers
             if (!System.IO.File.Exists(downloadFileInfo.Filepath))
                 return NotFound($"Файла с id={id} нет на диске");
 
-            string extension = Path.GetExtension(downloadFileInfo.Filepath).ToLower();
-            string contentType = GetContentType(extension);
+            string extension = downloadFileInfo.Extension.Extension;
+            string contentType = downloadFileInfo.Extension.MimeType;
 
             return PhysicalFile(downloadFileInfo.Filepath, contentType, $"{downloadFileInfo.FilenameForSend}{extension}");
-        }
-
-        private string GetContentType(string extension)
-        {
-            return extension switch
-            {
-                ".mp3" => "audio/mpeg",
-                ".wav" => "audio/wav",
-                ".flac" => "audio/flac",
-                ".ogg" => "audio/ogg",
-                _ => "application/octet-stream"
-            };
         }
         #endregion
 

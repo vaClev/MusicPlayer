@@ -8,6 +8,7 @@ namespace MusicServer.API.DTOs
     {
         public int Id { get; set; }
         public string OriginalFileName { get; set; }
+        public string Extension { get; set; }
         public string Description { get; set; }
         public ExtraFileType FileType { get; set; }
         public string FileTypeName => FileType.ToString();
