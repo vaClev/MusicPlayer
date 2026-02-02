@@ -20,6 +20,7 @@ entity MusicFile {
   * filesize : BIGINT
   * duration : INTERVAL
   * uploadDate : TIMESTAMP WITH TIME ZONE
+  * FileExtensionId : INT <<FK>>
 }
 
 ' Сущность дополнительных файлов
@@ -34,26 +35,72 @@ entity ExtraFile {
   * FileSize : BIGINT
   * UploadDate : TIMESTAMP WITH TIME ZONE
   * MusicFileId : INT <<FK>>
+  * FileExtensionId : INT <<FK>>
+}
+
+' Cущность: расширения файлов
+entity FileExtension {
+  * Id : INT <<PK>>
+  --
+  * Extension : VARCHAR(10)
+  * MimeType : VARCHAR(100)
+  * Category : VARCHAR(20)
+  Description : TEXT
 }
 
 ' Определение связи один-ко-многим
 MusicFile ||--o{ ExtraFile : "имеет"
+FileExtension ||--o{ MusicFile 
+FileExtension ||--o{ ExtraFile : "используется в"
 
 ' Примечания и пояснения
 note top of MusicFile
   Основная сущность - аудиофайл
   * - обязательные поля
   PK - первичный ключ
+  FK - внешний ключ к FileExtension
 end note
 
 note top of ExtraFile
   Дополнительные файлы (ноты, тексты)
   FK - внешний ключ к MusicFile.id
+  FK2 - внешний ключ к FileExtension.id
   Связь: один MusicFile → много ExtraFile
+end note
+
+note top of FileExtension
+  Справочник расширений файлов
+  Extension: ".mp3", ".jpg", ".pdf"
+  MimeType: "audio/mpeg", "image/jpeg"
+  Один ко многим с MusicFile и ExtraFile
 end note
 
 ' Блок с примерами данных
 package "Пример данных" {
+   entity "FileExtension #1" as FE1 {
+    .mp3
+    --
+    audio/mpeg
+    audio
+    MP3 Audio
+  }
+  
+  entity "FileExtension #2" as FE2 {
+    .pdf
+    --
+    application/pdf
+    document
+    PDF Document
+  }
+  
+  entity "FileExtension #3" as FE3 {
+    .jpg
+    --
+    image/jpeg
+    image
+    JPEG Image
+  }
+
   entity "MusicFile #1" as MF1 {
     Bohemian Rhapsody
     --
@@ -78,7 +125,11 @@ package "Пример данных" {
 }
 
 ' Показать связи с примерами
+FE1 --> MF1 : используется для
 MF1 --> EF1 : содержит
 MF1 --> EF2 : содержит
+FE2 --> EF1 : используется для
+FE3 --> EF2 : используется для
+
 
 @enduml
