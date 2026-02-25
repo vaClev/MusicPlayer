@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Formats.Tar;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -60,7 +61,7 @@ namespace MusicServer.API.Services
             await m_uploadService.SaveFile(file, filePath);
 
             // 4. Извлекаем метаданные из mp3
-            MusicFile musicFile = ExtractMetadataAsync(filePath, fileName, file);
+            MusicFile musicFile = await ExtractMetadataAsync(filePath, fileName, file);
             musicFile.FileExtensionId = fileExtension.Id;
             
             // 5. Сохраняем в БД 
@@ -75,7 +76,7 @@ namespace MusicServer.API.Services
 
         // TODO создать класс обертку для этой функции.
         // зависит от библиотеки TagLib
-        private MusicFile ExtractMetadataAsync(string filePath, string fileName, IFormFile originalFile)
+        private async Task<MusicFile> ExtractMetadataAsync(string filePath, string fileName, IFormFile originalFile)
         {
             var musicFile = new MusicFile
             {
@@ -91,9 +92,9 @@ namespace MusicServer.API.Services
                 using (var tagFile = TagLib.File.Create(filePath))
                 {
                     musicFile.title = tagFile.Tag.Title ?? Path.GetFileNameWithoutExtension(originalFile.FileName);
-                    musicFile.artist = tagFile.Tag.FirstPerformer ?? "Unknown Artist";
+                    musicFile.artist = await GetOrCreateArtistAsync(tagFile.Tag.FirstPerformer);
                     musicFile.album = tagFile.Tag.Album ?? "Unknown Album";
-                    musicFile.genre = tagFile.Tag.FirstGenre;
+                    musicFile.genre = await GetOrCreateGenreAsync(tagFile.Tag.FirstGenre);
                     musicFile.year = (int?)tagFile.Tag.Year;
                     musicFile.duration = tagFile.Properties.Duration;
                 }
@@ -103,14 +104,72 @@ namespace MusicServer.API.Services
                 // Если не удалось извлечь метаданные, используем информацию из имени файла
                 Console.WriteLine($"Ошибка извлечения метаданных: {ex.Message}");
                 musicFile.title = Path.GetFileNameWithoutExtension(originalFile.FileName);
-                musicFile.artist = "Unknown Artist";
+                musicFile.artist = await GetOrCreateArtistAsync("Unknown Artist");
                 musicFile.album = "Unknown Album";
+                musicFile.genre = await GetOrCreateGenreAsync("Unknown Genre");
                 musicFile.duration = TimeSpan.Zero;
             }
 
             return musicFile;
         }
 
+        #region "работа с исполнителем и жанром"
+        //TODO вынести в отдельный класс?
+
+        /// Получить или создать исполнителя в БД
+        private async Task<Artist> GetOrCreateArtistAsync(string artistName)
+        {
+            if (string.IsNullOrWhiteSpace(artistName))
+                artistName = "Unknown Artist";
+
+            // Ищем существующего исполнителя
+            // TODO проверять альтернативное написание - не плодить дубликаты
+            var artist = await _context.Artists
+                .FirstOrDefaultAsync(a => a.Name == artistName);
+
+            if (artist == null)
+            {
+                // Создаем нового исполнителя
+                artist = new Artist
+                {
+                    Name = artistName,
+                    Bio = "",
+                    Country = ""
+                };
+
+                _context.Artists.Add(artist);
+                await _context.SaveChangesAsync(); // Сохраняем чтобы присвоить ID
+            }
+
+            return artist;
+        }
+
+        /// Получить или создать жанр в БД
+        private async Task<Genre> GetOrCreateGenreAsync(string genreName)
+        {
+            if (string.IsNullOrWhiteSpace(genreName))
+                genreName = "Unknown Genre";
+
+            // Ищем существующий жанр
+            var genre = await _context.Genres
+                .FirstOrDefaultAsync(g => g.Name == genreName);
+
+            if (genre == null)
+            {
+                // Создаем новый жанр
+                genre = new Genre
+                {
+                    Name = genreName,
+                    Description = ""
+                };
+
+                _context.Genres.Add(genre);
+                await _context.SaveChangesAsync(); // Сохраняем чтобы присвоить ID
+            }
+
+            return genre;
+        }
+        #endregion
 
         // Получить MusicFile(карточку)
         public async Task<MusicFileWithExtrasDto> GetMusicFileAsync(int id)
@@ -126,7 +185,9 @@ namespace MusicServer.API.Services
         {
             var musicFile = await _context.MusicFiles
                 .Include(mf => mf.FileExtension)// Включить объект расширение
-                .Include(mf => mf.ExtraFiles)// Включить связанные допфайлы
+                .Include(mf => mf.artist)       // Включить объект исолнитель
+                .Include(mf => mf.genre)        // Включить объект жанр
+                .Include(mf => mf.ExtraFiles)   // Включить связанные допфайлы
                 .FirstOrDefaultAsync(mf => mf.id == id);
 
             if (musicFile == null)
@@ -152,6 +213,8 @@ namespace MusicServer.API.Services
         {
             return await _context.MusicFiles
                .Include(mf => mf.FileExtension)// Включить объект расширение
+               .Include(mf => mf.artist)       // Включить объект исолнитель
+               .Include(mf => mf.genre)        // Включить объект жанр
                .OrderByDescending(m => m.uploadDate)
                .ToListAsync();
         }
@@ -200,10 +263,10 @@ namespace MusicServer.API.Services
             {
                 Id = musicFile.id,
                 Title = musicFile.title,
-                Artist = musicFile.artist,
+                Artist = musicFile.artist.Name,
                 Extension = musicFile.FileExtension.Extension,
                 Album = musicFile.album,
-                Genre = musicFile.genre,
+                Genre = musicFile.genre.Name,
                 Year = musicFile.year,
                 FileSize = musicFile.filesize,
                 Duration = musicFile.duration,
@@ -219,10 +282,10 @@ namespace MusicServer.API.Services
             {
                 Id = musicFile.id,
                 Title = musicFile.title,
-                Artist = musicFile.artist,
+                Artist = musicFile.artist.Name,
                 Extension = musicFile.FileExtension.Extension,
                 Album = musicFile.album,
-                Genre = musicFile.genre,
+                Genre = musicFile.genre.Name,
                 Year = musicFile.year,
                 Duration = musicFile.duration,
                 UploadDate = musicFile.uploadDate,
@@ -246,7 +309,7 @@ namespace MusicServer.API.Services
         {
             return new DownloadFileDto
             {
-                FilenameForSend = $"{musicFile.artist}-{musicFile.title}",
+                FilenameForSend = $"{musicFile.artist.Name}-{musicFile.title}",
                 Filepath = musicFile.filepath,
                 Extension = musicFile.FileExtension
             };

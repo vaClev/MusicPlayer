@@ -131,10 +131,10 @@ namespace MusicServer.API.Controllers
                 filename = "test_song.mp3",
                 filepath = "/music/test_song.mp3",
                 title = "Test Song",
-                artist = "Test Artist",
+                artist = new Artist(),
                 album = "Test Album",
                 year = 2024,
-                genre = "Test Genre",
+                genre = new Genre(),
                 filesize = 1024000, // 1MB
                 duration = TimeSpan.FromMinutes(3.5)
             };

@@ -16,10 +16,19 @@ namespace MusicServer.API.Models
         public string filepath { get; set; }
 
         public string title { get; set; }
-        public string artist { get; set; }
+
+        // Внешний ключ на Artist
+        public int ArtistId { get; set; }
+        [ForeignKey("ArtistId")]
+        public virtual Artist artist { get; set; }
+
         public string? album { get; set; }
         public int? year { get; set; }
-        public string? genre { get; set; }
+
+        // Внешний ключ на Genre
+        public int GenreId { get; set; }
+        [ForeignKey("GenreId")]
+        public virtual Genre genre { get; set; }
 
         public long filesize { get; set; }
         public TimeSpan duration { get; set; }

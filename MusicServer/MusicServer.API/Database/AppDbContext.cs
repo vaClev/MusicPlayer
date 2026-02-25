@@ -14,6 +14,12 @@ namespace MusicServer.API.Database
         /// Таблица сущностей MusicServer.API.Models:::::FileExtensions - расширения файлов
         public DbSet<FileExtension> FileExtensions { get; set; }
 
+        /// Таблица сущностей MusicServer.API.Models:::::Artist - исполнитель
+        public DbSet<Artist> Artists { get; set; }
+
+        /// Таблица сущностей MusicServer.API.Models:::::Genre - жанр
+        public DbSet<Genre> Genres { get; set; }
+
         /// Таблица сущностей MusicServer.API.Models:::::MusicFile
         public DbSet<MusicFile> MusicFiles { get; set; }
 
@@ -23,6 +29,21 @@ namespace MusicServer.API.Database
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // Настройка индексов для поиска
+            modelBuilder.Entity<Artist>()
+                .HasIndex(a => a.Name)
+                .HasDatabaseName("IX_Artists_Name");
+
+            modelBuilder.Entity<Genre>()
+                .HasIndex(g => g.Name)
+                .HasDatabaseName("IX_Genres_Name");
+
+            modelBuilder.Entity<MusicFile>()
+                .HasIndex(m => m.title)
+                .HasDatabaseName("IX_MusicFiles_Title");
+
+
 
             // Настройка отношения одно расширение - ко многоим муз файлам
             modelBuilder.Entity<MusicFile>()
@@ -37,6 +58,20 @@ namespace MusicServer.API.Database
                 .WithMany(f => f.ExtraFiles)
                 .HasForeignKey(e => e.FileExtensionId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // Настройка отношения один исполнитель - ко многим муз файлам
+            modelBuilder.Entity<MusicFile>()
+                .HasOne(m => m.artist)
+                .WithMany(a => a.MusicFiles)
+                .HasForeignKey(m => m.ArtistId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Настройка отношения один жанр - ко многим муз файлам
+            modelBuilder.Entity<MusicFile>()
+               .HasOne(m => m.genre)
+               .WithMany(g => g.MusicFiles)
+               .HasForeignKey(m => m.GenreId)
+               .OnDelete(DeleteBehavior.SetNull);
 
             // Настройка отношения один-ко - многим
             modelBuilder.Entity<ExtraFile>()

@@ -85,7 +85,7 @@ using (var scope = app.Services.CreateScope())
 
     // ЗАПУСК СИДИНГА
     SeedFileExtensions.Seed(dbContext);
-
+    SeedArtists.Seed(dbContext);
 }
 
 app.Run();
