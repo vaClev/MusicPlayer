@@ -1,0 +1,64 @@
+@startuml
+!define RECTANGLE class
+
+' === Стилизация ===
+skinparam component {
+  BackgroundColor White
+  BorderColor #2E3436
+}
+
+skinparam database {
+  BackgroundColor LightBlue
+  BorderColor #2E3436
+}
+
+skinparam node {
+  BackgroundColor LightGray
+  BorderColor #2E3436
+}
+
+' === Компоненты системы ===
+node "Клиентское приложение" as Client {
+  component "JavaFX UI" as JavaFXUI
+  component "Контроллеры" as Controllers
+  component "Сервисы" as ClientServices
+  component "Модели" as ClientModels
+  component "HTTP Клиент" as HttpClient
+}
+
+database "PostgreSQL" as DB {
+  file "MusicFile"
+  file "ExtraFile" 
+  file "FileExtension"
+}
+
+node "Сервер ASP.NET 9.0" as Server {
+  component "Контроллеры API" as APIControllers #LightGreen
+  component "Сервисы" as ServerServices #LightGreen
+  component "Модели" as ServerModels #LightGreen
+  component "Entity Framework" as EF #LightGreen
+  database "БД контекст" as DbContext #LightGreen
+}
+
+' === Связи ===
+Client -right-> Server : "HTTP/REST API"
+Server -down-> DB : "Entity Framework"
+DB -up-> Server : "SQL"
+
+' === Детали связей ===
+HttpClient --> APIControllers : "JSON запросы/ответы"
+APIControllers --> ServerServices : "использует"
+ServerServices --> ServerModels : "работает с"
+ServerServices --> DbContext : "запросы"
+DbContext --> EF : "ORM"
+EF --> DB : "SQL"
+
+' === Легенда ===
+legend right
+  |= Компонент |= Технология |
+  | Клиент | JavaFX 21+ |
+  | Сервер | ASP.NET Core 9.0 |
+  | База данных | PostgreSQL 15+ |
+end legend
+
+@enduml
