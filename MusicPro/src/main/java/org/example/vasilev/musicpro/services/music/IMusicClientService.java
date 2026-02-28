@@ -1,5 +1,6 @@
 package org.example.vasilev.musicpro.services.music;
 
+import org.example.vasilev.musicpro.dto.MusicPageDTO;
 import org.example.vasilev.musicpro.models.MusicFile;
 
 import java.util.List;
@@ -9,11 +10,14 @@ public interface IMusicClientService
 {
     /**
      * Получить порцию музыкальных файлов с сервера
-     * @param page номер страницы (начиная с 0)
+     * @param pageNumber номер страницы (начиная с 0)
      * @param pageSize размер страницы
      * @return список музыкальных файлов
      */
-    CompletableFuture<List<MusicFile>> getMusicFiles(int page, int pageSize);
+    CompletableFuture<MusicPageDTO> getMusicFiles(int pageNumber, int pageSize);
+
+    //OLD версия для проверки
+    CompletableFuture<List<MusicFile>> getMusicFiles();
 
     /**
      * Получить следующую порцию музыкальных файлов

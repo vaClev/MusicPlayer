@@ -6,7 +6,11 @@ import org.example.vasilev.musicpro.utils.GsonFactory;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,6 +28,28 @@ public class APIClient
         this.gson = GsonFactory.createSimpleGson();
         this.downloadExecutor = Executors.newFixedThreadPool(threadsCount); // Отдельный пул для загрузок
     }
+
+    /// Построение URL с query параметрами
+    public static String buildUrlWithParams(String basePath, Map<String, String> params)
+    {
+        if (params == null || params.isEmpty()) {
+            return basePath;
+        }
+
+        StringBuilder urlBuilder = new StringBuilder(basePath);
+        urlBuilder.append("?");
+
+        List<String> paramPairs = new ArrayList<>();
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            String encodedKey = URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8);
+            String encodedValue = URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8);
+            paramPairs.add(encodedKey + "=" + encodedValue);
+        }
+
+        urlBuilder.append(String.join("&", paramPairs));
+        return urlBuilder.toString();
+    }
+
 
     /**
      * Выполнить GET запрос к API

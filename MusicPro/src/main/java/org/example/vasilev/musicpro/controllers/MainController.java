@@ -79,12 +79,12 @@ public class MainController implements Initializable {
     }
 
 
-    /// Тестовое получение данных с сервера
+    /// Тестовое получение данных с сервера OLD API GetALL
     private void testLoadAllFromServer()
     {
         songsContainer.getChildren().clear();
 
-        musicClientService.getMusicFiles(1,100).thenApplyAsync(
+        musicClientService.getMusicFiles().thenApplyAsync(
                 musicFiles->
                 {
                     List<VBox> cards = new ArrayList<>();
@@ -120,6 +120,47 @@ public class MainController implements Initializable {
                 });
     }
 
+    /// Тестовое получение данных с сервера NEW API с пагинацией
+    private void testLoadPageFromServer()
+    {
+        songsContainer.getChildren().clear();
+
+        musicClientService.getMusicFiles(1,10).thenApplyAsync(
+                        page->
+                        {
+                            List<VBox> cards = new ArrayList<>();
+                            for (MusicFile musicFile : page.toCardsList()) {
+                                try
+                                {
+                                    VBox card = createSongCard(musicFile);
+                                    cards.add(card);
+                                }
+                                catch (IOException e)
+                                {
+                                    // Логируем ошибку, но продолжаем создание других карточек
+                                    System.err.println("Ошибка создания карточки: " + e.getMessage());
+                                }
+                            }
+                            return cards;
+                        })
+                .thenAcceptAsync(cards -> {
+                    // Обновление UI только после создания всех карточек
+                    Platform.runLater(() -> {
+                        songsContainer.getChildren().addAll(cards);
+                        //showLoadingIndicator(false);
+                        //updateStatus("Загружено " + cards.size() + " песен");
+                    });
+                }, Platform::runLater) // Исполнять в UI потоке
+
+                .exceptionally(throwable -> {
+                    Platform.runLater(() -> {
+                        showAlert("Ошибка загрузки", throwable.getMessage());
+                        //showLoadingIndicator(false);
+                    });
+                    return null;
+                });
+    }
+
 
     private VBox createSongCard(MusicFile musicFile) throws IOException
     {
@@ -146,6 +187,13 @@ public class MainController implements Initializable {
     private void handleGetAll()
     {
         testLoadAllFromServer();
+        statusLabel.setText("Список обновлен с сервера. Папка загрузок: " + configService.getConfig().getDownloadDir());
+    }
+
+    @FXML
+    private void handleGetPage()
+    {
+        testLoadPageFromServer();
         statusLabel.setText("Список обновлен с сервера. Папка загрузок: " + configService.getConfig().getDownloadDir());
     }
 
