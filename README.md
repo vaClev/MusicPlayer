@@ -4,10 +4,14 @@ https://docs.google.com/document/d/1B5BQ3vxK5Hc6708G56_nAb37K9KFGfsFhen_pG0t9_w/
 -----
 API серверной части:
 -----
-1.  Получить всю коллекцию музыки  
+1.  Получить всю коллекцию музыки. New с пагинацией
 GET: 
 ```
-https://127.0.0.1:7044/api/Music
+https://127.0.0.1:7044/api/music
+или с параметрами
+http://127.0.0.1:5098/api/music?pageNumber=1&pageSize=10
+
+https://127.0.0.1:7044/api/music/all - старое API, как было на курсовой.
 ```
 
 2. Получить конкретный музыкальный файл по id
