@@ -206,17 +206,43 @@ namespace MusicServer.API.Services
                 .Select(mf => ToResponseDto(mf));
         }
 
-
-        // TODO продумать с учетом пагинации по 20 песен
-        // Получить все музыкальные файлы(сущности) из БД
+        //[OLD]
+        // Получить все музыкальные файлы(сущности) из БД 
         private async Task<IEnumerable<MusicFile>> GetAllMusicFilesEntitiesAsync()
         {
-            return await _context.MusicFiles
-               .Include(mf => mf.FileExtension)// Включить объект расширение
-               .Include(mf => mf.artist)       // Включить объект исолнитель
-               .Include(mf => mf.genre)        // Включить объект жанр
-               .OrderByDescending(m => m.uploadDate)
-               .ToListAsync();
+            return await GetMusicFilesQuery().ToListAsync();
+        }
+
+        //[NEW]
+        // C поддержкой пагинации
+        private IQueryable<MusicFile> GetMusicFilesQuery()
+        {
+            return _context.MusicFiles
+                .Include(mf => mf.FileExtension)
+                .Include(mf => mf.artist)
+                .Include(mf => mf.genre)
+                .OrderByDescending(m => m.uploadDate)
+                .AsNoTracking();
+        }
+
+        // Получить одну страницу с музыкальными файлами из библиотки
+        // может выбросить исключения
+        public async Task<PagedResponse<MusicFileResponseDto>> GetMusicFilesPageAsync(PaginationParams pageParams)
+        {
+            var query = GetMusicFilesQuery();
+            // Получаем общее количество (это быстрый запрос)
+            var totalCount = await query.CountAsync();
+
+            // Применяем пагинацию на уровне БД (эффективно!)
+            var pagedEntities = await query
+                .Skip((pageParams.PageNumber - 1) * pageParams.PageSize)
+                .Take(pageParams.PageSize)
+                .ToListAsync();
+
+            // Маппим в MusicFileResponseDto
+            var items = pagedEntities.Select(mf => ToResponseDto(mf)).ToList();
+
+            return new PagedResponse<MusicFileResponseDto>(items, totalCount, pageParams);
         }
 
 

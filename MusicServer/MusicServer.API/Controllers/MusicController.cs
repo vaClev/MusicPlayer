@@ -22,12 +22,55 @@ namespace MusicServer.API.Controllers
         }
 
         #region GetDTO
-        // GET: api/music
+
+        // GET: api/music/
+        //  или api/music?pageNumber=2&pageSize=5
+        /// Получить список песен с пагинацией
+        /// </summary>
+        /// <param name="pageNumber">Номер страницы (по умолчанию 1)</param>
+        /// <param name="pageSize">Размер страницы (по умолчанию 10, максимум 50)</param>
+        /// <returns>Список песен с информацией о пагинации</returns>
         [HttpGet]
+        public async Task<ActionResult<PagedResponse<MusicFileResponseDto>>> GetMusicFilesPage(
+            [FromQuery] PaginationParams paginationParams)
+        {
+            try
+            {
+                // Валидация входных параметров
+                var checkResult = paginationParams.Validate();
+                if (!checkResult.IsValid)
+                    return BadRequest(checkResult.ErrorMessage);
+
+                // Получаем данные из сервиса
+                var response = await _musicService.GetMusicFilesPageAsync(paginationParams);
+
+                // Перебираем все элементы и добавляем DownloadUrl'ы
+                foreach (var item in response.Items)
+                    item.DownloadUrl = Url.Action("Download", "Music", new { id = item.Id }, Request.Scheme);
+
+                // Добавляем информацию о пагинации в заголовки (для удобства)
+                Response.Headers.Append("X-Pagination-TotalCount", response.TotalCount.ToString());
+                Response.Headers.Append("X-Pagination-PageNumber", response.PageNumber.ToString());
+                Response.Headers.Append("X-Pagination-PageSize", response.PageSize.ToString());
+                Response.Headers.Append("X-Pagination-TotalPages", response.TotalPages.ToString());
+                Response.Headers.Append("X-Pagination-HasNext", response.HasNextPage.ToString());
+                Response.Headers.Append("X-Pagination-HasPrevious", response.HasPreviousPage.ToString());
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while processing your request");
+            }
+        }
+
+
+        // GET: api/music/all
+        [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<MusicFileResponseDto>>> GetMusicFiles()
         {
             var musicFiles = (await _musicService.GetAllMusicFilesAsync())
-                .Select(musicFile => 
+                .Select(musicFile =>
                 {
                     musicFile.DownloadUrl = Url.Action("Download", "Music", new { id = musicFile.Id }, Request.Scheme);
                     return musicFile;
