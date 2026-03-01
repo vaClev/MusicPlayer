@@ -23,7 +23,11 @@ https://127.0.0.1:7044/api/music/id5
 3.  Загрузить муз файл на сервер.
 POST: 
 ```
+один файл (смотри пример uploadForm.html)
 https://127.0.0.1:7044/api/music/upload
+
+пакетная загрузка, пачка файлов до 500Mb (смотри пример BatchUpload.html) 
+https://127.0.0.1:7044/api/music/upload/batch
 ```
 ```"AllowedExtensions": [ ".mp3", ".wav", ".flac", ".ogg" ]```
 
