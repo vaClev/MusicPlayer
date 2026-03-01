@@ -10,15 +10,18 @@ using MusicServer.API.DTOs;
 using MusicServer.API.Models;
 using MusicServer.API.Services.Upload;
 using TagLib;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MusicServer.API.Services
 {
     public class MusicService : IMusicService
     {
         private readonly AppDbContext _context;
-        private readonly IConfiguration _configuration; //TODO проверить можно без нее?
+        private readonly IConfiguration _configuration;
 
-        private readonly IUploadService m_uploadService;
+        private IUploadService? m_uploadService;
+        private readonly IUploadServiceFactory m_uploadServiceFactory;
+
         private readonly string m_pathPrefix;
         private readonly string m_folderName;
         //private readonly ILogger<ExtraFileService> _logger; TODO обдумать возможно стоит добавить
@@ -31,27 +34,41 @@ namespace MusicServer.API.Services
         {
             _context = context;
             _configuration = configuration;
-
-            string musicFolderFullSystemPath = _configuration.GetSection("MusicStorage:FullPath").Get<string>() ?? string.Empty; ;
-            var allowedExtensions = _configuration.GetSection("MusicStorage:AllowedExtensions").Get<string[]>() ?? new[] { string.Empty };
-            m_uploadService = uploadServiceFactory.Create(musicFolderFullSystemPath, allowedExtensions);
+            m_uploadServiceFactory = uploadServiceFactory;
 
             m_pathPrefix = _configuration.GetSection("MusicStorage:PrefixPath").Get<string>() ?? string.Empty;
             m_folderName = _configuration.GetSection("MusicStorage:Path").Value ?? string.Empty;
         }
 
+        private void LazyInitUploadService()
+        {
+            if (m_uploadService == null)
+            {
+                string musicFolderFullSystemPath = _configuration.GetSection("MusicStorage:FullPath").Get<string>() ?? string.Empty; ;
+                var allowedExtensions = _configuration.GetSection("MusicStorage:AllowedExtensions").Get<string[]>() ?? new[] { string.Empty };
+                m_uploadService = m_uploadServiceFactory.Create(musicFolderFullSystemPath, allowedExtensions);
+            }
+        }
 
         #region "Реализация интерфейса IMusicService"
         //Загрузка файла на сервер
         public async Task<MusicFileResponseDto> UploadMusicAsync([FromForm] IFormFile file)
         {
+            // 0. проверка на пустой файл
+            if (file.Length == 0)
+                throw new ArgumentException("Файл пустой");
+
+            LazyInitUploadService();
+            if (m_uploadService == null)
+                throw new Exception("Не удалось инициализировать Upload Service");
+
             // 1. Проверяем расширение файла.
             var extension = m_uploadService.GetExtensionWithCheck(file); //может выбросить исключение
             var fileExtension = await _context.FileExtensions
                 .FirstOrDefaultAsync(e => e.Extension == extension);
             // 1.1 Проверка расширения. Что оно есть в таблице сервера. 
             if (fileExtension == null)
-              throw new ArgumentException($"Неизвесное расширение файла, такие загружать на сервер нельзя {extension}");
+                throw new ArgumentException($"Неизвесное расширение файла, такие загружать на сервер нельзя {extension}");
 
             // 2. Создаем уникальное имя файла
             var fileName = Guid.NewGuid().ToString() + extension;
@@ -63,7 +80,7 @@ namespace MusicServer.API.Services
             // 4. Извлекаем метаданные из mp3
             MusicFile musicFile = await ExtractMetadataAsync(filePath, fileName, file);
             musicFile.FileExtensionId = fileExtension.Id;
-            
+
             // 5. Сохраняем в БД 
             // TODO вынести в отдельный класс MusicFileDBHelper для возможности отвязаться от EntityFramework
             //Подмена пути на короткий для сохранения в БД

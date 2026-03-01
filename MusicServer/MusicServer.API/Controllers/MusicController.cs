@@ -121,6 +121,49 @@ namespace MusicServer.API.Controllers
                 return BadRequest($"Ошибка загрузки: {ex.Message}");
             }
         }
+
+        //пакетная загрузка файлов на сервер
+        // TODO: сделать возможным только для авторизованных админов.
+        // POST: api/music/upload/batch
+        [HttpPost("upload/batch")]
+        [RequestSizeLimit(500_000_000)] // 500 MB максимум (например 100 файлов по 5 Mb)
+        public async Task<IActionResult> UploadMusicFilesBatch(List<IFormFile> files)
+        {
+            if (files == null || files.Count == 0)
+                return BadRequest(new { error = "No files selected" });
+
+            var results = new List<object>();
+            var errors = new List<object>();
+
+            foreach (var file in files)
+            {
+                try
+                {
+                    var musicFile = await _musicService.UploadMusicAsync(file);
+                    results.Add(new
+                    {
+                        musicFile.Id,
+                        musicFile.Title,
+                        musicFile.Artist,
+                        musicFile.Album,
+                        musicFile.Duration,
+                        Status = "Success"
+                    });
+                }
+                catch (Exception ex)
+                {
+                    errors.Add(new { fileName = file.FileName, error = ex.Message });
+                }
+            }
+            return Ok(new
+            {
+                TotalProcessed = files.Count,
+                SuccessCount = results.Count,
+                ErrorCount = errors.Count,
+                Results = results,
+                Errors = errors
+            });
+        }
         #endregion
 
         #region Download
