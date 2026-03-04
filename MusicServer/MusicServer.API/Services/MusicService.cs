@@ -193,6 +193,18 @@ namespace MusicServer.API.Services
 
         #endregion
 
+        #region Поиск музыки (Расширение интерфейса IMusicService)
+        public async Task<PagedResponse<MusicFileResponseDto>> SearchMusicFilesAsync(SearchParams searchParams)
+        {
+            var (items, totalCount) = await _repository.SearchAsync(searchParams);
+
+            var itemsDto = items.Select(ToResponseDto).ToList();
+
+            return new PagedResponse<MusicFileResponseDto>( itemsDto, totalCount, searchParams);
+        }
+        #endregion
+
+
         #region "Методы маппинга"
 
         private MusicFileResponseDto ToResponseDto(MusicFile musicFile)

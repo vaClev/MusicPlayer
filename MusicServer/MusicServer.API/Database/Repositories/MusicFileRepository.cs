@@ -151,6 +151,152 @@ namespace MusicServer.API.Database.Repositories
 				.FirstOrDefaultAsync(e => e.Extension == extension);
 		}
 
+
+		// Поиск
+		public async Task<(IEnumerable<MusicFile> items, int totalCount)> SearchAsync(SearchParams searchParams)
+		{
+			// Начинаем с базового запроса
+			var query = _context.MusicFiles
+				.Include(m => m.artist)
+				.Include(m => m.genre)
+				.Include(m => m.FileExtension)
+				.AsQueryable();
+
+			// ПРИМЕНЯЕМ ВСЕ ФИЛЬТРЫ
+			query = ApplySearchFilters(query, searchParams);
+
+			// Получаем общее количество ДО пагинации
+			var totalCount = await query.CountAsync();
+
+			// ПРИМЕНЯЕМ СОРТИРОВКУ
+			query = ApplySorting(query, searchParams);
+
+			// ПРИМЕНЯЕМ ПАГИНАЦИЮ
+			var items = await query
+				.Skip((searchParams.PageNumber - 1) * searchParams.PageSize)
+				.Take(searchParams.PageSize)
+				.ToListAsync();
+
+			return (items, totalCount);
+		}
+
+		/// Применение всех фильтров поиска
+		private IQueryable<MusicFile> ApplySorting(IQueryable<MusicFile> query, SearchParams searchParams)
+		{
+			// 1. Поиск по общему запросу (ищет в названии и исполнителе)
+			if (!string.IsNullOrWhiteSpace(searchParams.Query))
+			{
+				var searchTerm = searchParams.Query.Trim().ToLower();
+				query = query.Where(m =>
+					m.title.ToLower().Contains(searchTerm) ||
+					(m.artist != null && m.artist.Name.ToLower().Contains(searchTerm)));
+			}
+
+			// 2. Поиск по названию песни
+			if (!string.IsNullOrWhiteSpace(searchParams.Title))
+			{
+				if (searchParams.ExactMatch)
+				{
+					query = query.Where(m => m.title == searchParams.Title);
+				}
+				else
+				{
+					var searchTerm = searchParams.Title.Trim().ToLower();
+					query = query.Where(m => m.title.ToLower().Contains(searchTerm));
+				}
+			}
+
+			// 3. Поиск по исполнителю (по имени)
+			if (!string.IsNullOrWhiteSpace(searchParams.Artist))
+			{
+				if (searchParams.ExactMatch)
+				{
+					query = query.Where(m =>
+						m.artist != null && m.artist.Name == searchParams.Artist);
+				}
+				else
+				{
+					var searchTerm = searchParams.Artist.Trim().ToLower();
+					query = query.Where(m =>
+						m.artist != null && m.artist.Name.ToLower().Contains(searchTerm));
+				}
+			}
+
+			// 4. Поиск по ID исполнителя (точное совпадение)
+			if (searchParams.ArtistId.HasValue)
+			{
+				query = query.Where(m => m.ArtistId == searchParams.ArtistId);
+			}
+
+			// 5. Поиск по жанру (по имени)
+			if (!string.IsNullOrWhiteSpace(searchParams.Genre))
+			{
+				if (searchParams.ExactMatch)
+				{
+					query = query.Where(m =>
+						m.genre != null && m.genre.Name == searchParams.Genre);
+				}
+				else
+				{
+					var searchTerm = searchParams.Genre.Trim().ToLower();
+					query = query.Where(m =>
+						m.genre != null && m.genre.Name.ToLower().Contains(searchTerm));
+				}
+			}
+
+			// 6. Поиск по ID жанра (точное совпадение)
+			if (searchParams.GenreId.HasValue)
+			{
+				query = query.Where(m => m.GenreId == searchParams.GenreId);
+			}
+
+			// 7. Поиск по году
+			if (searchParams.Year.HasValue)
+			{
+				query = query.Where(m => m.year == searchParams.Year);
+			}
+
+			return query;
+		}
+
+		private IQueryable<MusicFile> ApplySearchFilters(IQueryable<MusicFile> query, SearchParams searchParams)
+		{
+			if (string.IsNullOrWhiteSpace(searchParams.SortBy))
+				searchParams.SortBy = "Title";
+
+			return searchParams.SortBy.ToLower() switch
+			{
+				"title" => searchParams.SortDesc
+					? query.OrderByDescending(m => m.title)
+					: query.OrderBy(m => m.title),
+
+				"artist" => searchParams.SortDesc
+					? query.OrderByDescending(m => m.artist.Name)
+					: query.OrderBy(m => m.artist.Name),
+
+				"album" => searchParams.SortDesc
+					? query.OrderByDescending(m => m.album)
+					: query.OrderBy(m => m.album),
+
+				"genre" => searchParams.SortDesc
+					? query.OrderByDescending(m => m.genre.Name)
+					: query.OrderBy(m => m.genre.Name),
+
+				"year" => searchParams.SortDesc
+					? query.OrderByDescending(m => m.year)
+					: query.OrderBy(m => m.year),
+
+				"duration" => searchParams.SortDesc
+					? query.OrderByDescending(m => m.duration)
+					: query.OrderBy(m => m.duration),
+
+				"uploaddate" => searchParams.SortDesc
+					? query.OrderByDescending(m => m.uploadDate)
+					: query.OrderBy(m => m.uploadDate),
+
+				_ => query.OrderBy(m => m.title) // По умолчанию по названию
+			};
+		}
 		#endregion
 
 		#region "Сохранение изменений"

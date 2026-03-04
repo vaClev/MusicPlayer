@@ -17,9 +17,12 @@ namespace MusicServer.API.Database
         Task<MusicFile?> GetByIdWithDetailsAsync(int id);
 
         // Пагинация с использованием PagedResponse
-        Task<List<MusicFile>> GetPagedAsync(PaginationParams pageParams);
+        Task<List<MusicFile>> GetPagedAsync(PaginationParams pageParams); // TODO тоже передавать int totalCount в возврате
 
-        
+        // Поиск
+        Task<(IEnumerable<MusicFile> items, int totalCount)> SearchAsync(SearchParams searchParams);
+
+
         // Работа со связанными сущностями TODO подумать о разделении ответственности
         Task<Artist> GetOrCreateArtistAsync(string artistName);
         Task<Genre> GetOrCreateGenreAsync(string genreName);

@@ -16,7 +16,7 @@ using MusicServer.API.Services.Upload;
 
 namespace MusicServer.API.Services
 {
-    public class MusicService_OLD : IMusicService
+    public class MusicService_OLD //: IMusicService
     {
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;

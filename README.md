@@ -90,3 +90,30 @@ GET:
 ```
 https://127.0.0.1:7044/api/extrafiles/id5
 ```
+
+9. Добавлены поисковые запросы. (Смотри все критерии поиска в файле SearchParams.cs)
+ПРИМЕРЫ ПОИСКОВЫХ ЗАПРОСОВ
+/// Простой поиск по названию/исполнителю - критерий "содержит"
+```
+   /api/search?query=blur
+```
+
+Поиск по точному названию песни: ```/api/search?title=Coffee%20And%20TV&exactMatch=true```
+
+* точное совпадение exactMatch=true можно добавлять в конце любого запроса
+
+Поиск по исполнителю: ```/api/search?artist=Blur``
+
+Поиск по жанру: ```/api/search?genre=Rock```
+
+Поиск по году: ```/api/search?year=2000```
+
+Комбинированный поиск: исполнитель + год + пагинация: ```/api/search?artist=Blur&year=2000&pageNumber=2&pageSize=5```
+
+Комбинированный поиск: жанр + сортировка по году (от новых к старым): ```/api/search?genre=Rock&sortBy=year&sortDesc=true```
+
+Комбинированный поиск: исполнитель + жанр + точное совпадение: ```/api/search?artist=Blur&genre=Britpop&exactMatch=true```
+
+Комбинированный поиск: диапазон лет + пагинация: ```/api/search?yearFrom=1990&yearTo=2000&pageNumber=1&pageSize=20```
+
+Комбинированный поиск: сложный запрос с несколькими параметрами: ```/api/search?artist=Blur&year=2000&genre=Rock&sortBy=duration&sortDesc=false&pageNumber=1&pageSize=10```

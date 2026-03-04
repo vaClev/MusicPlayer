@@ -22,5 +22,8 @@ namespace MusicServer.API.Services
 
         // Удаление карточки и файла
         Task<bool> DeleteMusicFileAsync(int id);
+
+        // Вернуть муз файлы сответсвующие поисковому запросу
+        Task<PagedResponse<MusicFileResponseDto>> SearchMusicFilesAsync(SearchParams searchParams);
     }
 }
