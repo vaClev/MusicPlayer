@@ -22,7 +22,5 @@ namespace MusicServer.API.Services
 
         // Удаление карточки и файла
         Task<bool> DeleteMusicFileAsync(int id);
-
-        Task<MusicFile> SaveToDbForTest(MusicFile musicFile);
     }
 }

@@ -1,9 +1,5 @@
-﻿
-
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using MusicServer.API.DTOs;
-using MusicServer.API.Models;
 using MusicServer.API.Services;
 
 namespace MusicServer.API.Controllers

@@ -1,7 +1,4 @@
 ﻿
-using System;
-using System.Formats.Tar;
-using System.Linq.Expressions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MusicServer.API.Database;
@@ -9,8 +6,6 @@ using MusicServer.API.DTO;
 using MusicServer.API.DTOs;
 using MusicServer.API.Models;
 using MusicServer.API.Services.Upload;
-using TagLib;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MusicServer.API.Services
 {
@@ -216,7 +211,6 @@ namespace MusicServer.API.Services
 
 
         // Получить все музыкальные файлы(карточки)
-        // TODO продумать с учетом пагинации по 20 песен
         public async Task<IEnumerable<MusicFileResponseDto>> GetAllMusicFilesAsync()
         {
             return (await GetAllMusicFilesEntitiesAsync())
@@ -289,13 +283,6 @@ namespace MusicServer.API.Services
             return true;
         }
 
-        // Тестовый запрос
-        public async Task<MusicFile> SaveToDbForTest(MusicFile musicFile)
-        {
-            _context.MusicFiles.Add(musicFile);
-            await _context.SaveChangesAsync();
-            return musicFile;
-        }
         #endregion
 
         //---- к перенесу

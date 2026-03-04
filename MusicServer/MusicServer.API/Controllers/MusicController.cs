@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using MusicServer.API.DTO;
 using MusicServer.API.DTOs;
 using MusicServer.API.Models;
@@ -206,28 +205,5 @@ namespace MusicServer.API.Controllers
             return NoContent();
         }
 
-        /// Тестовый POST запрос добавления сущности в базу данных.
-        /// TODO: Сделать админское приложение на WPF для добавления сущностей.
-        [HttpPost("test")]
-        public async Task<ActionResult<MusicFile>> PostTestMusic()
-        {
-            var testFilePAth = Path.Combine(_environment.WebRootPath, "test.mp3");
-            var testMusic = new MusicFile
-            {
-                filename = "test_song.mp3",
-                filepath = "/music/test_song.mp3",
-                title = "Test Song",
-                artist = new Artist(),
-                album = "Test Album",
-                year = 2024,
-                genre = new Genre(),
-                filesize = 1024000, // 1MB
-                duration = TimeSpan.FromMinutes(3.5)
-            };
-
-            await _musicService.SaveToDbForTest(testMusic);
-
-            return Ok(testMusic);
-        }
     }
 }
