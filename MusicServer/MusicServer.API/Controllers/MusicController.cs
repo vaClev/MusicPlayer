@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using MusicServer.API.DTO;
 using MusicServer.API.DTOs;
 using MusicServer.API.Models;
@@ -22,12 +21,55 @@ namespace MusicServer.API.Controllers
         }
 
         #region GetDTO
-        // GET: api/music
+
+        // GET: api/music/
+        //  или api/music?pageNumber=2&pageSize=5
+        /// Получить список песен с пагинацией
+        /// </summary>
+        /// <param name="pageNumber">Номер страницы (по умолчанию 1)</param>
+        /// <param name="pageSize">Размер страницы (по умолчанию 10, максимум 50)</param>
+        /// <returns>Список песен с информацией о пагинации</returns>
         [HttpGet]
+        public async Task<ActionResult<PagedResponse<MusicFileResponseDto>>> GetMusicFilesPage(
+            [FromQuery] PaginationParams paginationParams)
+        {
+            try
+            {
+                // Валидация входных параметров
+                var checkResult = paginationParams.Validate();
+                if (!checkResult.IsValid)
+                    return BadRequest(checkResult.ErrorMessage);
+
+                // Получаем данные из сервиса
+                var response = await _musicService.GetMusicFilesPageAsync(paginationParams);
+
+                // Перебираем все элементы и добавляем DownloadUrl'ы
+                foreach (var item in response.Items)
+                    item.DownloadUrl = Url.Action("Download", "Music", new { id = item.Id }, Request.Scheme);
+
+                // Добавляем информацию о пагинации в заголовки (для удобства)
+                Response.Headers.Append("X-Pagination-TotalCount", response.TotalCount.ToString());
+                Response.Headers.Append("X-Pagination-PageNumber", response.PageNumber.ToString());
+                Response.Headers.Append("X-Pagination-PageSize", response.PageSize.ToString());
+                Response.Headers.Append("X-Pagination-TotalPages", response.TotalPages.ToString());
+                Response.Headers.Append("X-Pagination-HasNext", response.HasNextPage.ToString());
+                Response.Headers.Append("X-Pagination-HasPrevious", response.HasPreviousPage.ToString());
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while processing your request");
+            }
+        }
+
+
+        // GET: api/music/all
+        [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<MusicFileResponseDto>>> GetMusicFiles()
         {
             var musicFiles = (await _musicService.GetAllMusicFilesAsync())
-                .Select(musicFile => 
+                .Select(musicFile =>
                 {
                     musicFile.DownloadUrl = Url.Action("Download", "Music", new { id = musicFile.Id }, Request.Scheme);
                     return musicFile;
@@ -78,6 +120,49 @@ namespace MusicServer.API.Controllers
                 return BadRequest($"Ошибка загрузки: {ex.Message}");
             }
         }
+
+        //пакетная загрузка файлов на сервер
+        // TODO: сделать возможным только для авторизованных админов.
+        // POST: api/music/upload/batch
+        [HttpPost("upload/batch")]
+        [RequestSizeLimit(500_000_000)] // 500 MB максимум (например 100 файлов по 5 Mb)
+        public async Task<IActionResult> UploadMusicFilesBatch(List<IFormFile> files)
+        {
+            if (files == null || files.Count == 0)
+                return BadRequest(new { error = "No files selected" });
+
+            var results = new List<object>();
+            var errors = new List<object>();
+
+            foreach (var file in files)
+            {
+                try
+                {
+                    var musicFile = await _musicService.UploadMusicAsync(file);
+                    results.Add(new
+                    {
+                        musicFile.Id,
+                        musicFile.Title,
+                        musicFile.Artist,
+                        musicFile.Album,
+                        musicFile.Duration,
+                        Status = "Success"
+                    });
+                }
+                catch (Exception ex)
+                {
+                    errors.Add(new { fileName = file.FileName, error = ex.Message });
+                }
+            }
+            return Ok(new
+            {
+                TotalProcessed = files.Count,
+                SuccessCount = results.Count,
+                ErrorCount = errors.Count,
+                Results = results,
+                Errors = errors
+            });
+        }
         #endregion
 
         #region Download
@@ -120,28 +205,5 @@ namespace MusicServer.API.Controllers
             return NoContent();
         }
 
-        /// Тестовый POST запрос добавления сущности в базу данных.
-        /// TODO: Сделать админское приложение на WPF для добавления сущностей.
-        [HttpPost("test")]
-        public async Task<ActionResult<MusicFile>> PostTestMusic()
-        {
-            var testFilePAth = Path.Combine(_environment.WebRootPath, "test.mp3");
-            var testMusic = new MusicFile
-            {
-                filename = "test_song.mp3",
-                filepath = "/music/test_song.mp3",
-                title = "Test Song",
-                artist = "Test Artist",
-                album = "Test Album",
-                year = 2024,
-                genre = "Test Genre",
-                filesize = 1024000, // 1MB
-                duration = TimeSpan.FromMinutes(3.5)
-            };
-
-            await _musicService.SaveToDbForTest(testMusic);
-
-            return Ok(testMusic);
-        }
     }
 }

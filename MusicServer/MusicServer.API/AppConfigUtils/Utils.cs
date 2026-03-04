@@ -20,6 +20,9 @@ namespace MusicServer.API
 
         public static void RegistrateMusicService(WebApplicationBuilder builder)
         {
+            //builder.Services.AddScoped<IMusicService, MusicService_OLD>(); 
+            //Благодоря низкой связности с контроллером легко заменился
+
             builder.Services.AddScoped<IMusicService, MusicService>();
 
             // Настройка максимального размера файла

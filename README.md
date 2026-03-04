@@ -4,10 +4,14 @@ https://docs.google.com/document/d/1B5BQ3vxK5Hc6708G56_nAb37K9KFGfsFhen_pG0t9_w/
 -----
 API серверной части:
 -----
-1.  Получить всю коллекцию музыки  
+1.  Получить всю коллекцию музыки. New с пагинацией
 GET: 
 ```
-https://127.0.0.1:7044/api/Music
+https://127.0.0.1:7044/api/music
+или с параметрами
+http://127.0.0.1:5098/api/music?pageNumber=1&pageSize=10
+
+https://127.0.0.1:7044/api/music/all - старое API, как было на курсовой.
 ```
 
 2. Получить конкретный музыкальный файл по id
@@ -19,7 +23,11 @@ https://127.0.0.1:7044/api/music/id5
 3.  Загрузить муз файл на сервер.
 POST: 
 ```
+один файл (смотри пример uploadForm.html)
 https://127.0.0.1:7044/api/music/upload
+
+пакетная загрузка, пачка файлов до 500Mb (смотри пример BatchUpload.html) 
+https://127.0.0.1:7044/api/music/upload/batch
 ```
 ```"AllowedExtensions": [ ".mp3", ".wav", ".flac", ".ogg" ]```
 
@@ -82,3 +90,30 @@ GET:
 ```
 https://127.0.0.1:7044/api/extrafiles/id5
 ```
+
+9. Добавлены поисковые запросы. (Смотри все критерии поиска в файле SearchParams.cs)
+ПРИМЕРЫ ПОИСКОВЫХ ЗАПРОСОВ
+/// Простой поиск по названию/исполнителю - критерий "содержит"
+```
+   /api/search?query=blur
+```
+
+Поиск по точному названию песни: ```/api/search?title=Coffee%20And%20TV&exactMatch=true```
+
+* точное совпадение exactMatch=true можно добавлять в конце любого запроса
+
+Поиск по исполнителю: ```/api/search?artist=Blur``
+
+Поиск по жанру: ```/api/search?genre=Rock```
+
+Поиск по году: ```/api/search?year=2000```
+
+Комбинированный поиск: исполнитель + год + пагинация: ```/api/search?artist=Blur&year=2000&pageNumber=2&pageSize=5```
+
+Комбинированный поиск: жанр + сортировка по году (от новых к старым): ```/api/search?genre=Rock&sortBy=year&sortDesc=true```
+
+Комбинированный поиск: исполнитель + жанр + точное совпадение: ```/api/search?artist=Blur&genre=Britpop&exactMatch=true```
+
+Комбинированный поиск: диапазон лет + пагинация: ```/api/search?yearFrom=1990&yearTo=2000&pageNumber=1&pageSize=20```
+
+Комбинированный поиск: сложный запрос с несколькими параметрами: ```/api/search?artist=Blur&year=2000&genre=Rock&sortBy=duration&sortDesc=false&pageNumber=1&pageSize=10```

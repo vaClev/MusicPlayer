@@ -15,6 +15,7 @@
         <HBox spacing="10" HBox.hgrow="ALWAYS">
             <Button text="JSON TEST" onAction="#handleRefresh"/>
             <Button text="GET ALL" onAction="#handleGetAll"/>
+            <Button text="GET PAGE" onAction="#handleGetPage"/>
             <Button text="Открыть папку загрузок" onAction="#openFolder"/>
         </HBox>
         <Label fx:id="statusLabel" styleClass="status-label"/>

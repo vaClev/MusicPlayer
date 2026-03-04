@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using MusicServer.API;
 using MusicServer.API.Database;
+using MusicServer.API.Database.Repositories;
 using MusicServer.API.Services.Upload;
 
 /////////////////////////////////////////////////////
@@ -27,6 +28,9 @@ builder.Services.AddControllers();
 // Настраиваем PostgreSQL - в рамках разработки курсовой подключение к локальноve серверу БД
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DevelopConnection")));
+
+// Регистрируем Repositories в приложении
+builder.Services.AddScoped<IMusicFileRepository, MusicFileRepository>();
 
 // Регистрируем Services сервис в приложении
 AppConfigUtils.RegistrateMusicService(builder);
@@ -85,7 +89,7 @@ using (var scope = app.Services.CreateScope())
 
     // ЗАПУСК СИДИНГА
     SeedFileExtensions.Seed(dbContext);
-
+    SeedArtists.Seed(dbContext);
 }
 
 app.Run();

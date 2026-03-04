@@ -3,11 +3,18 @@ package org.example.vasilev.musicpro.services.music;
 import com.google.gson.reflect.TypeToken;
 import org.example.vasilev.musicpro.dto.MusicFileDTO;
 import org.example.vasilev.musicpro.dto.MusicFileDetailDTO;
+import org.example.vasilev.musicpro.dto.MusicPageDTO;
 import org.example.vasilev.musicpro.models.MusicFile;
 import org.example.vasilev.musicpro.services.APIClient;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -22,31 +29,54 @@ public class MusicClientService implements IMusicClientService
         this.apiClient = apiClient;
     }
 
-    /// Получение с сервера списка музыкальных файлов
+    /// Получение с сервера списка музыкальных файлов OLD
     @Override
-    public CompletableFuture<List<MusicFile>> getMusicFiles(int page, int pageSize)
+    public CompletableFuture<List<MusicFile>> getMusicFiles()
     {
         return CompletableFuture.supplyAsync(() ->
         {
             try
             {
-                //Map<String, String> params = new HashMap<>();
-                //params.put("page", String.valueOf(page));
-                //params.put("pageSize", String.valueOf(pageSize));
-
-                ///пока игнорируем пагинацию. Отправим простой запрос All.
-                String url = "api/music";
+                /// игнорируем пагинацию. Отправим простой запрос All.
+                String url = "api/music/all";
 
                 Type listType = new TypeToken<List<MusicFileDTO>>()
                 {
                 }.getType();
                 List<MusicFileDTO> dtoList = (List<MusicFileDTO>) apiClient.getAsync(url, listType).join();
 
-                currentPage = page;
                 return dtoList.stream()
                         .map(MusicFileDTO::toDomainModel)
                         .collect(Collectors.toList());
             } catch (Exception e)
+            {
+                throw new RuntimeException("Failed to get music files", e);
+            }
+        });
+    }
+
+    /// Получение с сервера списка музыкальных файлов NEW API
+    @Override
+    public CompletableFuture<MusicPageDTO> getMusicFiles(int pageNumber, int pageSize)
+    {
+        return CompletableFuture.supplyAsync(() ->
+        {
+            try
+            {
+                // Формируем параметры запроса
+                Map<String, String> params = new HashMap<>();
+                params.put("pageNumber", String.valueOf(pageNumber));
+                params.put("pageSize", String.valueOf(pageSize));
+
+                // Строим URL с параметрами -- например api/music?pageNumber=2&pageSize=5
+                String url = APIClient.buildUrlWithParams("api/music", params);
+
+                MusicPageDTO page = apiClient.getAsync(url, MusicPageDTO.class).join();
+                currentPage = page.getPageNumber();
+
+                return page;
+            }
+            catch (Exception e)
             {
                 throw new RuntimeException("Failed to get music files", e);
             }

@@ -1,81 +1,83 @@
-﻿
-using System;
-using System.Linq.Expressions;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MusicServer.API.Database;
+﻿using MusicServer.API.Database;
 using MusicServer.API.DTO;
 using MusicServer.API.DTOs;
 using MusicServer.API.Models;
 using MusicServer.API.Services.Upload;
-using TagLib;
 
 namespace MusicServer.API.Services
 {
     public class MusicService : IMusicService
     {
-        private readonly AppDbContext _context;
-        private readonly IConfiguration _configuration; //TODO проверить можно без нее?
+        private readonly IConfiguration _configuration;
+        private readonly IMusicFileRepository _repository;
+        private readonly IUploadServiceFactory _uploadServiceFactory;
 
-        private readonly IUploadService m_uploadService;
-        private readonly string m_pathPrefix;
-        private readonly string m_folderName;
-        //private readonly ILogger<ExtraFileService> _logger; TODO обдумать возможно стоит добавить
+        private IUploadService? _uploadService;
+        private readonly string _pathPrefix;
+        private readonly string _folderName;
 
         public MusicService(
-            AppDbContext context,
-            IWebHostEnvironment environment,
             IConfiguration configuration,
-            IUploadServiceFactory uploadServiceFactory)
+            IUploadServiceFactory uploadServiceFactory,
+            IMusicFileRepository repository)
         {
-            _context = context;
             _configuration = configuration;
+            _uploadServiceFactory = uploadServiceFactory;
+            _repository = repository;
 
-            string musicFolderFullSystemPath = _configuration.GetSection("MusicStorage:FullPath").Get<string>() ?? string.Empty; ;
-            var allowedExtensions = _configuration.GetSection("MusicStorage:AllowedExtensions").Get<string[]>() ?? new[] { string.Empty };
-            m_uploadService = uploadServiceFactory.Create(musicFolderFullSystemPath, allowedExtensions);
-
-            m_pathPrefix = _configuration.GetSection("MusicStorage:PrefixPath").Get<string>() ?? string.Empty;
-            m_folderName = _configuration.GetSection("MusicStorage:Path").Value ?? string.Empty;
+            _pathPrefix = _configuration.GetSection("MusicStorage:PrefixPath").Get<string>() ?? string.Empty;
+            _folderName = _configuration.GetSection("MusicStorage:Path").Value ?? string.Empty;
         }
 
+        private void LazyInitUploadService()
+        {
+            if (_uploadService == null)
+            {
+                string musicFolderFullSystemPath = _configuration.GetSection("MusicStorage:FullPath").Get<string>() ?? string.Empty;
+                var allowedExtensions = _configuration.GetSection("MusicStorage:AllowedExtensions").Get<string[]>() ?? new[] { string.Empty };
+                _uploadService = _uploadServiceFactory.Create(musicFolderFullSystemPath, allowedExtensions);
+            }
+        }
 
         #region "Реализация интерфейса IMusicService"
-        //Загрузка файла на сервер
-        public async Task<MusicFileResponseDto> UploadMusicAsync([FromForm] IFormFile file)
+
+        public async Task<MusicFileResponseDto> UploadMusicAsync(IFormFile file)
         {
+            // 0. проверка на пустой файл
+            if (file.Length == 0)
+                throw new ArgumentException("Файл пустой");
+
+            LazyInitUploadService();
+            if (_uploadService == null)
+                throw new Exception("Не удалось инициализировать Upload Service");
+
             // 1. Проверяем расширение файла.
-            var extension = m_uploadService.GetExtensionWithCheck(file); //может выбросить исключение
-            var fileExtension = await _context.FileExtensions
-                .FirstOrDefaultAsync(e => e.Extension == extension);
+            var extension = _uploadService.GetExtensionWithCheck(file);  //может выбросить исключение
+            var fileExtension = await _repository.GetFileExtensionAsync(extension);
             // 1.1 Проверка расширения. Что оно есть в таблице сервера. 
             if (fileExtension == null)
-              throw new ArgumentException($"Неизвесное расширение файла, такие загружать на сервер нельзя {extension}");
+                throw new ArgumentException($"Неизвестное расширение файла: {extension}");
 
             // 2. Создаем уникальное имя файла
             var fileName = Guid.NewGuid().ToString() + extension;
-            var filePath = m_uploadService.CreateFilePath(fileName);
+            var filePath = _uploadService.CreateFilePath(fileName);
 
             // 3. Сохраняем файл
-            await m_uploadService.SaveFile(file, filePath);
+            await _uploadService.SaveFile(file, filePath);
 
             // 4. Извлекаем метаданные из mp3
-            MusicFile musicFile = ExtractMetadataAsync(filePath, fileName, file);
+            MusicFile musicFile = await ExtractMetadataAsync(filePath, fileName, file);
             musicFile.FileExtensionId = fileExtension.Id;
-            
-            // 5. Сохраняем в БД 
-            // TODO вынести в отдельный класс MusicFileDBHelper для возможности отвязаться от EntityFramework
-            //Подмена пути на короткий для сохранения в БД
-            musicFile.filepath = Path.Combine(m_folderName, fileName) ?? ""; //в базу пишем только от папки MusicFiles, для кросплатформенности Linux
-            _context.MusicFiles.Add(musicFile);
-            await _context.SaveChangesAsync();
+
+            // 5. Сохраняем в БД через репозиторий
+            musicFile.filepath = Path.Combine(_folderName, fileName);
+            await _repository.AddAsync(musicFile);
+            await _repository.SaveChangesAsync();
 
             return ToResponseDto(musicFile);
         }
 
-        // TODO создать класс обертку для этой функции.
-        // зависит от библиотеки TagLib
-        private MusicFile ExtractMetadataAsync(string filePath, string fileName, IFormFile originalFile)
+        private async Task<MusicFile> ExtractMetadataAsync(string filePath, string fileName, IFormFile originalFile)
         {
             var musicFile = new MusicFile
             {
@@ -90,10 +92,16 @@ namespace MusicServer.API.Services
             {
                 using (var tagFile = TagLib.File.Create(filePath))
                 {
+                    var artist = await _repository.GetOrCreateArtistAsync(
+                    tagFile.Tag.FirstPerformer ?? "Unknown Artist");
+
+                    var genre = await _repository.GetOrCreateGenreAsync(
+                        tagFile.Tag.FirstGenre ?? "Unknown Genre");
+
                     musicFile.title = tagFile.Tag.Title ?? Path.GetFileNameWithoutExtension(originalFile.FileName);
-                    musicFile.artist = tagFile.Tag.FirstPerformer ?? "Unknown Artist";
+                    musicFile.artist = artist;
                     musicFile.album = tagFile.Tag.Album ?? "Unknown Album";
-                    musicFile.genre = tagFile.Tag.FirstGenre;
+                    musicFile.genre = genre;
                     musicFile.year = (int?)tagFile.Tag.Year;
                     musicFile.duration = tagFile.Properties.Duration;
                 }
@@ -103,107 +111,112 @@ namespace MusicServer.API.Services
                 // Если не удалось извлечь метаданные, используем информацию из имени файла
                 Console.WriteLine($"Ошибка извлечения метаданных: {ex.Message}");
                 musicFile.title = Path.GetFileNameWithoutExtension(originalFile.FileName);
-                musicFile.artist = "Unknown Artist";
+                musicFile.artist = await _repository.GetOrCreateArtistAsync("Unknown Artist");
                 musicFile.album = "Unknown Album";
+                musicFile.genre = await _repository.GetOrCreateGenreAsync("Unknown Genre");
                 musicFile.duration = TimeSpan.Zero;
             }
 
             return musicFile;
         }
 
-
-        // Получить MusicFile(карточку)
         public async Task<MusicFileWithExtrasDto> GetMusicFileAsync(int id)
         {
-            MusicFile musicFile = await GetMusicFileEntityAsync(id);//пробросит исключение
+            var musicFile = await _repository.GetByIdWithDetailsAsync(id);
+            if (musicFile == null)
+                throw new ArgumentException($"Файл с id={id} не найден");
+
+            musicFile.filepath = Path.Combine(_pathPrefix, musicFile.filepath);
 
             return ToWithExtrasDto(musicFile);
         }
 
-
-        // Получить MusicFile(сущность) из БД
-        private async Task<MusicFile> GetMusicFileEntityAsync(int id)
-        {
-            var musicFile = await _context.MusicFiles
-                .Include(mf => mf.FileExtension)// Включить объект расширение
-                .Include(mf => mf.ExtraFiles)// Включить связанные допфайлы
-                .FirstOrDefaultAsync(mf => mf.id == id);
-
-            if (musicFile == null)
-                throw new ArgumentException($"Файла c id={id} не найдено");
-
-            musicFile.filepath = Path.Combine(m_pathPrefix, musicFile.filepath);
-            return musicFile;
-        }
-
-
-        // Получить все музыкальные файлы(карточки)
-        // TODO продумать с учетом пагинации по 20 песен
+        //TODO по идее можно отказаться от него OLD
         public async Task<IEnumerable<MusicFileResponseDto>> GetAllMusicFilesAsync()
         {
-            return (await GetAllMusicFilesEntitiesAsync())
-                .Select(mf => ToResponseDto(mf));
+            // Для получения всех файлов используем пагинацию с большим размером страницы
+            // или можно добавить метод GetAllWithDetails в репозиторий
+            var pageParams = new PaginationParams
+            {
+                PageNumber = 1,
+                PageSize = 1000 // достаточно большое число
+            };
+
+            var files = await _repository.GetPagedAsync(pageParams);
+            return files.Select(ToResponseDto);
         }
 
-
-        // TODO продумать с учетом пагинации по 20 песен
-        // Получить все музыкальные файлы(сущности) из БД
-        private async Task<IEnumerable<MusicFile>> GetAllMusicFilesEntitiesAsync()
+        public async Task<PagedResponse<MusicFileResponseDto>> GetMusicFilesPageAsync(PaginationParams pageParams)
         {
-            return await _context.MusicFiles
-               .Include(mf => mf.FileExtension)// Включить объект расширение
-               .OrderByDescending(m => m.uploadDate)
-               .ToListAsync();
+            // Получаем список файлов из репозитория
+            var items = await _repository.GetPagedAsync(pageParams);
+
+            // Получаем общее количество
+            var totalCount = await _repository.GetTotalCount();
+
+            // Маппим в DTO
+            var itemsDto = items.Select(ToResponseDto).ToList();
+
+            // Возвращаем PagedResponse
+            return new PagedResponse<MusicFileResponseDto>(itemsDto, totalCount, pageParams);
         }
 
-
-        // Получить данные для скачивания MusicFile
         public async Task<DownloadFileDto> GetMusicFileDownloadDataAsync(int id)
         {
-            var musicFile = await GetMusicFileEntityAsync(id);// может пробросить исключение
+            var musicFile = await _repository.GetByIdWithExtensionAndArtistAsync(id);
+            if (musicFile == null)
+                throw new ArgumentException($"Файл с id={id} не найден");
+
+            musicFile.filepath = Path.Combine(_pathPrefix, musicFile.filepath);
             return ToDownloadDto(musicFile);
         }
 
-
-        // Удаление карточки и файла
         public async Task<bool> DeleteMusicFileAsync(int id)
         {
-            var musicFile = await GetMusicFileEntityAsync(id);
+            LazyInitUploadService();
+
+            var musicFile = await _repository.GetByIdAsync(id);
             if (musicFile == null)
                 return false;
 
-            // Удаляем физический файл из папки
-            string filepath = Path.Combine(m_pathPrefix, musicFile.filepath);
-            m_uploadService.DeleteFile(filepath);
+            // Удаляем физический файл
+            string filepath = Path.Combine(_pathPrefix, musicFile.filepath);
+            _uploadService?.DeleteFile(filepath);
 
             // Удаляем запись из БД
-            _context.MusicFiles.Remove(musicFile);
-            await _context.SaveChangesAsync();
+            var deleted = await _repository.DeleteAsync(id);
+            if (deleted)
+                await _repository.SaveChangesAsync();
 
-            return true;
+            return deleted;
         }
 
-        // Тестовый запрос
-        public async Task<MusicFile> SaveToDbForTest(MusicFile musicFile)
+        #endregion
+
+        #region Поиск музыки (Расширение интерфейса IMusicService)
+        public async Task<PagedResponse<MusicFileResponseDto>> SearchMusicFilesAsync(SearchParams searchParams)
         {
-            _context.MusicFiles.Add(musicFile);
-            await _context.SaveChangesAsync();
-            return musicFile;
+            var (items, totalCount) = await _repository.SearchAsync(searchParams);
+
+            var itemsDto = items.Select(ToResponseDto).ToList();
+
+            return new PagedResponse<MusicFileResponseDto>( itemsDto, totalCount, searchParams);
         }
         #endregion
 
-        //---- к перенесу
-        //Маппирование сущности в DTO //TODO создать class Mapper
+
+        #region "Методы маппинга"
+
         private MusicFileResponseDto ToResponseDto(MusicFile musicFile)
         {
             return new MusicFileResponseDto
             {
                 Id = musicFile.id,
                 Title = musicFile.title,
-                Artist = musicFile.artist,
+                Artist = musicFile.artist.Name,
                 Extension = musicFile.FileExtension.Extension,
                 Album = musicFile.album,
-                Genre = musicFile.genre,
+                Genre = musicFile.genre.Name,
                 Year = musicFile.year,
                 FileSize = musicFile.filesize,
                 Duration = musicFile.duration,
@@ -212,17 +225,16 @@ namespace MusicServer.API.Services
             };
         }
 
-        //Маппирование сущности в DTO
         private MusicFileWithExtrasDto ToWithExtrasDto(MusicFile musicFile)
         {
             return new MusicFileWithExtrasDto
             {
                 Id = musicFile.id,
                 Title = musicFile.title,
-                Artist = musicFile.artist,
+                Artist = musicFile.artist.Name,
                 Extension = musicFile.FileExtension.Extension,
                 Album = musicFile.album,
-                Genre = musicFile.genre,
+                Genre = musicFile.genre.Name,
                 Year = musicFile.year,
                 Duration = musicFile.duration,
                 UploadDate = musicFile.uploadDate,
@@ -241,15 +253,15 @@ namespace MusicServer.API.Services
             };
         }
 
-        //Маппирование сущности в DTO
         private DownloadFileDto ToDownloadDto(MusicFile musicFile)
         {
             return new DownloadFileDto
             {
-                FilenameForSend = $"{musicFile.artist}-{musicFile.title}",
+                FilenameForSend = $"{musicFile.artist.Name}-{musicFile.title}",
                 Filepath = musicFile.filepath,
                 Extension = musicFile.FileExtension
             };
         }
+        #endregion
     }
-} //namespace MusicServer.API.Services
+}//namespace MusicServer.API.Services

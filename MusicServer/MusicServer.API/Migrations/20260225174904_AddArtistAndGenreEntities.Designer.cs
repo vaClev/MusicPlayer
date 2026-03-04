@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MusicServer.API.Database;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MusicServer.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260225174904_AddArtistAndGenreEntities")]
+    partial class AddArtistAndGenreEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -170,11 +173,14 @@ namespace MusicServer.API.Migrations
                     b.Property<int?>("FileExtensionId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("GenreId")
+                    b.Property<int?>("GenreId")
                         .HasColumnType("integer");
 
                     b.Property<string>("album")
                         .HasColumnType("text");
+
+                    b.Property<int>("artistId")
+                        .HasColumnType("integer");
 
                     b.Property<TimeSpan>("duration")
                         .HasColumnType("interval");
@@ -190,6 +196,9 @@ namespace MusicServer.API.Migrations
                     b.Property<long>("filesize")
                         .HasColumnType("bigint");
 
+                    b.Property<int?>("genreId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("title")
                         .IsRequired()
                         .HasColumnType("text");
@@ -202,11 +211,11 @@ namespace MusicServer.API.Migrations
 
                     b.HasKey("id");
 
-                    b.HasIndex("ArtistId");
-
                     b.HasIndex("FileExtensionId");
 
-                    b.HasIndex("GenreId");
+                    b.HasIndex("artistId");
+
+                    b.HasIndex("genreId");
 
                     b.HasIndex("title")
                         .HasDatabaseName("IX_MusicFiles_Title");
@@ -234,22 +243,21 @@ namespace MusicServer.API.Migrations
 
             modelBuilder.Entity("MusicServer.API.Models.MusicFile", b =>
                 {
-                    b.HasOne("MusicServer.API.Models.Artist", "artist")
-                        .WithMany("MusicFiles")
-                        .HasForeignKey("ArtistId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
-
                     b.HasOne("MusicServer.API.Models.FileExtension", "FileExtension")
                         .WithMany("MusicFiles")
                         .HasForeignKey("FileExtensionId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("MusicServer.API.Models.Genre", "genre")
+                    b.HasOne("MusicServer.API.Models.Artist", "artist")
                         .WithMany("MusicFiles")
-                        .HasForeignKey("GenreId")
+                        .HasForeignKey("artistId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
+
+                    b.HasOne("MusicServer.API.Models.Genre", "genre")
+                        .WithMany("MusicFiles")
+                        .HasForeignKey("genreId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("FileExtension");
 

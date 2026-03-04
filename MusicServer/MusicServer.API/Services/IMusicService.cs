@@ -14,12 +14,16 @@ namespace MusicServer.API.Services
         // Получить все музыкальные файлы(карточки) из библиотки
         Task<IEnumerable<MusicFileResponseDto>> GetAllMusicFilesAsync();
 
+        // Получить одну страницу с музыкальными файлами из библиотки
+        Task<PagedResponse<MusicFileResponseDto>> GetMusicFilesPageAsync(PaginationParams pageParams);
+
         // Получить данные для скачивания MusicFile
         Task<DownloadFileDto> GetMusicFileDownloadDataAsync(int id);
 
         // Удаление карточки и файла
         Task<bool> DeleteMusicFileAsync(int id);
 
-        Task<MusicFile> SaveToDbForTest(MusicFile musicFile);
+        // Вернуть муз файлы сответсвующие поисковому запросу
+        Task<PagedResponse<MusicFileResponseDto>> SearchMusicFilesAsync(SearchParams searchParams);
     }
 }
