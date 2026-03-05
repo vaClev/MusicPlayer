@@ -18,7 +18,7 @@ public class Tests
     {
         // Путь к файлу в ресурсах
         String jsonPath = "/org/example/vasilev/musicpro/test.json";
-        // Создаем Gson с адаптером для LocalDateTime
+        // Создаем Gson
         Gson gson = new Gson();
 
         try (InputStream inputStream = getClass().getResourceAsStream(jsonPath);

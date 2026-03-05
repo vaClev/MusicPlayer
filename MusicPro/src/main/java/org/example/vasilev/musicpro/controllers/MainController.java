@@ -78,50 +78,12 @@ public class MainController implements Initializable {
         }
     }
 
+/// //////////////////////////////////////////////////////
+///  Получение карточек песен
+/// //////////////////////////////////////////////////////
 
-    /// Тестовое получение данных с сервера OLD API GetALL
-    private void testLoadAllFromServer()
-    {
-        songsContainer.getChildren().clear();
-
-        musicClientService.getMusicFiles().thenApplyAsync(
-                musicFiles->
-                {
-                    List<VBox> cards = new ArrayList<>();
-                    for (MusicFile musicFile : musicFiles) {
-                        try
-                        {
-                            VBox card = createSongCard(musicFile);
-                            cards.add(card);
-                        }
-                        catch (IOException e)
-                        {
-                            // Логируем ошибку, но продолжаем создание других карточек
-                            System.err.println("Ошибка создания карточки: " + e.getMessage());
-                        }
-                    }
-                    return cards;
-                })
-                .thenAcceptAsync(cards -> {
-                    // Обновление UI только после создания всех карточек
-                    Platform.runLater(() -> {
-                        songsContainer.getChildren().addAll(cards);
-                        //showLoadingIndicator(false);
-                        //updateStatus("Загружено " + cards.size() + " песен");
-                    });
-                }, Platform::runLater) // Исполнять в UI потоке
-
-                .exceptionally(throwable -> {
-                    Platform.runLater(() -> {
-                        //showError("Ошибка загрузки", throwable.getMessage());
-                        //showLoadingIndicator(false);
-                    });
-                    return null;
-                });
-    }
-
-    /// Тестовое получение данных с сервера NEW API с пагинацией
-    private void testLoadPageFromServer()
+    /// Получение данных с сервера NEW API с пагинацией
+    private void loadPagesFromServer()
     {
         songsContainer.getChildren().clear();
 
@@ -161,7 +123,6 @@ public class MainController implements Initializable {
                 });
     }
 
-
     private VBox createSongCard(MusicFile musicFile) throws IOException
     {
         FXMLLoader loader = new FXMLLoader(
@@ -181,19 +142,10 @@ public class MainController implements Initializable {
         return card;
     }
 
-
-    /// Обработчики нажатия кнопок
-    @FXML
-    private void handleGetAll()
-    {
-        testLoadAllFromServer();
-        statusLabel.setText("Список обновлен с сервера. Папка загрузок: " + configService.getConfig().getDownloadDir());
-    }
-
     @FXML
     private void handleGetPage()
     {
-        testLoadPageFromServer();
+        loadPagesFromServer();
         statusLabel.setText("Список обновлен с сервера. Папка загрузок: " + configService.getConfig().getDownloadDir());
     }
 
@@ -242,6 +194,11 @@ public class MainController implements Initializable {
         }
     }
 
+
+    /// //////////////////////////////////////////////////////
+    /// Открыть папку "Загрузки"
+    /// //////////////////////////////////////////////////////
+    @FXML
     public void openFolder(ActionEvent actionEvent)
     {
         boolean success = FolderOpener.openFolder(
@@ -253,6 +210,8 @@ public class MainController implements Initializable {
             showAlert("Не удалось открыть проводник",
                     "откройте папку"+ downloadService.getDefaultDownloadsFolder());
     }
+
+    /// Показ окна с ошибкой
     private void showAlert(String title, String content) {
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR);
