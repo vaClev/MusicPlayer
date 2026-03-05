@@ -6,6 +6,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import org.example.vasilev.musicpro.models.MusicFile;
@@ -19,17 +20,21 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
-public class MainController implements Initializable {
+public class MainController implements Initializable, SearchController.SearchCallback
+{
     public VBox root;
-    /// Контейнер UI элементов списков песен
-    @FXML
-    private VBox songsContainer;
 
-    /// Контейнер UI элементов плеера
     @FXML
-    private VBox playerContainer;
+    private VBox searchContainer; /// Контейнер для элементов поиска
+
+    @FXML
+    private VBox songsContainer; /// Контейнер UI элементов списков песен
+
+    @FXML
+    private VBox playerContainer; /// Контейнер UI элементов плеера
 
     @FXML
     private Label statusLabel;
@@ -41,11 +46,17 @@ public class MainController implements Initializable {
     /// ссылка на контроллер плеера. Будем инжектить ее в карточки песен, чтобы добавлять их в плейлист
     private IPlaylistOwner playlistOwner;
 
+    /// контроллер поиска
+    private SearchController searchController; //TODO интерфейс
+
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
         // инициализация UI элементов плеера
         loadPlayer();
+
+        // инициализация панели поиска
+        loadSearchPanel();
     }
 
     public void setServices(ConfigService configService, IDownloadService downloadService,  IMusicClientService musicClientService)
@@ -76,6 +87,46 @@ public class MainController implements Initializable {
         {
             System.err.println("Не удалось загрузить player.fxml: " + e.getMessage());
         }
+    }
+
+    private void loadSearchPanel()
+    {
+        try
+        {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/org/example/vasilev/musicpro/views/search-panel.fxml")
+            );
+            VBox searchPanel = loader.load();
+            searchContainer.getChildren().add(searchPanel);
+
+            // Получаем контроллер и устанавливаем колбэк
+            searchController = loader.getController();
+            searchController.setCallback(this);
+        }
+        catch (IOException e)
+        {
+            System.err.println("Не удалось загрузить search-panel.fxml: " + e.getMessage());
+        }
+    }
+    /// //////////////////////////////////////////////////////
+    ///  Реализация SearchCallback
+    /// //////////////////////////////////////////////////////
+
+    @Override
+    public void onSearch(Map<String, String> searchParams, int page, int pageSize)
+    {
+        //songsContainer.getChildren().clear();
+        //Эту функцию умеет дергать контроллер поиска
+//        musicClientService.searchMusicFiles(searchParams, page, pageSize)
+//                .thenApplyAsync(this::createCardsFromPage)
+//                .thenAcceptAsync(this::displayCards, Platform::runLater)
+//                .exceptionally(throwable -> {
+//                    Platform.runLater(() -> {
+//                        showAlert("Ошибка поиска", throwable.getMessage());
+//                    });
+//                    return null;
+//                });
+        loadPagesFromServer(); //временно простой запрос
     }
 
 /// //////////////////////////////////////////////////////
@@ -220,5 +271,34 @@ public class MainController implements Initializable {
             alert.setContentText(content);
             alert.showAndWait();
         });
+    }
+
+    /// Показать/скрыть панель поиска
+    @FXML
+    public void handleShowHide(ActionEvent actionEvent)
+    {
+        if (searchContainer == null) return;
+
+        boolean isVisible = searchContainer.isVisible();
+
+        // Переключаем видимость
+        searchContainer.setVisible(!isVisible);
+        searchContainer.setManaged(!isVisible); // managed влияет на то, занимает ли элемент место в layout
+
+        // Меняем текст кнопки (если нужно)
+        if (actionEvent.getSource() instanceof Button) {
+            Button sourceButton = (Button) actionEvent.getSource();
+            if (!isVisible) {
+                sourceButton.setText("Скрыть поиск");
+            } else {
+                sourceButton.setText("Показать поиск");
+            }
+        }
+
+        // Обновляем статус
+        if (statusLabel != null) {
+            statusLabel.setText("Панель поиска " + (searchContainer.isVisible() ? "показана" : "скрыта") +
+                    " | Папка загрузок: " + configService.getConfig().getDownloadDir());
+        }
     }
 }

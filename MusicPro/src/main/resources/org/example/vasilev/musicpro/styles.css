@@ -18,11 +18,6 @@
     -fx-text-fill: white;
 }
 
-.status-label {
-    -fx-font-size: 12px;
-    -fx-text-fill: #e0e0e0;
-}
-
 /* ===== КАРТОЧКА ПЕСНИ (КОМПАКТНАЯ) ===== */
 .music-card {
     -fx-background-color: linear-gradient(to right, #f8f4ff 0%, #ffffff 100%);

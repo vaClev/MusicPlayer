@@ -6,19 +6,24 @@
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="org.example.vasilev.musicpro.controllers.MainController"
-      spacing="20" prefWidth="1000" prefHeight="700"
+      spacing="2" prefWidth="1000" prefHeight="700"
       fx:id="root">
 
     <!-- Шапка приложения -->
     <VBox styleClass="header" spacing="20" alignment="CENTER_LEFT">
-        <Label text="🎵 MusicPro v0.1" styleClass="app-title"/>
         <HBox spacing="10" HBox.hgrow="ALWAYS">
+            <Label text="🎵 MusicPro v0.1" styleClass="app-title"/>
             <Button text="JSON TEST" onAction="#handleRefresh"/>
             <Button text="GET PAGE" onAction="#handleGetPage"/>
             <Button text="Открыть папку загрузок" onAction="#openFolder"/>
+            <Button text="Search show/hide" onAction="#handleShowHide"/>
         </HBox>
-        <Label fx:id="statusLabel" styleClass="status-label"/>
+        <!-- Статус бар -->
+        <Label fx:id="statusLabel" styleClass="footer"/>
     </VBox>
+
+    <!-- Панель поиска (будет загружена программно) -->
+    <VBox fx:id="searchContainer" styleClass="search-panel-container" VBox.vgrow="NEVER" visible="false"/>
 
     <!-- Разделитель на 2 зоны -->
     <SplitPane orientation="VERTICAL"
@@ -54,9 +59,4 @@
             <!-- Плеер будет загружен сюда программно -->
         </VBox>
     </SplitPane>
-
-    <!-- Статус бар -->
-    <Label text="Разработано с ❤️ | Oleg Vasilev"
-           styleClass="footer"/>
-
 </VBox>

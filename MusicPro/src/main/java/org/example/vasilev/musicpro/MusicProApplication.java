@@ -38,7 +38,7 @@ public class MusicProApplication extends Application
             Scene scene = new Scene(root, 1000, 700);
 
             // Устанавливаем заголовок
-            stage.setTitle("MusicPro v.0.1");
+            stage.setTitle("MusicPro v.0.2");
 
             /// TODO Создать все сервисы  и Внедрить зависимости
             startServices();
@@ -55,16 +55,17 @@ public class MusicProApplication extends Application
                 /// Основные стили
                 URL cssUrl = getClass().getResource("/org/example/vasilev/musicpro/styles.css");
                 if (cssUrl != null)
-                {
                     scene.getStylesheets().add(cssUrl.toExternalForm());
-                }
+
+                /// Стили панели поиска
+                cssUrl = getClass().getResource("/org/example/vasilev/musicpro/search-panel.css");
+                if (cssUrl != null)
+                    scene.getStylesheets().add(cssUrl.toExternalForm());
 
                 /// Стили кнопок плеера
                 cssUrl = getClass().getResource("/org/example/vasilev/musicpro/player.css");
                 if (cssUrl != null)
-                {
                     scene.getStylesheets().add(cssUrl.toExternalForm());
-                }
             }
             catch (Exception e)
             {

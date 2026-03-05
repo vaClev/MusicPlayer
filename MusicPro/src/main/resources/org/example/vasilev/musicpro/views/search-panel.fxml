@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.vasilev.musicpro.controllers.SearchController"
+      spacing="15" styleClass="search-panel">
+
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+
+    <!-- Базовая строка поиска -->
+    <VBox spacing="3" alignment="CENTER_LEFT">
+        <HBox>
+            <Label text="Быстрый поиск:" minWidth="100"/>
+            <TextField fx:id="searchQueryField" promptText="Поиск по названию/исполнителю..." HBox.hgrow="ALWAYS"/>
+        </HBox>
+        <!-- Расширенные параметры поиска -->
+        <TitledPane text="Расширенный поиск" expanded="false">
+            <GridPane hgap="10" vgap="10">
+                <padding>
+                    <Insets top="10" right="10" bottom="10" left="10"/>
+                </padding>
+
+                <!-- Строка 1: Название и Исполнитель -->
+                <Label text="Название:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="titleField" promptText="соната ..." GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+
+                <!-- Строка 2: Исполнитель Жанр и Точное совпадение -->
+                <Label text="Исполнитель:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <TextField fx:id="artistField" promptText="Цой..." GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                <!-- Строка 3: Жанр и Точное совпадение -->
+                <Label text="Жанр:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <TextField fx:id="genreField" promptText="Жанр..." GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                <Label text="Точное совпадение:" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+                <CheckBox fx:id="exactMatchCheckBox" GridPane.rowIndex="2" GridPane.columnIndex="3"/>
+
+                <!-- Строка 4: Год  -->
+                <Label text="Год:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <TextField fx:id="yearField" promptText="1980" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                <!-- Строка 5: Сортировка -->
+                <Label text="Сортировать по:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                <ComboBox fx:id="sortByComboBox" GridPane.rowIndex="4" GridPane.columnIndex="1" prefWidth="150"/>
+
+                <Label text="По убыванию:" GridPane.rowIndex="4" GridPane.columnIndex="2"/>
+                <CheckBox fx:id="sortDescCheckBox" GridPane.rowIndex="4" GridPane.columnIndex="3"/>
+
+                <!-- Строка 6: Размер страницы -->
+                <Label text="Элементов на странице:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                <TextField fx:id="pageSizeField" text="10" prefWidth="60" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+            </GridPane>
+        </TitledPane>
+    </VBox>
+    <HBox spacing="5" alignment="BOTTOM_RIGHT">
+        <Button fx:id="searchButton" text="Искать" defaultButton="true"/>
+        <Button fx:id="clearSearchButton" text="Очистить"/>
+    </HBox>
+
+    <!-- Пагинация -->
+    <HBox spacing="10" alignment="CENTER">
+        <Button fx:id="prevPageButton" text="◀ Предыдущая"/>
+        <Label fx:id="pageInfoLabel" text="Страница 1 из 1"/>
+        <Button fx:id="nextPageButton" text="Следующая ▶"/>
+    </HBox>
+</VBox>
