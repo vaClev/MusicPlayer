@@ -4,14 +4,14 @@ import javafx.application.Platform;
 import org.example.vasilev.musicpro.services.APIClient;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.lang.ref.WeakReference;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 
 public class DownloadService implements IDownloadService, AutoCloseable
@@ -27,7 +27,9 @@ public class DownloadService implements IDownloadService, AutoCloseable
     private volatile boolean isShutdown = false;
 
     // Список подписчиков на события загрузки
-    private final List<Consumer<DownloadEvent>> subscribers = Collections.synchronizedList(new ArrayList<>());;
+    // Используем WeakReference для автоматической очистки
+    private final List<WeakReference<Consumer<DownloadEvent>>> subscribers =
+            Collections.synchronizedList(new ArrayList<>());
 
     public DownloadService(APIClient apiClient, String defaultDownloadPath)
     {
@@ -114,27 +116,32 @@ public class DownloadService implements IDownloadService, AutoCloseable
     @Override
     public void subscribe(Consumer<DownloadEvent> subscriber)
     {
-        if (subscriber != null && !subscribers.contains(subscriber))
+        if (isShutdown) return; //проверка на идиотизм
+
+        if (subscriber != null)
         {
-            subscribers.add(subscriber);
+            cleanupStaleReferences();
+            subscribers.add(new WeakReference<>(subscriber));
             System.out.println("Новый подписчик добавлен. Всего подписчиков: " + subscribers.size());
+        }
+    }
+    /// Очистка ссылок на удаленные объекты
+    private void cleanupStaleReferences() {
+        synchronized (subscribers) {
+            subscribers.removeIf(ref -> ref.get() == null);
         }
     }
 
     @Override
     public void unsubscribe(Consumer<DownloadEvent> subscriber)
     {
-        if (subscriber != null)
-        {
-            subscribers.remove(subscriber);
-            System.out.println("Подписчик удален. Осталось подписчиков: " + subscribers.size());
-        }
-    }
+        if (isShutdown) return;
+        subscribers.removeIf(ref -> {
+            Consumer<DownloadEvent> listener = ref.get();
+            return listener == null || listener == subscriber;
+        });
 
-    @Override
-    public List<Consumer<DownloadEvent>> getSubscribers()
-    {
-        return new ArrayList<>(subscribers); // Возвращаем копию для безопасности
+        System.out.println("Отписка от сервиса скачивания. Всего подписчиков: " + subscribers.size());
     }
 
     @Override
@@ -144,10 +151,25 @@ public class DownloadService implements IDownloadService, AutoCloseable
         System.out.println("Все подписчики очищены");
     }
 
+    /// Получение копии активных подписчиков (только живые)
+    @Override
+    public List<Consumer<DownloadEvent>> getSubscribers()
+    {
+        synchronized (subscribers) {
+            // Очищаем мертвые ссылки и возвращаем живых подписчиков
+            subscribers.removeIf(ref -> ref.get() == null);
+
+            return subscribers.stream()
+                    .map(WeakReference::get)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        }
+    }
+
     /// Уведомление подписчиков о событиях
     private void notifySubscribersAsync(DownloadEvent event)
     {
-        // Создаем копию списка для безопасной итерации
+        // Получаем копию живых подписчиков
         List<Consumer<DownloadEvent>> currentSubscribers = getSubscribers();
 
         if (!currentSubscribers.isEmpty()) {
@@ -159,7 +181,7 @@ public class DownloadService implements IDownloadService, AutoCloseable
                     }
                     catch (IllegalStateException e)
                     {
-                        // Если возникла ошибка "Not on FX application thread". Это скоре всего UI - подписчик
+                        // Если возникла ошибка "Not on FX application thread". Это скорее всего UI-подписчик
                         // пробуем через Platform.runLater.
                         Platform.runLater(() -> {
                             try
@@ -180,6 +202,7 @@ public class DownloadService implements IDownloadService, AutoCloseable
             });
         }
     }
+
 
     private void handleSubscriberError(Consumer<DownloadEvent> subscriber, Exception ex)
     {

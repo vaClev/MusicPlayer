@@ -1,10 +1,12 @@
 package org.example.vasilev.musicpro.controllers;
 
 import javafx.application.Platform;
+import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -25,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 public class MainController implements Initializable, SearchController.SearchCallback
 {
@@ -50,10 +53,10 @@ public class MainController implements Initializable, SearchController.SearchCal
     private IDownloadService downloadService = null;
     private IMusicClientService musicClientService = null;
 
-    /// ссылка на контроллер плеера. Будем инжектить ее в карточки песен, чтобы добавлять их в плейлист
+    /// Ссылка на контроллер плеера. Будем инжектить ее в карточки песен, чтобы добавлять их в плейлист
     private IPlaylistOwner playlistOwner;
 
-    /// контроллер поиска
+    /// Контроллер поиска
     private SearchController searchController; //TODO интерфейс
 
 
@@ -61,11 +64,38 @@ public class MainController implements Initializable, SearchController.SearchCal
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
+        // Слушатель очистки songsContainer. Чтобы карточки отписались от событий сервисов.
+        initSongsContainerClearListener();
+
         // инициализация UI элементов плеера
         loadPlayer();
 
         // инициализация панели поиска
         loadSearchPanel();
+    }
+
+    // Добавляем слушатель изменений в songsContainer. Чтобы карточки при удалении из UI отписались от событий сервисов.
+    private void initSongsContainerClearListener()
+    {
+        Consumer<Node> cleanupNode = node -> {
+            if (node instanceof VBox) {
+                Object controller = ((VBox) node).getProperties().get("controller");
+                if (controller instanceof MusicSmallCardController) {
+                    ((MusicSmallCardController) controller).cleanup();
+                }
+            }
+        };
+
+        songsContainer.getChildren().addListener((ListChangeListener<Node>) change -> {
+            while (change.next()) {
+                if (change.wasRemoved()) {
+                    change.getRemoved().forEach(cleanupNode);
+                }
+                if (change.wasReplaced()) {
+                    change.getRemoved().forEach(cleanupNode);
+                }
+            }
+        });
     }
 
     public void setServices(ConfigService configService, IDownloadService downloadService, IMusicClientService musicClientService)
@@ -207,6 +237,10 @@ public class MainController implements Initializable, SearchController.SearchCal
 
         // Получаем контроллер
         MusicSmallCardController controller = loader.getController();
+
+        // сохраняем контроллер в свойствах карточки -- чтобы cleanListener при очистке смог все понять и почистить
+        card.getProperties().put("controller", controller);
+
         // Внедряем ему зависимости
         controller.setMusicFile(musicFile, downloadService);
         controller.setPlaylistOwner(playlistOwner);

@@ -37,7 +37,7 @@ public class MusicSmallCardController
     private IPlaylistOwner playlistOwner = null;
     private IMusicClientService musicClientService = null;
     private IDownloadService downloadService = null;
-    Consumer<DownloadEvent> smallCardSubscriber = null;
+    private Consumer<DownloadEvent> smallCardSubscriber = null;
 
     public MusicSmallCardController()
     {
@@ -234,5 +234,10 @@ public class MusicSmallCardController
             return;
 
         playlistOwner.addMusicFileToPlaylist(musicFile);
+    }
+
+    public void cleanup()
+    {
+        downloadService.unsubscribe(smallCardSubscriber);
     }
 }
