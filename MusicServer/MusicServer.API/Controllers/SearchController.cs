@@ -11,14 +11,11 @@ namespace MusicServer.API.Controllers
     public class SearchController : ControllerBase
     {
         private readonly IMusicService _musicService;
-        private readonly ILogger<SearchController> _logger;
 
         public SearchController(
-            IMusicService musicService,
-            ILogger<SearchController> logger)
+            IMusicService musicService)
         {
             _musicService = musicService;
-            _logger = logger;
         }
 
         /// <summary>
