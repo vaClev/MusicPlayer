@@ -10,6 +10,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.VBox;
+import org.example.vasilev.musicpro.dto.MusicPageDTO;
 import org.example.vasilev.musicpro.models.MusicFile;
 import org.example.vasilev.musicpro.services.*;
 import org.example.vasilev.musicpro.services.download.IDownloadService;
@@ -23,20 +24,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.concurrent.CompletableFuture;
 
 public class MainController implements Initializable, SearchController.SearchCallback
 {
     public VBox root;
 
     @FXML
-    private VBox searchContainer; /// Контейнер для элементов поиска
+    private VBox searchContainer;
+    /// Контейнер для элементов поиска
 
     @FXML
     public SplitPane splitPane;
     @FXML
-    private VBox songsContainer; /// Контейнер UI элементов списков песен
+    private VBox songsContainer;
+    /// Контейнер UI элементов списков песен
     @FXML
-    private VBox playerContainer; /// Контейнер UI элементов плеера
+    private VBox playerContainer;
+    /// Контейнер UI элементов плеера
 
     @FXML
     private Label statusLabel;
@@ -51,6 +56,8 @@ public class MainController implements Initializable, SearchController.SearchCal
     /// контроллер поиска
     private SearchController searchController; //TODO интерфейс
 
+
+
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
@@ -61,11 +68,11 @@ public class MainController implements Initializable, SearchController.SearchCal
         loadSearchPanel();
     }
 
-    public void setServices(ConfigService configService, IDownloadService downloadService,  IMusicClientService musicClientService)
+    public void setServices(ConfigService configService, IDownloadService downloadService, IMusicClientService musicClientService)
     {
-       this.configService = configService;
-       this.downloadService = downloadService;
-       this.musicClientService = musicClientService;
+        this.configService = configService;
+        this.downloadService = downloadService;
+        this.musicClientService = musicClientService;
 
         // Показываем путь к папке загрузок
         statusLabel.setText("Папка загрузок: " + configService.getConfig().getDownloadDir());
@@ -86,13 +93,13 @@ public class MainController implements Initializable, SearchController.SearchCal
             playerController.setSplitPane(splitPane);
             /// сохраняем ссылку на владельца плейлиста.
             this.playlistOwner = playerController;
-        }
-        catch (IOException e)
+        } catch (IOException e)
         {
             System.err.println("Не удалось загрузить player.fxml: " + e.getMessage());
         }
     }
 
+    /// Загрузка UI элементов панели поиск
     private void loadSearchPanel()
     {
         try
@@ -112,71 +119,82 @@ public class MainController implements Initializable, SearchController.SearchCal
             System.err.println("Не удалось загрузить search-panel.fxml: " + e.getMessage());
         }
     }
+
     /// //////////////////////////////////////////////////////
-    ///  Реализация SearchCallback
+    ///  Методы
     /// //////////////////////////////////////////////////////
 
+    ///  Реализация SearchCallback
     @Override
     public void onSearch(Map<String, String> searchParams, int page, int pageSize)
     {
-        //songsContainer.getChildren().clear();
-        //Эту функцию умеет дергать контроллер поиска
-//        musicClientService.searchMusicFiles(searchParams, page, pageSize)
-//                .thenApplyAsync(this::createCardsFromPage)
-//                .thenAcceptAsync(this::displayCards, Platform::runLater)
-//                .exceptionally(throwable -> {
-//                    Platform.runLater(() -> {
-//                        showAlert("Ошибка поиска", throwable.getMessage());
-//                    });
-//                    return null;
-//                });
-        loadPagesFromServer(); //временно простой запрос
+        loadAndDisplayCards(musicClientService.searchMusicFiles(searchParams, page, pageSize));
     }
 
-/// //////////////////////////////////////////////////////
-///  Получение карточек песен
-/// //////////////////////////////////////////////////////
+    @FXML
+    private void handleGetPage()
+    {
+        loadPagesFromServer();
+    }
 
-    /// Получение данных с сервера NEW API с пагинацией
+    /// Получение всех песен с сервера NEW API с пагинацией
     private void loadPagesFromServer()
     {
-        songsContainer.getChildren().clear();
+        loadAndDisplayCards(musicClientService.getMusicFiles(1, 10));
+    }
 
-        musicClientService.getMusicFiles(1,10).thenApplyAsync(
-                        page->
-                        {
-                            List<VBox> cards = new ArrayList<>();
-                            for (MusicFile musicFile : page.toCardsList()) {
-                                try
-                                {
-                                    VBox card = createSongCard(musicFile);
-                                    cards.add(card);
-                                }
-                                catch (IOException e)
-                                {
-                                    // Логируем ошибку, но продолжаем создание других карточек
-                                    System.err.println("Ошибка создания карточки: " + e.getMessage());
-                                }
-                            }
-                            return cards;
-                        })
-                .thenAcceptAsync(cards -> {
-                    // Обновление UI только после создания всех карточек
-                    Platform.runLater(() -> {
-                        songsContainer.getChildren().addAll(cards);
-                        //showLoadingIndicator(false);
-                        //updateStatus("Загружено " + cards.size() + " песен");
-                    });
-                }, Platform::runLater) // Исполнять в UI потоке
-
-                .exceptionally(throwable -> {
-                    Platform.runLater(() -> {
+    /// //////////////////////////////////////////////////////
+    ///  Получение карточек песен
+    /// //////////////////////////////////////////////////////
+    /**
+     * Загрузка и отображения карточек песен
+     *
+     * @param futurePage CompletableFuture с данными страницы
+     */
+    private void loadAndDisplayCards(CompletableFuture<MusicPageDTO> futurePage)
+    {
+        futurePage
+                .thenApplyAsync(this::createCardsFromPage)
+                .thenAcceptAsync(this::displayCards, Platform::runLater)
+                .exceptionally(throwable ->
+                {
+                    Platform.runLater(() ->
+                    {
                         showAlert("Ошибка загрузки", throwable.getMessage());
-                        //showLoadingIndicator(false);
                     });
                     return null;
                 });
     }
+
+    /**
+     * Создание списка карточек из страницы
+     *
+     * @param page страница с данными
+     * @return список VBox карточек
+     */
+    private List<VBox> createCardsFromPage(MusicPageDTO page)
+    {
+        List<VBox> cards = new ArrayList<>();
+
+        // Обновляем информацию о пагинации в SearchController
+        if (searchController != null)
+            searchController.updatePagination(page.getPageNumber(), page.getTotalPages());
+
+        for (MusicFile musicFile : page.toCardsList())
+        {
+            try
+            {
+                VBox card = createSongCard(musicFile);
+                cards.add(card);
+            } catch (IOException e)
+            {
+                System.err.println("Ошибка создания карточки: " + e.getMessage());
+            }
+        }
+
+        return cards;
+    }
+
 
     private VBox createSongCard(MusicFile musicFile) throws IOException
     {
@@ -197,13 +215,20 @@ public class MainController implements Initializable, SearchController.SearchCal
         return card;
     }
 
-    @FXML
-    private void handleGetPage()
+    /**
+     * Отображение карточек в UI
+     *
+     * @param cards список карточек для отображения
+     */
+    private void displayCards(List<VBox> cards)
     {
-        loadPagesFromServer();
+        songsContainer.getChildren().clear();
+        if(cards.isEmpty())
+            throw new RuntimeException("Пустая страница. Ничего не нашлось по вашим параметрам поиска");
+
+        songsContainer.getChildren().addAll(cards);
         statusLabel.setText("Список обновлен с сервера. Папка загрузок: " + configService.getConfig().getDownloadDir());
     }
-
 
     /// //////////////////////////////////////////////////////
     /// //////////////////////////////////////////////////////
@@ -215,6 +240,7 @@ public class MainController implements Initializable, SearchController.SearchCal
         loadMockSongs();
         statusLabel.setText("Список обновлен из тест JSON. Папка загрузок: " + configService.getConfig().getDownloadDir());
     }
+
     /// Загрузка и отображение в UI содержимого из файла JSON
     private void loadMockSongs()
     {
@@ -263,12 +289,14 @@ public class MainController implements Initializable, SearchController.SearchCal
         if (!success)
             // Показываем путь для ручного открытия
             showAlert("Не удалось открыть проводник",
-                    "откройте папку"+ downloadService.getDefaultDownloadsFolder());
+                    "откройте папку" + downloadService.getDefaultDownloadsFolder());
     }
 
     /// Показ окна с ошибкой
-    private void showAlert(String title, String content) {
-        Platform.runLater(() -> {
+    private void showAlert(String title, String content)
+    {
+        Platform.runLater(() ->
+        {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle(title);
             alert.setHeaderText(null);
@@ -290,17 +318,20 @@ public class MainController implements Initializable, SearchController.SearchCal
         searchContainer.setManaged(!isVisible); // managed влияет на то, занимает ли элемент место в layout
 
         // Меняем текст кнопки (если нужно)
-        if (actionEvent.getSource() instanceof Button) {
-            Button sourceButton = (Button) actionEvent.getSource();
-            if (!isVisible) {
+        if (actionEvent.getSource() instanceof Button sourceButton)
+        {
+            if (!isVisible)
+            {
                 sourceButton.setText("Скрыть поиск");
-            } else {
+            } else
+            {
                 sourceButton.setText("Показать поиск");
             }
         }
 
         // Обновляем статус
-        if (statusLabel != null) {
+        if (statusLabel != null)
+        {
             statusLabel.setText("Панель поиска " + (searchContainer.isVisible() ? "показана" : "скрыта") +
                     " | Папка загрузок: " + configService.getConfig().getDownloadDir());
         }

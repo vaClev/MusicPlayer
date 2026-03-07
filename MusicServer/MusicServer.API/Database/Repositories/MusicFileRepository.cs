@@ -181,7 +181,7 @@ namespace MusicServer.API.Database.Repositories
 		}
 
 		/// Применение всех фильтров поиска
-		private IQueryable<MusicFile> ApplySorting(IQueryable<MusicFile> query, SearchParams searchParams)
+		private IQueryable<MusicFile> ApplySearchFilters(IQueryable<MusicFile> query, SearchParams searchParams)
 		{
 			// 1. Поиск по общему запросу (ищет в названии и исполнителе)
 			if (!string.IsNullOrWhiteSpace(searchParams.Query))
@@ -259,7 +259,7 @@ namespace MusicServer.API.Database.Repositories
 			return query;
 		}
 
-		private IQueryable<MusicFile> ApplySearchFilters(IQueryable<MusicFile> query, SearchParams searchParams)
+		private IQueryable<MusicFile> ApplySorting(IQueryable<MusicFile> query, SearchParams searchParams)
 		{
 			if (string.IsNullOrWhiteSpace(searchParams.SortBy))
 				searchParams.SortBy = "Title";

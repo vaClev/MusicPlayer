@@ -102,4 +102,31 @@ public class MusicClientService implements IMusicClientService
             }
         });
     }
+
+    //TODO реализовать
+    @Override
+    public CompletableFuture<MusicPageDTO> searchMusicFiles(Map<String, String> searchParams, int page, int pageSize)
+    {
+        return CompletableFuture.supplyAsync(() ->
+        {
+            try
+            {
+                // Добавляем параметры пагинации
+                searchParams.put("pageNumber", String.valueOf(page));
+                searchParams.put("pageSize", String.valueOf(pageSize));
+
+                // Строим URL с параметрами
+                String url = APIClient.buildUrlWithParams("api/search", searchParams);
+
+                // Выполняем запрос
+                MusicPageDTO pageResult = apiClient.getAsync(url, MusicPageDTO.class).join();
+                currentPage = pageResult.getPageNumber();
+
+                return pageResult;
+            } catch (Exception e)
+            {
+                throw new RuntimeException("Failed to search music files", e);
+            }
+        });
+    }
 }

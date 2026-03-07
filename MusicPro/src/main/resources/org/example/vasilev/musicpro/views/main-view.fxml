@@ -12,7 +12,7 @@
     <!-- Шапка приложения -->
     <VBox styleClass="header" spacing="20" alignment="CENTER_LEFT">
         <HBox spacing="10" HBox.hgrow="ALWAYS">
-            <Label text="🎵 MusicPro v0.1" styleClass="app-title"/>
+            <Label text="🎵 MusicPro v0.2" styleClass="app-title"/>
             <Button text="JSON TEST" onAction="#handleRefresh"/>
             <Button text="GET PAGE" onAction="#handleGetPage"/>
             <Button text="Открыть папку загрузок" onAction="#openFolder"/>

@@ -1,13 +1,10 @@
 package org.example.vasilev.musicpro.controllers;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
-import org.example.vasilev.musicpro.services.music.IMusicClientService;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,7 +58,7 @@ public class SearchController implements Initializable {
     @FXML
     private Button searchButton;
 
-    /// Ссылка на главный контроллер для обратного вызова
+    /// Ссылка на метод для обратного вызова поиска
     private SearchCallback callback;
 
     private int currentPage = 1;
@@ -219,9 +216,12 @@ public class SearchController implements Initializable {
         this.currentPage = currentPage;
         this.totalPages = totalPages;
 
-        pageInfoLabel.setText("Страница " + currentPage + " из " + totalPages);
-        prevPageButton.setDisable(currentPage <= 1);
-        nextPageButton.setDisable(currentPage >= totalPages);
+        Platform.runLater(() ->
+        {
+            pageInfoLabel.setText("Страница " + currentPage + " из " + totalPages);
+            prevPageButton.setDisable(currentPage <= 1);
+            nextPageButton.setDisable(currentPage >= totalPages);
+        });
     }
 
     /// Установка колбэка для связи с главным контроллером
