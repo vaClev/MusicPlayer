@@ -25,6 +25,8 @@ public class MusicSmallCardController
     @FXML
     private Label albumLabel;
     @FXML
+    public Label genreLabel;
+    @FXML
     private Label durationLabel;
     @FXML
     private Label statusLabel;
@@ -109,7 +111,7 @@ public class MusicSmallCardController
         titleLabel.setText(musicFile.getTitle());
         artistLabel.setText(musicFile.getArtist());
         albumLabel.setText("Альбом: " + musicFile.getAlbum());
-
+        genreLabel.setText(musicFile.getGenre());
         // Форматированная длительность
         durationLabel.setText("Длительность: " + musicFile.getFormattedDuration());
 

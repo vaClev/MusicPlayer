@@ -60,7 +60,6 @@ public class MainController implements Initializable, SearchController.SearchCal
     private SearchController searchController; //TODO интерфейс
 
 
-
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
@@ -77,21 +76,28 @@ public class MainController implements Initializable, SearchController.SearchCal
     // Добавляем слушатель изменений в songsContainer. Чтобы карточки при удалении из UI отписались от событий сервисов.
     private void initSongsContainerClearListener()
     {
-        Consumer<Node> cleanupNode = node -> {
-            if (node instanceof VBox) {
+        Consumer<Node> cleanupNode = node ->
+        {
+            if (node instanceof VBox)
+            {
                 Object controller = ((VBox) node).getProperties().get("controller");
-                if (controller instanceof MusicSmallCardController) {
+                if (controller instanceof MusicSmallCardController)
+                {
                     ((MusicSmallCardController) controller).cleanup();
                 }
             }
         };
 
-        songsContainer.getChildren().addListener((ListChangeListener<Node>) change -> {
-            while (change.next()) {
-                if (change.wasRemoved()) {
+        songsContainer.getChildren().addListener((ListChangeListener<Node>) change ->
+        {
+            while (change.next())
+            {
+                if (change.wasRemoved())
+                {
                     change.getRemoved().forEach(cleanupNode);
                 }
-                if (change.wasReplaced()) {
+                if (change.wasReplaced())
+                {
                     change.getRemoved().forEach(cleanupNode);
                 }
             }
@@ -143,8 +149,7 @@ public class MainController implements Initializable, SearchController.SearchCal
             // Получаем контроллер и устанавливаем колбэк
             searchController = loader.getController();
             searchController.setCallback(this);
-        }
-        catch (IOException e)
+        } catch (IOException e)
         {
             System.err.println("Не удалось загрузить search-panel.fxml: " + e.getMessage());
         }
@@ -158,7 +163,10 @@ public class MainController implements Initializable, SearchController.SearchCal
     @Override
     public void onSearch(Map<String, String> searchParams, int page, int pageSize)
     {
-        loadAndDisplayCards(musicClientService.searchMusicFiles(searchParams, page, pageSize));
+        if (searchParams.isEmpty())
+            songsContainer.getChildren().clear();
+        else
+            loadAndDisplayCards(musicClientService.searchMusicFiles(searchParams, page, pageSize));
     }
 
     @FXML
@@ -257,7 +265,7 @@ public class MainController implements Initializable, SearchController.SearchCal
     private void displayCards(List<VBox> cards)
     {
         songsContainer.getChildren().clear();
-        if(cards.isEmpty())
+        if (cards.isEmpty())
             throw new RuntimeException("Пустая страница. Ничего не нашлось по вашим параметрам поиска");
 
         songsContainer.getChildren().addAll(cards);

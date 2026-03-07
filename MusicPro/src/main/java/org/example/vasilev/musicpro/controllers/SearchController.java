@@ -13,7 +13,8 @@ import java.util.ResourceBundle;
 /**
  * Контроллер для панели поиска и пагинации
  */
-public class SearchController implements Initializable {
+public class SearchController implements Initializable
+{
 
     @FXML
     private TextField searchQueryField;
@@ -86,15 +87,19 @@ public class SearchController implements Initializable {
     private void setupEventHandlers()
     {
         // Кнопки пагинации
-        prevPageButton.setOnAction(event -> {
-            if (currentPage > 1) {
+        prevPageButton.setOnAction(event ->
+        {
+            if (currentPage > 1)
+            {
                 currentPage--;
                 notifySearch();
             }
         });
 
-        nextPageButton.setOnAction(event -> {
-            if (currentPage < totalPages) {
+        nextPageButton.setOnAction(event ->
+        {
+            if (currentPage < totalPages)
+            {
                 currentPage++;
                 notifySearch();
             }
@@ -104,7 +109,8 @@ public class SearchController implements Initializable {
         clearSearchButton.setOnAction(event -> clearFields());
 
         // Кнопка поиска
-        searchButton.setOnAction(event -> {
+        searchButton.setOnAction(event ->
+        {
             currentPage = 1; // Сбрасываем на первую страницу при новом поиске
             notifySearch();
         });
@@ -115,27 +121,32 @@ public class SearchController implements Initializable {
 
     private void setupEnterKeyHandlers()
     {
-        searchQueryField.setOnAction(event -> {
+        searchQueryField.setOnAction(event ->
+        {
             currentPage = 1;
             notifySearch();
         });
 
-        titleField.setOnAction(event -> {
+        titleField.setOnAction(event ->
+        {
             currentPage = 1;
             notifySearch();
         });
 
-        artistField.setOnAction(event -> {
+        artistField.setOnAction(event ->
+        {
             currentPage = 1;
             notifySearch();
         });
 
-        genreField.setOnAction(event -> {
+        genreField.setOnAction(event ->
+        {
             currentPage = 1;
             notifySearch();
         });
 
-        yearField.setOnAction(event -> {
+        yearField.setOnAction(event ->
+        {
             currentPage = 1;
             notifySearch();
         });
@@ -162,7 +173,8 @@ public class SearchController implements Initializable {
     /// Уведомление главного контроллера о необходимости поиска
     private void notifySearch()
     {
-        if (callback != null) {
+        if (callback != null)
+        {
             callback.onSearch(buildSearchParams(), currentPage, getPageSize());
         }
     }
@@ -178,16 +190,17 @@ public class SearchController implements Initializable {
         addIfNotEmpty(params, "genre", genreField.getText());
         addIfNotEmpty(params, "year", yearField.getText());
 
-        if (exactMatchCheckBox.isSelected()) {
-            params.put("exactMatch", "true");
-        }
 
-        if (sortByComboBox.getValue() != null && !sortByComboBox.getValue().isEmpty()) {
-            params.put("sortBy", sortByComboBox.getValue());
-        }
+        if (!params.isEmpty())
+        {
+            if (exactMatchCheckBox.isSelected())
+                params.put("exactMatch", "true");
 
-        if (sortDescCheckBox.isSelected()) {
-            params.put("sortDesc", "true");
+            if (sortByComboBox.getValue() != null && !sortByComboBox.getValue().isEmpty())
+                params.put("sortBy", sortByComboBox.getValue());
+
+            if (sortDescCheckBox.isSelected())
+                params.put("sortDesc", "true");
         }
 
         return params;
@@ -195,7 +208,8 @@ public class SearchController implements Initializable {
 
     private void addIfNotEmpty(Map<String, String> map, String key, String value)
     {
-        if (value != null && !value.trim().isEmpty()) {
+        if (value != null && !value.trim().isEmpty())
+        {
             map.put(key, value.trim());
         }
     }
@@ -203,9 +217,11 @@ public class SearchController implements Initializable {
     /// Получение размера страницы из поля ввода
     public int getPageSize()
     {
-        try {
+        try
+        {
             return Integer.parseInt(pageSizeField.getText());
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException e)
+        {
             return 10;
         }
     }
