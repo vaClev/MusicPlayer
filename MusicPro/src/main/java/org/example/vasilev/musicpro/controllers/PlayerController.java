@@ -10,6 +10,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.control.SplitPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -58,6 +59,21 @@ public class PlayerController implements IPlaylistOwner
     /// Статус бар
     @FXML
     private Label playerStatusLabel;
+
+    /// ////////////////////////////////////////////////
+    ///Скрыть показать нижнюю панель
+    @FXML
+    private HBox bottomPanel;
+    @FXML
+    private Button toggleBottomPanelButton;
+    private boolean isBottomPanelVisible = false;
+    @FXML
+    private SplitPane splitPane; // ссылка на SplitPane из главного окна
+    // Метод для установки splitPane из MainController
+    public void setSplitPane(SplitPane splitPane) {
+        this.splitPane = splitPane;
+    }
+    /// ////////////////////////////////////////////////
 
     /// ////////////////////////////////////////////////
     /// Сервис воспроизведения музыки
@@ -431,5 +447,42 @@ public class PlayerController implements IPlaylistOwner
 
         // Показываем статус
         playerStatusLabel.setText("Добавлено " + selectedFiles.size() + " треков в плейлист");
+    }
+
+    /// UI сворачивание разворачивание нижней панели
+    public void handleToggleBottomPanel(ActionEvent actionEvent)
+    {
+        if (bottomPanel == null) return;
+
+        isBottomPanelVisible = !isBottomPanelVisible;
+
+        // Скрываем/показываем панель
+        bottomPanel.setVisible(isBottomPanelVisible);
+        bottomPanel.setManaged(isBottomPanelVisible);
+
+        // Меняем символ на кнопке
+        if (isBottomPanelVisible) {
+            toggleBottomPanelButton.setText("−");
+            toggleBottomPanelButton.getStyleClass().remove("collapsed");
+
+            // Если панель показывается, увеличиваем высоту playerContainer
+            if (splitPane != null) {
+                // Устанавливаем разделитель на 50% для списка и 50% для плеера
+                splitPane.setDividerPositions(0.5);
+            }
+        } else {
+            toggleBottomPanelButton.setText("+");
+            toggleBottomPanelButton.getStyleClass().add("collapsed");
+
+            // Если панель скрывается, сворачиваем плеер
+            if (splitPane != null) {
+                splitPane.setDividerPositions(1.0);
+            }
+        }
+
+        // Обновляем статус
+        if (playerStatusLabel != null) {
+            playerStatusLabel.setText("Плейлист " + (isBottomPanelVisible ? "показан" : "скрыт"));
+        }
     }
 }

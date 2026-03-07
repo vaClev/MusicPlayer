@@ -16,32 +16,42 @@
             <Button text="JSON TEST" onAction="#handleRefresh"/>
             <Button text="GET PAGE" onAction="#handleGetPage"/>
             <Button text="Открыть папку загрузок" onAction="#openFolder"/>
-            <Button text="Search show/hide" onAction="#handleShowHide"/>
+            <Button text="Панель поиска" onAction="#handleShowHide"/>
         </HBox>
         <!-- Статус бар -->
         <Label fx:id="statusLabel" styleClass="footer"/>
     </VBox>
 
     <!-- Панель поиска (будет загружена программно) -->
-    <VBox fx:id="searchContainer" styleClass="search-panel-container" VBox.vgrow="NEVER" visible="false"/>
+    <VBox fx:id="searchContainer" styleClass="search-panel-container" VBox.vgrow="NEVER" visible="false" managed="false"/>
 
     <!-- Разделитель на 2 зоны -->
-    <SplitPane orientation="VERTICAL"
-               dividerPositions="0.75"
+    <SplitPane fx:id="splitPane"
+               orientation="VERTICAL"
+               dividerPositions="1.0"
                VBox.vgrow="ALWAYS"
                HBox.hgrow="ALWAYS"
                maxWidth="Infinity"
                maxHeight="Infinity">
 
-        <!-- Верхняя область (75%): Контейнер для карточек песен (вертикальный) -->
+        <!-- Верхняя область: Контейнер для карточек песен -->
         <ScrollPane fitToWidth="true"
                     hbarPolicy="NEVER"
                     vbarPolicy="AS_NEEDED"
-                    VBox.vgrow="ALWAYS">
+                    VBox.vgrow="ALWAYS"
+                    HBox.hgrow="ALWAYS"
+                    maxWidth="Infinity"
+                    maxHeight="Infinity"
+                    minHeight="50"> <!-- Минимальная высота, чтобы не схлопнулось -->
 
             <VBox fx:id="songsContainer" styleClass="songs-container"
                   spacing="10"
-                  alignment="TOP_CENTER">
+                  alignment="TOP_CENTER"
+                  VBox.vgrow="ALWAYS"
+                  maxWidth="Infinity"
+                  maxHeight="Infinity"
+                  minHeight="80"
+                  >
                 <padding>
                     <Insets top="10" right="10" bottom="10" left="10"/>
                 </padding>
@@ -50,12 +60,12 @@
             </VBox>
         </ScrollPane>
 
-        <!-- Нижняя область (25%): Плеер -->
+        <!-- Нижняя область: Плеер с автоматической высотой -->
         <VBox fx:id="playerContainer" styleClass="player-area"
-              VBox.vgrow="ALWAYS"
+              VBox.vgrow="SOMETIMES"
               HBox.hgrow="ALWAYS"
               maxWidth="Infinity"
-              maxHeight="Infinity">
+              minHeight="80">
             <!-- Плеер будет загружен сюда программно -->
         </VBox>
     </SplitPane>

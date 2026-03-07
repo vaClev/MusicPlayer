@@ -8,6 +8,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.SplitPane;
 import javafx.scene.layout.VBox;
 import org.example.vasilev.musicpro.models.MusicFile;
 import org.example.vasilev.musicpro.services.*;
@@ -31,8 +32,9 @@ public class MainController implements Initializable, SearchController.SearchCal
     private VBox searchContainer; /// Контейнер для элементов поиска
 
     @FXML
+    public SplitPane splitPane;
+    @FXML
     private VBox songsContainer; /// Контейнер UI элементов списков песен
-
     @FXML
     private VBox playerContainer; /// Контейнер UI элементов плеера
 
@@ -80,8 +82,10 @@ public class MainController implements Initializable, SearchController.SearchCal
             VBox player = loader.load();
             playerContainer.getChildren().add(player);
 
+            PlayerController playerController = loader.getController();
+            playerController.setSplitPane(splitPane);
             /// сохраняем ссылку на владельца плейлиста.
-            this.playlistOwner = loader.getController();
+            this.playlistOwner = playerController;
         }
         catch (IOException e)
         {
