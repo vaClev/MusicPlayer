@@ -82,17 +82,18 @@ public class SearchController implements Initializable
 
     private void onPageChange(PageChangeEvent event)
     {
-        totalPages = event.getData().getTotalPages();
-        currentPage = event.getData().getPageNumber();
+        var page = event.getData();
+        totalPages = page!=null ? event.getData().getTotalPages() : 0;
+        currentPage = page!=null ? event.getData().getPageNumber() : 0;
 
         Platform.runLater(() ->
         {
             // Обновляем информацию о пагинации
-            pageInfoLabel.setText("Страница " + event.getData().getPageNumber() + " из " + event.getData().getTotalPages());
+            pageInfoLabel.setText("Страница " + currentPage + " из " + totalPages);
             prevPageButton.setDisable(!pageOwner.hasPreviousPage());
             nextPageButton.setDisable(!pageOwner.hasNextPage());
 
-            // Если это обычный режим (не поиск) - очищаем поля //TODO можно написать что сейчас поиск неактивен. Загреить?
+            // Если это обычный режим (не поиск) - очищаем поля //TODO можно написать что сейчас поиск неактивен. Или загреить?
             if (event.isNormal())
                 clearFields(true);
         });

@@ -67,12 +67,6 @@ public class MainController implements Initializable
     {
         // Слушатель очистки songsContainer. Чтобы карточки отписались от событий сервисов.
         initSongsContainerClearListener();
-
-        // инициализация UI элементов плеера
-        loadPlayer();
-
-        // инициализация панели поиска
-        loadSearchPanel();
     }
 
     // Добавляем слушатель изменений в songsContainer. Чтобы карточки при удалении из UI отписались от событий сервисов.
@@ -106,6 +100,7 @@ public class MainController implements Initializable
         });
     }
 
+    // Внедрение зависимостей
     public void setServices(ConfigService configService, IDownloadService downloadService, IMusicClientService musicClientService,
                             IPageOwner pageOwner)
     {
@@ -115,49 +110,24 @@ public class MainController implements Initializable
 
         this.pageOwner = pageOwner;
         pageOwner.subscribe(cardCreatorSubscriber);  // подпишемся на события
-        searchController.setPageOwner(pageOwner); // внедрим зависимость в searchController
+
         // Показываем путь к папке загрузок
         statusLabel.setText("Папка загрузок: " + configService.getConfig().getDownloadDir());
     }
 
-    /// Загрузка UI элементов кнопок плеера
-    private void loadPlayer()
+    /// Внедрение UI элементов плеера
+    public void setPlayerContainer(VBox player, PlayerController playerController)
     {
-        try
-        {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/org/example/vasilev/musicpro/views/player.fxml")
-            );
-            VBox player = loader.load();
-            playerContainer.getChildren().add(player);
+        playerContainer.getChildren().add(player);
+        playerController.setSplitPane(splitPane);
 
-            PlayerController playerController = loader.getController();
-            playerController.setSplitPane(splitPane);
-            /// сохраняем ссылку на владельца плейлиста.
-            this.playlistOwner = playerController;
-        } catch (IOException e)
-        {
-            System.err.println("Не удалось загрузить player.fxml: " + e.getMessage());
-        }
+        this.playlistOwner = playerController; /// сохраняем ссылку на владельца плейлиста.
     }
 
-    /// Загрузка UI элементов панели поиск
-    private void loadSearchPanel()
+    /// Внедрение UI элементов панели поиск
+    public void setSearchPanel(VBox searchPanel)
     {
-        try
-        {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/org/example/vasilev/musicpro/views/search-panel.fxml")
-            );
-            VBox searchPanel = loader.load();
-            searchContainer.getChildren().add(searchPanel);
-
-            // Получаем контроллер и внедряем ему IPageOwner
-            searchController = loader.getController();
-        } catch (IOException e)
-        {
-            System.err.println("Не удалось загрузить search-panel.fxml: " + e.getMessage());
-        }
+        searchContainer.getChildren().add(searchPanel);
     }
 
     /// //////////////////////////////////////////////////////
@@ -166,7 +136,6 @@ public class MainController implements Initializable
     @FXML
     private void handleGetPage()
     {
-        //loadPagesFromServer();
         int page = 1; //TODO получить из UI кнопок пагинации и намера текущей страницы
         pageOwner.loadPage(page);
     }
@@ -180,6 +149,16 @@ public class MainController implements Initializable
         if (event.isError())
         {
             showAlert("Ошибка загрузки", event.getError().getMessage());
+            return;
+        }
+
+        /// Поиск без параметров = сигнал об очистке результатов.
+        if(event.isSearch() && event.getSearchParams().isEmpty())
+        {
+            Platform.runLater(() ->
+            {
+                songsContainer.getChildren().clear();
+            });
             return;
         }
 

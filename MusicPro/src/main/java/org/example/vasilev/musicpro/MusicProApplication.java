@@ -4,8 +4,11 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.example.vasilev.musicpro.controllers.MainController;
+import org.example.vasilev.musicpro.controllers.PlayerController;
+import org.example.vasilev.musicpro.controllers.SearchController;
 import org.example.vasilev.musicpro.models.AppConfig;
 import org.example.vasilev.musicpro.services.APIClient;
 import org.example.vasilev.musicpro.services.ConfigService;
@@ -15,7 +18,11 @@ import org.example.vasilev.musicpro.services.music.IMusicClientService;
 import org.example.vasilev.musicpro.services.music.IPageOwner;
 import org.example.vasilev.musicpro.services.music.MusicClientService;
 import org.example.vasilev.musicpro.services.music.PageOwner;
+import org.example.vasilev.musicpro.services.player.BasicPlayerService;
+import org.example.vasilev.musicpro.services.player.IPlayerService;
+import org.example.vasilev.musicpro.services.player.MusicMetadataExtractService;
 
+import java.io.IOException;
 import java.net.URL;
 
 public class MusicProApplication extends Application
@@ -27,6 +34,11 @@ public class MusicProApplication extends Application
     private IMusicClientService musicClientService = null;
     private IPageOwner pageOwner = null;
 
+    /// Сервис воспроизведения музыки
+    private IPlayerService playerService;
+    /// Сервис извлечением метаданных из локального файла
+    private MusicMetadataExtractService extractService;
+
     @Override
     public void start(Stage stage)
     {
@@ -36,6 +48,7 @@ public class MusicProApplication extends Application
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/vasilev/musicpro/views/main-view.fxml"));
             Parent root = loader.load();
             this.mainController = loader.getController(); // Вот она, сохраняется в поле класса
+            System.out.println("Создан MainController");
 
             // Создаем сцену
             Scene scene = new Scene(root, 1000, 700);
@@ -43,8 +56,10 @@ public class MusicProApplication extends Application
             // Устанавливаем заголовок
             stage.setTitle("MusicPro v.0.2");
 
-            /// TODO Создать все сервисы  и Внедрить зависимости
+            /// TODO Создать все сервисы и Внедрить зависимости
             startServices();
+            loadSearchPanel();
+            loadPlayer();
 
             // Обработчик закрытия приложения
             stage.setOnCloseRequest(event -> {
@@ -87,6 +102,7 @@ public class MusicProApplication extends Application
         }
     }
 
+    /// Запуск сервисов
     private void startServices()
     {
         // Инициализация сервисов
@@ -103,8 +119,59 @@ public class MusicProApplication extends Application
         // внедрение зависимостей
         mainController.setServices(configService, downloadService, musicClientService, pageOwner);
         System.out.println("Сервисы внедрены в mainController");
+
+        playerService = new BasicPlayerService();
+        extractService = new MusicMetadataExtractService();
     }
 
+
+    /// Загрузка UI контроллера панели поиск. И внедрение его в mainController
+    private void loadSearchPanel()
+    {
+        try
+        {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/org/example/vasilev/musicpro/views/search-panel.fxml")
+            );
+            VBox searchPanel = loader.load();
+
+            // Получаем контроллер и внедряем ему IPageOwner
+            SearchController searchController = loader.getController();
+            searchController.setPageOwner(pageOwner);
+
+            mainController.setSearchPanel(searchPanel);
+            System.out.println("SearchPanel внедрен в mainController");
+        } catch (IOException e)
+        {
+            System.err.println("Не удалось загрузить search-panel.fxml: " + e.getMessage());
+        }
+    }
+
+
+    /// Загрузка UI контроллера плеера. И внедрение его в mainController
+    private void loadPlayer()
+    {
+        try
+        {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/org/example/vasilev/musicpro/views/player.fxml")
+            );
+            VBox player = loader.load();
+            PlayerController playerController = loader.getController();
+
+            //внедрение зависимостей
+            playerController.setServices(playerService, extractService);
+            System.out.println("в PlayerController внедрены в playerService и extractService");
+
+            mainController.setPlayerContainer(player, playerController);
+            System.out.println("Player внедрен в mainController");
+        } catch (IOException e)
+        {
+            System.err.println("Не удалось загрузить player.fxml: " + e.getMessage());
+        }
+    }
+
+    /// Остановка сервисов. Очистка ресурсов где требуется
     private void shutdownServices()
     {
         AutoCloseable downloadNotificator = (AutoCloseable) downloadService;

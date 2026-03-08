@@ -85,22 +85,22 @@ public class PlayerController implements IPlaylistOwner
 
     public PlayerController()
     {
-        // Используем базовую реализацию плеера
-        this.playerService = new BasicPlayerService();
-
-        // используем при работе с локальными файлами (получены не с сервера)
-        this.extractService = new MusicMetadataExtractService();
     }
 
+    public void setServices(IPlayerService playerService, MusicMetadataExtractService extractService)
+    {
+        this.playerService = playerService;
+        this.extractService = extractService;
+
+        // Подписка UI элементов на события сервиса
+        setupPlayerBindings();
+    }
 
     @FXML
     public void initialize()
     {
         // Настройка плейлиста
         setupPlaylist();
-
-        // Подписка UI элементов на события сервиса
-        setupPlayerBindings();
     }
 
     /// ////////////////////////////////////////////////

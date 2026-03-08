@@ -94,10 +94,23 @@ public class PageOwner implements IPageOwner
         this.isSearchMode = true;
         this.currentSearchParams = searchParams != null ? new HashMap<>(searchParams) : new HashMap<>();
 
-        // Отправляем запрос
-        musicClientService.searchMusicFiles(currentSearchParams, currentPage, pageSize)
-                .thenAccept(this::handleSuccess)
-                .exceptionally(this::handleError);
+        if(searchParams == null || searchParams.isEmpty())
+        {
+            // Не стучимся зря на сервер. Создаем событие "пустой поисковой запрос"
+            PageChangeEvent event = new PageChangeEvent.Builder()
+                    .type(PageChangeEvent.Type.SEARCH)
+                    .searchParams(currentSearchParams)
+                    .build();
+
+            notifySubscribers(event);
+        }
+        else
+        {
+            // Отправляем запрос
+            musicClientService.searchMusicFiles(currentSearchParams, currentPage, pageSize)
+                    .thenAccept(this::handleSuccess)
+                    .exceptionally(this::handleError);
+        }
     }
 
     // следующая страница
