@@ -45,12 +45,8 @@ public interface IPageOwner extends IObservable<Consumer<PageChangeEvent>>
     ///Проверить, в режиме ли поиска ?
     boolean isSearchMode();
 
-    ///Получить текущие параметры поиска
-    Map<String, String> getCurrentSearchParams();
-
-
     /// ///////////////////////////////
-    /// с реализацией
+    /// с default реализацией
     /// //////////////////////////////
     /// Есть ли следующая страница ?
     default boolean hasNextPage()

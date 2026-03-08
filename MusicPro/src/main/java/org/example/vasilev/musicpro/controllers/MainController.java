@@ -62,6 +62,9 @@ public class MainController implements Initializable
     private SearchController searchController; //TODO интерфейс
 
 
+    /// //////////////////////////////////////////////////////
+    ///  Инициализация и внедрение зависимостей
+    /// //////////////////////////////////////////////////////
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
@@ -100,7 +103,7 @@ public class MainController implements Initializable
         });
     }
 
-    // Внедрение зависимостей
+    /// Внедрение зависимостей - Сервисы
     public void setServices(ConfigService configService, IDownloadService downloadService, IMusicClientService musicClientService,
                             IPageOwner pageOwner)
     {
@@ -130,8 +133,9 @@ public class MainController implements Initializable
         searchContainer.getChildren().add(searchPanel);
     }
 
+
     /// //////////////////////////////////////////////////////
-    ///  Методы
+    ///  Собственные Методы MainController
     /// //////////////////////////////////////////////////////
     @FXML
     private void handleGetPage()
@@ -152,8 +156,7 @@ public class MainController implements Initializable
             return;
         }
 
-        /// Поиск без параметров = сигнал об очистке результатов.
-        if(event.isSearch() && event.getSearchParams().isEmpty())
+        if(event.isSearch() && event.getSearchParams().isEmpty()) /// Поиск без параметров = сигнал об очистке результатов.
         {
             Platform.runLater(() ->
             {
@@ -166,12 +169,7 @@ public class MainController implements Initializable
         displayCards(cards);
     }
 
-    /**
-     * Создание списка карточек из страницы
-     *
-     * @param page страница с данными
-     * @return список VBox карточек
-     */
+    /// Создание списка карточек из страницы
     private List<VBox> createCardsFromPage(MusicPageDTO page)
     {
         List<VBox> cards = new ArrayList<>();
@@ -191,7 +189,7 @@ public class MainController implements Initializable
         return cards;
     }
 
-
+    ///  Создание одной карточки конкретного musicFile
     private VBox createSongCard(MusicFile musicFile) throws IOException
     {
         FXMLLoader loader = new FXMLLoader(
@@ -215,11 +213,7 @@ public class MainController implements Initializable
         return card;
     }
 
-    /**
-     * Отображение карточек в UI
-     *
-     * @param cards список карточек для отображения
-     */
+    /// Отображение карточек в UI
     private void displayCards(List<VBox> cards)
     {
         Platform.runLater(() ->
@@ -236,6 +230,7 @@ public class MainController implements Initializable
                     configService.getConfig().getDownloadDir());
         });
     }
+
 
     /// //////////////////////////////////////////////////////
     /// //////////////////////////////////////////////////////
@@ -287,7 +282,7 @@ public class MainController implements Initializable
     /// Открыть папку "Загрузки"
     /// //////////////////////////////////////////////////////
     @FXML
-    public void openFolder(ActionEvent actionEvent)
+    public void handleOpenFolder(ActionEvent actionEvent)
     {
         boolean success = FolderOpener.openFolder(
                 downloadService.getDefaultDownloadsFolder()

@@ -269,11 +269,4 @@ public class PageOwner implements IPageOwner
     {
         return isSearchMode;
     }
-
-    @Override
-    public Map<String, String> getCurrentSearchParams()
-    {
-        return currentSearchParams != null ?
-                Collections.unmodifiableMap(currentSearchParams) : null;
-    }
 }

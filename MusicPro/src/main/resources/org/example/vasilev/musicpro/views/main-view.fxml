@@ -15,7 +15,7 @@
             <Label text="🎵 MusicPro v0.2" styleClass="app-title"/>
             <Button text="JSON TEST" onAction="#handleRefresh"/>
             <Button text="GET PAGE" onAction="#handleGetPage"/>
-            <Button text="Открыть папку загрузок" onAction="#openFolder"/>
+            <Button text="Открыть папку загрузок" onAction="#handleOpenFolder"/>
             <Button text="Панель поиска" onAction="#handleShowHide"/>
         </HBox>
         <!-- Статус бар -->

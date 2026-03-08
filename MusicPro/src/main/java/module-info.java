@@ -13,6 +13,7 @@ module org.example.vasilev.musicpro
     // Если нужно, экспортируем и другие пакеты
     exports org.example.vasilev.musicpro;
     exports org.example.vasilev.musicpro.models;
+    exports org.example.vasilev.musicpro.dto;
     exports org.example.vasilev.musicpro.services;
     exports org.example.vasilev.musicpro.services.music;
     exports org.example.vasilev.musicpro.services.player;
