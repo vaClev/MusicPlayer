@@ -17,6 +17,8 @@ import org.example.vasilev.musicpro.models.MusicFile;
 import org.example.vasilev.musicpro.services.*;
 import org.example.vasilev.musicpro.services.download.IDownloadService;
 import org.example.vasilev.musicpro.services.music.IMusicClientService;
+import org.example.vasilev.musicpro.services.music.IPageOwner;
+import org.example.vasilev.musicpro.services.music.PageChangeEvent;
 import org.example.vasilev.musicpro.utils.FolderOpener;
 import org.example.vasilev.musicpro.utils.Tests;
 
@@ -24,12 +26,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-public class MainController implements Initializable, SearchController.SearchCallback
+public class MainController implements Initializable
 {
     public VBox root;
 
@@ -52,6 +52,8 @@ public class MainController implements Initializable, SearchController.SearchCal
     private ConfigService configService = null;
     private IDownloadService downloadService = null;
     private IMusicClientService musicClientService = null;
+    private IPageOwner pageOwner = null;
+    private final Consumer<PageChangeEvent> cardCreatorSubscriber = this::onPageChange;
 
     /// Ссылка на контроллер плеера. Будем инжектить ее в карточки песен, чтобы добавлять их в плейлист
     private IPlaylistOwner playlistOwner;
@@ -80,7 +82,7 @@ public class MainController implements Initializable, SearchController.SearchCal
         {
             if (node instanceof VBox)
             {
-                Object controller = ((VBox) node).getProperties().get("controller");
+                Object controller = node.getProperties().get("controller");
                 if (controller instanceof MusicSmallCardController)
                 {
                     ((MusicSmallCardController) controller).cleanup();
@@ -104,12 +106,16 @@ public class MainController implements Initializable, SearchController.SearchCal
         });
     }
 
-    public void setServices(ConfigService configService, IDownloadService downloadService, IMusicClientService musicClientService)
+    public void setServices(ConfigService configService, IDownloadService downloadService, IMusicClientService musicClientService,
+                            IPageOwner pageOwner)
     {
         this.configService = configService;
         this.downloadService = downloadService;
         this.musicClientService = musicClientService;
 
+        this.pageOwner = pageOwner;
+        pageOwner.subscribe(cardCreatorSubscriber);  // подпишемся на события
+        searchController.setPageOwner(pageOwner); // внедрим зависимость в searchController
         // Показываем путь к папке загрузок
         statusLabel.setText("Папка загрузок: " + configService.getConfig().getDownloadDir());
     }
@@ -146,9 +152,8 @@ public class MainController implements Initializable, SearchController.SearchCal
             VBox searchPanel = loader.load();
             searchContainer.getChildren().add(searchPanel);
 
-            // Получаем контроллер и устанавливаем колбэк
+            // Получаем контроллер и внедряем ему IPageOwner
             searchController = loader.getController();
-            searchController.setCallback(this);
         } catch (IOException e)
         {
             System.err.println("Не удалось загрузить search-panel.fxml: " + e.getMessage());
@@ -158,50 +163,28 @@ public class MainController implements Initializable, SearchController.SearchCal
     /// //////////////////////////////////////////////////////
     ///  Методы
     /// //////////////////////////////////////////////////////
-
-    ///  Реализация SearchCallback
-    @Override
-    public void onSearch(Map<String, String> searchParams, int page, int pageSize)
-    {
-        if (searchParams.isEmpty())
-            songsContainer.getChildren().clear();
-        else
-            loadAndDisplayCards(musicClientService.searchMusicFiles(searchParams, page, pageSize));
-    }
-
     @FXML
     private void handleGetPage()
     {
-        loadPagesFromServer();
-    }
-
-    /// Получение всех песен с сервера NEW API с пагинацией
-    private void loadPagesFromServer()
-    {
-        loadAndDisplayCards(musicClientService.getMusicFiles(1, 10));
+        //loadPagesFromServer();
+        int page = 1; //TODO получить из UI кнопок пагинации и намера текущей страницы
+        pageOwner.loadPage(page);
     }
 
     /// //////////////////////////////////////////////////////
     ///  Получение карточек песен
     /// //////////////////////////////////////////////////////
-    /**
-     * Загрузка и отображения карточек песен
-     *
-     * @param futurePage CompletableFuture с данными страницы
-     */
-    private void loadAndDisplayCards(CompletableFuture<MusicPageDTO> futurePage)
+    /// handler которым подписываемся на события IPageOwner'a
+    private void onPageChange(PageChangeEvent event)
     {
-        futurePage
-                .thenApplyAsync(this::createCardsFromPage)
-                .thenAcceptAsync(this::displayCards, Platform::runLater)
-                .exceptionally(throwable ->
-                {
-                    Platform.runLater(() ->
-                    {
-                        showAlert("Ошибка загрузки", throwable.getMessage());
-                    });
-                    return null;
-                });
+        if (event.isError())
+        {
+            showAlert("Ошибка загрузки", event.getError().getMessage());
+            return;
+        }
+
+        List<VBox> cards = createCardsFromPage(event.getData());
+        displayCards(cards);
     }
 
     /**
@@ -213,10 +196,6 @@ public class MainController implements Initializable, SearchController.SearchCal
     private List<VBox> createCardsFromPage(MusicPageDTO page)
     {
         List<VBox> cards = new ArrayList<>();
-
-        // Обновляем информацию о пагинации в SearchController
-        if (searchController != null)
-            searchController.updatePagination(page.getPageNumber(), page.getTotalPages());
 
         for (MusicFile musicFile : page.toCardsList())
         {
@@ -264,12 +243,19 @@ public class MainController implements Initializable, SearchController.SearchCal
      */
     private void displayCards(List<VBox> cards)
     {
-        songsContainer.getChildren().clear();
-        if (cards.isEmpty())
-            throw new RuntimeException("Пустая страница. Ничего не нашлось по вашим параметрам поиска");
+        Platform.runLater(() ->
+        {
+            songsContainer.getChildren().clear();
+            if (cards.isEmpty())
+            {
+                showAlert("Ошибка", "Пустая страница. Ничего не нашлось по вашим параметрам поиска");
+                return;
+            }
 
-        songsContainer.getChildren().addAll(cards);
-        statusLabel.setText("Список обновлен с сервера. Папка загрузок: " + configService.getConfig().getDownloadDir());
+            songsContainer.getChildren().addAll(cards);
+            statusLabel.setText("Список обновлен с сервера. Папка загрузок: " +
+                    configService.getConfig().getDownloadDir());
+        });
     }
 
     /// //////////////////////////////////////////////////////

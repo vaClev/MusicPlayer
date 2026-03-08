@@ -4,11 +4,15 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import org.example.vasilev.musicpro.services.download.DownloadEvent;
+import org.example.vasilev.musicpro.services.music.IPageOwner;
+import org.example.vasilev.musicpro.services.music.PageChangeEvent;
 
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
 /**
  * Контроллер для панели поиска и пагинации
@@ -60,10 +64,40 @@ public class SearchController implements Initializable
     private Button searchButton;
 
     /// Ссылка на метод для обратного вызова поиска
-    private SearchCallback callback;
+    private IPageOwner pageOwner;
+    private final Consumer<PageChangeEvent> searchSubscriber = this::onPageChange;
 
     private int currentPage = 1;
     private int totalPages = 1;
+
+    /// //////////////////////////////////////
+    /// Установка сервиса загрузки страниц
+    /// ////////////////////////////////////////
+    public void setPageOwner(IPageOwner pageOwner)
+    {
+        this.pageOwner = pageOwner;
+        if (pageOwner != null)
+            pageOwner.subscribe(searchSubscriber);
+    }
+
+    private void onPageChange(PageChangeEvent event)
+    {
+        totalPages = event.getData().getTotalPages();
+        currentPage = event.getData().getPageNumber();
+
+        Platform.runLater(() ->
+        {
+            // Обновляем информацию о пагинации
+            pageInfoLabel.setText("Страница " + event.getData().getPageNumber() + " из " + event.getData().getTotalPages());
+            prevPageButton.setDisable(!pageOwner.hasPreviousPage());
+            nextPageButton.setDisable(!pageOwner.hasNextPage());
+
+            // Если это обычный режим (не поиск) - очищаем поля //TODO можно написать что сейчас поиск неактивен. Загреить?
+            if (event.isNormal())
+                clearFields(true);
+        });
+    }
+    /// ////////////////////////////////////////
 
     @Override
     public void initialize(URL location, ResourceBundle resources)
@@ -71,7 +105,6 @@ public class SearchController implements Initializable
         initializeControls();
         setupEventHandlers();
     }
-
     private void initializeControls()
     {
         // Настраиваем ComboBox для сортировки
@@ -90,23 +123,17 @@ public class SearchController implements Initializable
         prevPageButton.setOnAction(event ->
         {
             if (currentPage > 1)
-            {
-                currentPage--;
-                notifySearch();
-            }
+                pageOwner.prevPage();
         });
 
         nextPageButton.setOnAction(event ->
         {
             if (currentPage < totalPages)
-            {
-                currentPage++;
-                notifySearch();
-            }
+                pageOwner.nextPage();
         });
 
         // Кнопка очистки
-        clearSearchButton.setOnAction(event -> clearFields());
+        clearSearchButton.setOnAction(event -> clearFields(false));
 
         // Кнопка поиска
         searchButton.setOnAction(event ->
@@ -154,7 +181,7 @@ public class SearchController implements Initializable
     }
 
     /// Очистка всех полей поиска
-    private void clearFields()
+    private void clearFields(boolean isFromNormalLoading)
     {
         searchQueryField.clear();
         titleField.clear();
@@ -166,16 +193,17 @@ public class SearchController implements Initializable
         sortDescCheckBox.setSelected(false);
         pageSizeField.setText("10");
 
-        currentPage = 1;
-        notifySearch();
+        if(!isFromNormalLoading)
+          notifySearch();
     }
 
-    /// Уведомление главного контроллера о необходимости поиска
+    /// Уведомление о необходимости поиска
     private void notifySearch()
     {
-        if (callback != null)
+        if (pageOwner != null)
         {
-            callback.onSearch(buildSearchParams(), currentPage, getPageSize());
+            pageOwner.setPageSize(getPageSize());
+            pageOwner.search(buildSearchParams(), currentPage);
         }
     }
 
@@ -224,37 +252,5 @@ public class SearchController implements Initializable
         {
             return 10;
         }
-    }
-
-    /// Обновление информации о пагинации
-    public void updatePagination(int currentPage, int totalPages)
-    {
-        this.currentPage = currentPage;
-        this.totalPages = totalPages;
-
-        Platform.runLater(() ->
-        {
-            pageInfoLabel.setText("Страница " + currentPage + " из " + totalPages);
-            prevPageButton.setDisable(currentPage <= 1);
-            nextPageButton.setDisable(currentPage >= totalPages);
-        });
-    }
-
-    /// Установка колбэка для связи с главным контроллером
-    public void setCallback(SearchCallback callback)
-    {
-        this.callback = callback;
-    }
-
-    /// Сброс на первую страницу
-    public void resetPage()
-    {
-        this.currentPage = 1;
-    }
-
-    /// Интерфейс для обратного вызова
-    public interface SearchCallback
-    {
-        void onSearch(Map<String, String> searchParams, int page, int pageSize);
     }
 }

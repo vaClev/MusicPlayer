@@ -12,7 +12,9 @@ import org.example.vasilev.musicpro.services.ConfigService;
 import org.example.vasilev.musicpro.services.download.DownloadService;
 import org.example.vasilev.musicpro.services.download.IDownloadService;
 import org.example.vasilev.musicpro.services.music.IMusicClientService;
+import org.example.vasilev.musicpro.services.music.IPageOwner;
 import org.example.vasilev.musicpro.services.music.MusicClientService;
+import org.example.vasilev.musicpro.services.music.PageOwner;
 
 import java.net.URL;
 
@@ -23,6 +25,7 @@ public class MusicProApplication extends Application
     private ConfigService configService = null;
     private IDownloadService downloadService = null;
     private IMusicClientService musicClientService = null;
+    private IPageOwner pageOwner = null;
 
     @Override
     public void start(Stage stage)
@@ -93,11 +96,12 @@ public class MusicProApplication extends Application
         // один экземпляр apiClient на оба сервиса.
         downloadService = new DownloadService(apiClient, configService.getConfig().getDownloadDir());
         musicClientService = new MusicClientService(apiClient);
+        pageOwner = new PageOwner(musicClientService);
 
         System.out.println("Сервисы запущены");
 
         // внедрение зависимостей
-        mainController.setServices(configService, downloadService, musicClientService);
+        mainController.setServices(configService, downloadService, musicClientService, pageOwner);
         System.out.println("Сервисы внедрены в mainController");
     }
 

@@ -14,6 +14,7 @@ module org.example.vasilev.musicpro
     exports org.example.vasilev.musicpro;
     exports org.example.vasilev.musicpro.models;
     exports org.example.vasilev.musicpro.services;
+    exports org.example.vasilev.musicpro.services.music;
 
     // Открываем доступ для FXML загрузчика
     opens org.example.vasilev.musicpro to javafx.fxml;
