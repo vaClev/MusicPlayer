@@ -30,7 +30,6 @@
                 <Label text="Название:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
                 <TextField fx:id="titleField" promptText="соната ..." GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-
                 <!-- Строка 2: Исполнитель Жанр и Точное совпадение -->
                 <Label text="Исполнитель:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
                 <TextField fx:id="artistField" promptText="Цой..." GridPane.rowIndex="1" GridPane.columnIndex="1"/>
@@ -52,22 +51,12 @@
 
                 <Label text="По убыванию:" GridPane.rowIndex="4" GridPane.columnIndex="2"/>
                 <CheckBox fx:id="sortDescCheckBox" GridPane.rowIndex="4" GridPane.columnIndex="3"/>
-
-                <!-- Строка 6: Размер страницы -->
-                <Label text="Элементов на странице:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-                <TextField fx:id="pageSizeField" text="10" prefWidth="60" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
             </GridPane>
         </TitledPane>
     </VBox>
+
     <HBox spacing="5" alignment="BOTTOM_RIGHT">
         <Button fx:id="searchButton" text="Искать" defaultButton="true"/>
         <Button fx:id="clearSearchButton" text="Очистить"/>
-    </HBox>
-
-    <!-- Пагинация -->
-    <HBox spacing="10" alignment="CENTER">
-        <Button fx:id="prevPageButton" text="◀ Предыдущая"/>
-        <Label fx:id="pageInfoLabel" text="Страница 1 из 1"/>
-        <Button fx:id="nextPageButton" text="Следующая ▶"/>
     </HBox>
 </VBox>

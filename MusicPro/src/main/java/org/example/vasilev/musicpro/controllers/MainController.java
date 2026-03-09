@@ -11,6 +11,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SplitPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.example.vasilev.musicpro.dto.MusicPageDTO;
 import org.example.vasilev.musicpro.models.MusicFile;
@@ -34,17 +35,24 @@ public class MainController implements Initializable
     public VBox root;
 
     @FXML
-    private VBox searchContainer;
     /// Контейнер для элементов поиска
+    private VBox searchContainer;
+
+    @FXML
+    /// Контейнер для кнопок пагинации
+    private HBox paginationContainer;
 
     @FXML
     public SplitPane splitPane;
+
     @FXML
-    private VBox songsContainer;
     /// Контейнер UI элементов списков песен
+    private VBox songsContainer;
+
     @FXML
-    private VBox playerContainer;
     /// Контейнер UI элементов плеера
+    private VBox playerContainer;
+
 
     @FXML
     private Label statusLabel;
@@ -57,10 +65,6 @@ public class MainController implements Initializable
 
     /// Ссылка на контроллер плеера. Будем инжектить ее в карточки песен, чтобы добавлять их в плейлист
     private IPlaylistOwner playlistOwner;
-
-    /// Контроллер поиска
-    private SearchController searchController; //TODO интерфейс
-
 
     /// //////////////////////////////////////////////////////
     ///  Инициализация и внедрение зависимостей
@@ -133,6 +137,11 @@ public class MainController implements Initializable
         searchContainer.getChildren().add(searchPanel);
     }
 
+    /// Внедрение UI элементов пагинации
+    public void setPaginationPanel(HBox paginationPanel)
+    {
+        paginationContainer.getChildren().add(paginationPanel);
+    }
 
     /// //////////////////////////////////////////////////////
     ///  Собственные Методы MainController
@@ -140,7 +149,7 @@ public class MainController implements Initializable
     @FXML
     private void handleGetPage()
     {
-        int page = 1; //TODO получить из UI кнопок пагинации и намера текущей страницы
+        int page = 1;
         pageOwner.loadPage(page);
     }
 
@@ -156,7 +165,7 @@ public class MainController implements Initializable
             return;
         }
 
-        if(event.isSearch() && event.getSearchParams().isEmpty()) /// Поиск без параметров = сигнал об очистке результатов.
+        if (event.isSearch() && event.getSearchParams().isEmpty()) /// Поиск без параметров = сигнал об очистке результатов.
         {
             Platform.runLater(() ->
             {

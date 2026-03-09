@@ -4,7 +4,6 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import org.example.vasilev.musicpro.services.download.DownloadEvent;
 import org.example.vasilev.musicpro.services.music.IPageOwner;
 import org.example.vasilev.musicpro.services.music.PageChangeEvent;
 
@@ -45,19 +44,6 @@ public class SearchController implements Initializable
     private CheckBox sortDescCheckBox;
 
     @FXML
-    private TextField pageSizeField;
-
-    // Кнопки пагинации
-    @FXML
-    private Label pageInfoLabel;
-
-    @FXML
-    private Button prevPageButton;
-
-    @FXML
-    private Button nextPageButton;
-
-    @FXML
     private Button clearSearchButton;
 
     @FXML
@@ -67,8 +53,7 @@ public class SearchController implements Initializable
     private IPageOwner pageOwner;
     private final Consumer<PageChangeEvent> searchSubscriber = this::onPageChange;
 
-    private int currentPage = 1;
-    private int totalPages = 1;
+    private final int startPage = 1;
 
     /// //////////////////////////////////////
     /// Установка сервиса загрузки страниц
@@ -82,18 +67,10 @@ public class SearchController implements Initializable
 
     private void onPageChange(PageChangeEvent event)
     {
-        var page = event.getData();
-        totalPages = page!=null ? event.getData().getTotalPages() : 0;
-        currentPage = page!=null ? event.getData().getPageNumber() : 0;
-
         Platform.runLater(() ->
         {
-            // Обновляем информацию о пагинации
-            pageInfoLabel.setText("Страница " + currentPage + " из " + totalPages);
-            prevPageButton.setDisable(!pageOwner.hasPreviousPage());
-            nextPageButton.setDisable(!pageOwner.hasNextPage());
-
-            // Если это обычный режим (не поиск) - очищаем поля //TODO можно написать что сейчас поиск неактивен. Или загреить?
+            // Если это обычный режим (не поиск) - очищаем поля
+            // TODO можно написать что сейчас поиск неактивен. Или загреить? или свернуть его
             if (event.isNormal())
                 clearFields(true);
         });
@@ -113,33 +90,16 @@ public class SearchController implements Initializable
                 "title", "artist", "album", "genre", "year", "duration", "uploadDate"
         );
         sortByComboBox.setValue("title");
-
-        // Устанавливаем размер страницы по умолчанию
-        pageSizeField.setText("10");
     }
 
     private void setupEventHandlers()
     {
-        // Кнопки пагинации
-        prevPageButton.setOnAction(event ->
-        {
-            if (currentPage > 1)
-                pageOwner.prevPage();
-        });
-
-        nextPageButton.setOnAction(event ->
-        {
-            if (currentPage < totalPages)
-                pageOwner.nextPage();
-        });
-
         // Кнопка очистки
         clearSearchButton.setOnAction(event -> clearFields(false));
 
         // Кнопка поиска
         searchButton.setOnAction(event ->
         {
-            currentPage = 1; // Сбрасываем на первую страницу при новом поиске
             notifySearch();
         });
 
@@ -151,31 +111,26 @@ public class SearchController implements Initializable
     {
         searchQueryField.setOnAction(event ->
         {
-            currentPage = 1;
             notifySearch();
         });
 
         titleField.setOnAction(event ->
         {
-            currentPage = 1;
             notifySearch();
         });
 
         artistField.setOnAction(event ->
         {
-            currentPage = 1;
             notifySearch();
         });
 
         genreField.setOnAction(event ->
         {
-            currentPage = 1;
             notifySearch();
         });
 
         yearField.setOnAction(event ->
         {
-            currentPage = 1;
             notifySearch();
         });
 
@@ -192,7 +147,6 @@ public class SearchController implements Initializable
         exactMatchCheckBox.setSelected(false);
         sortByComboBox.setValue("title");
         sortDescCheckBox.setSelected(false);
-        pageSizeField.setText("10");
 
         if(!isFromNormalLoading)
           notifySearch();
@@ -203,8 +157,7 @@ public class SearchController implements Initializable
     {
         if (pageOwner != null)
         {
-            pageOwner.setPageSize(getPageSize());
-            pageOwner.search(buildSearchParams(), currentPage);
+            pageOwner.search(buildSearchParams(), startPage);
         }
     }
 
@@ -240,18 +193,6 @@ public class SearchController implements Initializable
         if (value != null && !value.trim().isEmpty())
         {
             map.put(key, value.trim());
-        }
-    }
-
-    /// Получение размера страницы из поля ввода
-    public int getPageSize()
-    {
-        try
-        {
-            return Integer.parseInt(pageSizeField.getText());
-        } catch (NumberFormatException e)
-        {
-            return 10;
         }
     }
 }

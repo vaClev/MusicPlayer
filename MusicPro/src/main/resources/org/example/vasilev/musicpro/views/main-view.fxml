@@ -23,7 +23,18 @@
     </VBox>
 
     <!-- Панель поиска (будет загружена программно) -->
-    <VBox fx:id="searchContainer" styleClass="search-panel-container" VBox.vgrow="NEVER" visible="false" managed="false"/>
+    <VBox fx:id="searchContainer" styleClass="search-panel-container"
+          VBox.vgrow="NEVER"
+          visible="false"
+          managed="false"/>
+
+    <!-- Кнопки пагинации (будут загружены программно)-->
+    <HBox fx:id="paginationContainer" styleClass="search-panel-container"
+          VBox.vgrow="NEVER"
+          HBox.hgrow="ALWAYS"
+          maxWidth="Infinity"
+          alignment="CENTER"
+          fillHeight="false" />
 
     <!-- Разделитель на 2 зоны -->
     <SplitPane fx:id="splitPane"
@@ -51,7 +62,7 @@
                   maxWidth="Infinity"
                   maxHeight="Infinity"
                   minHeight="80"
-                  >
+            >
                 <padding>
                     <Insets top="10" right="10" bottom="10" left="10"/>
                 </padding>

@@ -238,46 +238,6 @@
     -fx-effect: dropshadow(gaussian, rgba(106, 17, 203, 0.2), 2, 0.3, 0, 0);
 }
 
-/* Кнопки пагинации */
-.page-button {
-    -fx-background-color: linear-gradient(to right, #6a11cb, #2575fc);
-    -fx-text-fill: white;
-    -fx-font-size: 12px;  /* Уменьшил с 13px до 12px */
-    -fx-font-weight: 600;
-    -fx-padding: 6px 20px;
-    -fx-background-radius: 30px;
-    -fx-border-radius: 30px;
-    -fx-border-color: rgba(255, 255, 255, 0.3);
-    -fx-border-width: 1px;
-    -fx-cursor: hand;
-    -fx-min-width: 130px;
-    -fx-min-height: 36px;
-    -fx-max-height: 36px;
-    -fx-effect: dropshadow(gaussian, rgba(106, 17, 203, 0.4), 8, 0.3, 0, 2);
-}
-
-.page-button:hover {
-    -fx-background-color: linear-gradient(to right, #7c2be0, #3d86fd);
-    -fx-effect: dropshadow(gaussian, rgba(106, 17, 203, 0.5), 12, 0.4, 0, 3);
-    -fx-scale-x: 1.03;
-    -fx-scale-y: 1.03;
-    -fx-border-color: #ffd700;
-}
-
-.page-button:pressed {
-    -fx-background-color: linear-gradient(to right, #5a00b5, #1e5fd4);
-    -fx-scale-x: 0.97;
-    -fx-scale-y: 0.97;
-}
-
-.page-button:disabled {
-    -fx-opacity: 0.5;
-    -fx-background-color: linear-gradient(to right, #a0a0a0, #808080);
-    -fx-border-color: rgba(255, 255, 255, 0.2);
-    -fx-cursor: default;
-    -fx-effect: none;
-}
-
 /* Поле размера страницы */
 .page-size-field {
     -fx-background-color: rgba(248, 244, 255, 0.8);

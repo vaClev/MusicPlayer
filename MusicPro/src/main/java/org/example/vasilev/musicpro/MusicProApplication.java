@@ -4,9 +4,11 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.example.vasilev.musicpro.controllers.MainController;
+import org.example.vasilev.musicpro.controllers.PaginationController;
 import org.example.vasilev.musicpro.controllers.PlayerController;
 import org.example.vasilev.musicpro.controllers.SearchController;
 import org.example.vasilev.musicpro.models.AppConfig;
@@ -59,10 +61,12 @@ public class MusicProApplication extends Application
             /// TODO Создать все сервисы и Внедрить зависимости
             startServices();
             loadSearchPanel();
+            loadPagination();
             loadPlayer();
 
             // Обработчик закрытия приложения
-            stage.setOnCloseRequest(event -> {
+            stage.setOnCloseRequest(event ->
+            {
                 shutdownServices();
             });
 
@@ -84,18 +88,16 @@ public class MusicProApplication extends Application
                 cssUrl = getClass().getResource("/org/example/vasilev/musicpro/player.css");
                 if (cssUrl != null)
                     scene.getStylesheets().add(cssUrl.toExternalForm());
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 System.err.println("CSS не загружен: " + e.getMessage());
             }
 
-            
+
             // Устанавливаем сцену и показываем окно
             stage.setScene(scene);
             stage.show();
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             System.err.println("Ошибка загрузки FXML: " + e.getMessage());
             e.printStackTrace();
@@ -171,6 +173,29 @@ public class MusicProApplication extends Application
         }
     }
 
+    /// Загрузка UI контроллера пагинации. И внедрение его в mainController
+    private void loadPagination()
+    {
+        try
+        {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/org/example/vasilev/musicpro/views/pagination-view.fxml")
+            );
+            HBox paginationPanel = loader.load();
+            PaginationController paginationController = loader.getController();
+
+            // Внедрение зависимостей
+            paginationController.setPageOwner(pageOwner);
+            System.out.println("в PaginationController внедрен pageOwner");
+
+            mainController.setPaginationPanel(paginationPanel);
+            System.out.println("PaginationPanel внедрен в mainController");
+        } catch (IOException e)
+        {
+            System.err.println("Не удалось загрузить pagination-view.fxml: " + e.getMessage());
+        }
+    }
+
     /// Остановка сервисов. Очистка ресурсов где требуется
     private void shutdownServices()
     {
@@ -179,8 +204,7 @@ public class MusicProApplication extends Application
         {
             downloadNotificator.close();
             // downloadService также закрывает и используемый им apiClient
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             throw new RuntimeException(e);
         }
