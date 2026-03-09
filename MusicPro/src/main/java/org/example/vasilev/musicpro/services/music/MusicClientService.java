@@ -7,11 +7,7 @@ import org.example.vasilev.musicpro.dto.MusicPageDTO;
 import org.example.vasilev.musicpro.models.MusicFile;
 import org.example.vasilev.musicpro.services.APIClient;
 
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +17,6 @@ import java.util.stream.Collectors;
 public class MusicClientService implements IMusicClientService
 {
     private final APIClient apiClient;
-    private int currentPage = 0;
 
     /// Конструктор для внедрения зависимости сверху
     public MusicClientService(APIClient apiClient)
@@ -72,7 +67,6 @@ public class MusicClientService implements IMusicClientService
                 String url = APIClient.buildUrlWithParams("api/music", params);
 
                 MusicPageDTO page = apiClient.getAsync(url, MusicPageDTO.class).join();
-                currentPage = page.getPageNumber();
 
                 return page;
             }
@@ -99,6 +93,30 @@ public class MusicClientService implements IMusicClientService
             catch (Exception e)
             {
                 throw new RuntimeException("Failed to get music files", e);
+            }
+        });
+    }
+
+    //TODO реализовать
+    @Override
+    public CompletableFuture<MusicPageDTO> searchMusicFiles(Map<String, String> searchParams, int page, int pageSize)
+    {
+        return CompletableFuture.supplyAsync(() ->
+        {
+            try
+            {
+                // Добавляем параметры пагинации
+                searchParams.put("pageNumber", String.valueOf(page));
+                searchParams.put("pageSize", String.valueOf(pageSize));
+
+                // Строим URL с параметрами
+                String url = APIClient.buildUrlWithParams("api/search", searchParams);
+
+                // Выполняем запрос
+                return apiClient.getAsync(url, MusicPageDTO.class).join();
+            } catch (Exception e)
+            {
+                throw new RuntimeException("Failed to search music files", e);
             }
         });
     }

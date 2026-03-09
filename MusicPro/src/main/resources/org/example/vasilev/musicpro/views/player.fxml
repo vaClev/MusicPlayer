@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.media.MediaView?>
 
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
@@ -10,7 +8,8 @@
       styleClass="player-container"
       spacing="10"
       VBox.vgrow="ALWAYS"
-      maxHeight="Infinity">
+      maxHeight="Infinity"
+      minHeight="80">
 
     <!-- Верхняя панель плеера -->
     <HBox styleClass="player-top-panel" spacing="15" alignment="CENTER"
@@ -47,11 +46,17 @@
         <!-- Общее время -->
         <Label fx:id="totalTimeLabel" text="00:00" styleClass="time-label"/>
 
+        <!-- Кнопка сворачивания/разворачивания нижней панели -->
+        <Button fx:id="toggleBottomPanelButton" text="+"
+                styleClass="player-btn toggle-btn"
+                onAction="#handleToggleBottomPanel"/>
     </HBox>
 
     <!-- Нижняя панель плеера -->
-    <HBox styleClass="player-bottom-panel" spacing="15" alignment="CENTER"
-          VBox.vgrow="ALWAYS" maxHeight="Infinity">
+    <HBox fx:id="bottomPanel"
+          styleClass="player-bottom-panel" spacing="15" alignment="CENTER"
+          VBox.vgrow="ALWAYS" maxHeight="Infinity"
+          visible="false" managed="false">
 
         <!-- Контейнер плейлиста (слева) -->
         <VBox styleClass="playlist-container" spacing="2" minWidth="250" maxWidth="350">

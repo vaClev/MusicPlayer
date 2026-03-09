@@ -69,7 +69,6 @@ public class MusicPageDTO
     public List<MusicFileDTO> getItems() { return items; }
     public void setItems(List<MusicFileDTO> items) { this.items = items; }
 
-
     // Метод для преобразования в список карточек (как было раньше)
     public List<MusicFile> toCardsList()
     {

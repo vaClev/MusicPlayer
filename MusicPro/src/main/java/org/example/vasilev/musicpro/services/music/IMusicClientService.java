@@ -4,6 +4,7 @@ import org.example.vasilev.musicpro.dto.MusicPageDTO;
 import org.example.vasilev.musicpro.models.MusicFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public interface IMusicClientService
@@ -37,11 +38,10 @@ public interface IMusicClientService
 
     /**
      * Поиск музыкальных файлов по запросу
-     * @param query поисковый запрос
+     * @param searchParams поисковые параметры
      * @param page номер страницы
      * @param pageSize размер страницы
      * @return список найденных музыкальных файлов
      */
-    /// TODO подумать о развитии функциональности
-    //CompletableFuture<List<MusicFile>> searchMusicFiles(String query, int page, int pageSize);
+    CompletableFuture<MusicPageDTO> searchMusicFiles(Map<String, String> searchParams, int page, int pageSize);
 }

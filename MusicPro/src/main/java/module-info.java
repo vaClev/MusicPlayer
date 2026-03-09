@@ -13,12 +13,16 @@ module org.example.vasilev.musicpro
     // Если нужно, экспортируем и другие пакеты
     exports org.example.vasilev.musicpro;
     exports org.example.vasilev.musicpro.models;
+    exports org.example.vasilev.musicpro.dto;
     exports org.example.vasilev.musicpro.services;
+    exports org.example.vasilev.musicpro.services.music;
+    exports org.example.vasilev.musicpro.services.player;
 
     // Открываем доступ для FXML загрузчика
     opens org.example.vasilev.musicpro to javafx.fxml;
     opens org.example.vasilev.musicpro.controllers to javafx.fxml;
     opens org.example.vasilev.musicpro.controllers.details to javafx.fxml;
+
     opens org.example.vasilev.musicpro.views to javafx.fxml;
     opens org.example.vasilev.musicpro.views.details to javafx.fxml;
     opens org.example.vasilev.musicpro.models to javafx.fxml; // ДЛЯ BINDING СВОЙСТВ

@@ -25,6 +25,8 @@ public class MusicSmallCardController
     @FXML
     private Label albumLabel;
     @FXML
+    public Label genreLabel;
+    @FXML
     private Label durationLabel;
     @FXML
     private Label statusLabel;
@@ -37,7 +39,7 @@ public class MusicSmallCardController
     private IPlaylistOwner playlistOwner = null;
     private IMusicClientService musicClientService = null;
     private IDownloadService downloadService = null;
-    Consumer<DownloadEvent> smallCardSubscriber = null;
+    private Consumer<DownloadEvent> smallCardSubscriber = null;
 
     public MusicSmallCardController()
     {
@@ -109,7 +111,7 @@ public class MusicSmallCardController
         titleLabel.setText(musicFile.getTitle());
         artistLabel.setText(musicFile.getArtist());
         albumLabel.setText("Альбом: " + musicFile.getAlbum());
-
+        genreLabel.setText(musicFile.getGenre());
         // Форматированная длительность
         durationLabel.setText("Длительность: " + musicFile.getFormattedDuration());
 
@@ -234,5 +236,10 @@ public class MusicSmallCardController
             return;
 
         playlistOwner.addMusicFileToPlaylist(musicFile);
+    }
+
+    public void cleanup()
+    {
+        downloadService.unsubscribe(smallCardSubscriber);
     }
 }

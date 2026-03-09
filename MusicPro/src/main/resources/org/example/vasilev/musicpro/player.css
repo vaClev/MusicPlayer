@@ -200,7 +200,7 @@
 .player-bottom-panel {
     -fx-padding: 10px 0 0 0;
     -fx-vgrow: ALWAYS;         /* ДОБАВИТЬ: растягиваться */
-    -fx-min-height: 100px;     /* Минимальная высота */
+    -fx-min-height: 120px;     /* Минимальная высота */
     -fx-max-height: Infinity;  /* Может расти */
 }
 
