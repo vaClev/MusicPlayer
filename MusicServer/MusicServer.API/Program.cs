@@ -27,7 +27,7 @@ builder.Services.AddControllers();
 
 // Настраиваем PostgreSQL - в рамках разработки курсовой подключение к локальноve серверу БД
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DevelopConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Регистрируем Repositories в приложении
 builder.Services.AddScoped<IMusicFileRepository, MusicFileRepository>();
