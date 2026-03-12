@@ -1,6 +1,7 @@
 package org.example.vasilev.musicpro.models;
 
 import java.io.*;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 public class AppConfig
@@ -9,9 +10,15 @@ public class AppConfig
     private static AppConfig instance;
     private Properties properties;
 
-    private static final String DEFAULT_DOWNLOAD_DIR = System.getProperty("user.home") + "\\MusicPlayer\\downloads";
-    private static final String DEFAULT_CACHE_DIR = System.getProperty("user.home") + "\\MusicPlayer\\cache";
-    private static final String DEFAULT_TEMP_DIR = System.getProperty("java.io.tmpdir") + "MusicPlayer";
+    // Используем Paths.get() для кросс-платформенных путей
+    private static final String DEFAULT_DOWNLOAD_DIR =
+            Paths.get(System.getProperty("user.home"), "MusicPlayer", "downloads").toString();
+
+    private static final String DEFAULT_CACHE_DIR =
+            Paths.get(System.getProperty("user.home"), "MusicPlayer", "cache").toString();
+
+    private static final String DEFAULT_TEMP_DIR =
+            Paths.get(System.getProperty("java.io.tmpdir"), "MusicPlayer").toString();
     private static final String DEFAULT_SERVER_URL = "http://127.0.0.1:5098/";
 
     private AppConfig()
@@ -23,7 +30,8 @@ public class AppConfig
     // Получение силглтона //TODO перенести его spring
     public static AppConfig getInstance()
     {
-        if (instance == null) {
+        if (instance == null)
+        {
             instance = new AppConfig();
         }
         return instance;
@@ -31,6 +39,26 @@ public class AppConfig
 
     private void loadConfig()
     {
+        File configFile = findConfigFile();// Ищем конфиг в нескольких местах
+
+        if (configFile.exists())
+        {
+            try (InputStream input = new FileInputStream(configFile)) {
+                properties.load(input);
+            }
+            catch (IOException e)
+            {
+                System.err.println("Ошибка загрузки конфига: " + e.getMessage());
+                setDefaults();
+            }
+        }
+        else
+        {
+            // Файл не существует, создаем с настройками по умолчанию
+            setDefaults();
+            saveConfig();
+        }
+
         try (InputStream input = new FileInputStream(CONFIG_FILE))
         {
             properties.load(input);
@@ -41,6 +69,24 @@ public class AppConfig
             setDefaults();
             saveConfig();
         }
+    }
+
+    private File findConfigFile()
+    {
+        // 1. Текущая директория
+        File currentDir = new File(CONFIG_FILE);
+        if (currentDir.exists()) return currentDir;
+
+        // 2. Домашняя директория
+        File homeDir = new File(System.getProperty("user.home"), CONFIG_FILE);
+        if (homeDir.exists()) return homeDir;
+
+        // 3. Директория приложения (для macOS .app)
+        String appDir = System.getProperty("app.dir", ".");
+        File appConfig = new File(appDir, CONFIG_FILE);
+        if (appConfig.exists()) return appConfig;
+
+        return currentDir; // вернем текущую для создания нового
     }
 
     private void setDefaults()
@@ -66,7 +112,7 @@ public class AppConfig
     }
 
 
-    ///Геттеры
+    /// Геттеры
     public String getDownloadDir()
     {
         return properties.getProperty("download.dir", DEFAULT_DOWNLOAD_DIR);
@@ -82,7 +128,10 @@ public class AppConfig
         return properties.getProperty("temp.dir", DEFAULT_TEMP_DIR);
     }
 
-    public String getServerUrl() {return properties.getProperty("server.url", DEFAULT_SERVER_URL); }
+    public String getServerUrl()
+    {
+        return properties.getProperty("server.url", DEFAULT_SERVER_URL);
+    }
 
     public int getMaxConcurrentDownloads()
     {

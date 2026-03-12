@@ -287,7 +287,7 @@
     -fx-padding: 5px 15px;
     -fx-min-height: 30px;
     -fx-pref-height: 30px;
-    -fx-max-height: 40px;
+    -fx-max-height: 30px;
     -fx-effect: dropshadow(gaussian, rgba(106, 17, 203, 0.1), 5, 0.2, 0, 1);
 }
 
