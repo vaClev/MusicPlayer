@@ -83,13 +83,3 @@ jpackage --type deb \
 
 ### **Шаг 6: Готово!**
 Установщик лежит в папке `output/musicpro_1.0_amd64.deb`. Запускай ! 🚀
-
-```bash
-sudo dpkg -i output/musicpro_1.0_amd64.deb
-```
-
-7. After setup
-File .properties need copy to 
-```bash
-~/test/MusicPlayer
-```
