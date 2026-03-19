@@ -1,0 +1,209 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using MusicServer.API.DTO;
+using MusicServer.API.DTOs;
+using MusicServer.API.Models;
+using MusicServer.API.Services;
+
+namespace MusicServer.API.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class MusicController : ControllerBase
+    {
+        private readonly IMusicService _musicService;
+        private readonly IWebHostEnvironment _environment;
+
+        // Конструктор для dependency injection
+        public MusicController(IMusicService musicService, IWebHostEnvironment environment)
+        {
+            _musicService = musicService;
+            _environment = environment;
+        }
+
+        #region GetDTO
+
+        // GET: api/music/
+        //  или api/music?pageNumber=2&pageSize=5
+        /// Получить список песен с пагинацией
+        /// </summary>
+        /// <param name="pageNumber">Номер страницы (по умолчанию 1)</param>
+        /// <param name="pageSize">Размер страницы (по умолчанию 10, максимум 50)</param>
+        /// <returns>Список песен с информацией о пагинации</returns>
+        [HttpGet]
+        public async Task<ActionResult<PagedResponse<MusicFileResponseDto>>> GetMusicFilesPage(
+            [FromQuery] PaginationParams paginationParams)
+        {
+            try
+            {
+                // Валидация входных параметров
+                var checkResult = paginationParams.Validate();
+                if (!checkResult.IsValid)
+                    return BadRequest(checkResult.ErrorMessage);
+
+                // Получаем данные из сервиса
+                var response = await _musicService.GetMusicFilesPageAsync(paginationParams);
+
+                // Перебираем все элементы и добавляем DownloadUrl'ы
+                foreach (var item in response.Items)
+                    item.DownloadUrl = Url.Action("Download", "Music", new { id = item.Id }, Request.Scheme);
+
+                // Добавляем информацию о пагинации в заголовки (для удобства)
+                Response.Headers.Append("X-Pagination-TotalCount", response.TotalCount.ToString());
+                Response.Headers.Append("X-Pagination-PageNumber", response.PageNumber.ToString());
+                Response.Headers.Append("X-Pagination-PageSize", response.PageSize.ToString());
+                Response.Headers.Append("X-Pagination-TotalPages", response.TotalPages.ToString());
+                Response.Headers.Append("X-Pagination-HasNext", response.HasNextPage.ToString());
+                Response.Headers.Append("X-Pagination-HasPrevious", response.HasPreviousPage.ToString());
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while processing your request");
+            }
+        }
+
+
+        // GET: api/music/all
+        [HttpGet("all")]
+        public async Task<ActionResult<IEnumerable<MusicFileResponseDto>>> GetMusicFiles()
+        {
+            var musicFiles = (await _musicService.GetAllMusicFilesAsync())
+                .Select(musicFile =>
+                {
+                    musicFile.DownloadUrl = Url.Action("Download", "Music", new { id = musicFile.Id }, Request.Scheme);
+                    return musicFile;
+                })
+                .ToList();
+
+            return Ok(musicFiles);
+        }
+
+
+        // GET: api/music/id5 ,где 5 это id сущности "MusicFile" в таблице БД
+        [HttpGet("id{id}")]
+        public async Task<ActionResult<MusicFileWithExtrasDto>> GetMusicFile(int id)
+        {
+            var musicFile = await _musicService.GetMusicFileAsync(id);
+
+            if (musicFile == null)
+                return NotFound();
+
+            //Подстановка ссылок для скачивания в DTO
+            musicFile.DownloadMusicUrl = Url.Action("Download", "Music", new { id = musicFile.Id }, Request.Scheme);
+            musicFile.ExtraFiles.ForEach(extraFile => extraFile.DownloadExtraUrl = Url.Action("Download", "ExtraFiles", new { id = extraFile.Id }, Request.Scheme));
+
+            return Ok(musicFile);
+        }
+        #endregion
+
+        #region UploadFile
+        // Загрузка файла на сервер. Прототип.
+        // TODO: сделать возможным только для авторизованных админов.
+        // POST: api/music/upload
+        [HttpPost("upload")]
+        [RequestSizeLimit(52428800)] // 50MB
+        public async Task<ActionResult<MusicFileResponseDto>> UploadMusic(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("Файл отсутсвует");
+
+            try
+            {
+                var uploadedFile = await _musicService.UploadMusicAsync(file);
+                uploadedFile.DownloadUrl = Url.Action("Download", "Music", new { id = uploadedFile.Id }, Request.Scheme);
+
+                return CreatedAtAction(nameof(GetMusicFile), new { id = uploadedFile.Id }, uploadedFile);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Ошибка загрузки: {ex.Message}");
+            }
+        }
+
+        //пакетная загрузка файлов на сервер
+        // TODO: сделать возможным только для авторизованных админов.
+        // POST: api/music/upload/batch
+        [HttpPost("upload/batch")]
+        [RequestSizeLimit(500_000_000)] // 500 MB максимум (например 100 файлов по 5 Mb)
+        public async Task<IActionResult> UploadMusicFilesBatch(List<IFormFile> files)
+        {
+            if (files == null || files.Count == 0)
+                return BadRequest(new { error = "No files selected" });
+
+            var results = new List<object>();
+            var errors = new List<object>();
+
+            foreach (var file in files)
+            {
+                try
+                {
+                    var musicFile = await _musicService.UploadMusicAsync(file);
+                    results.Add(new
+                    {
+                        musicFile.Id,
+                        musicFile.Title,
+                        musicFile.Artist,
+                        musicFile.Album,
+                        musicFile.Duration,
+                        Status = "Success"
+                    });
+                }
+                catch (Exception ex)
+                {
+                    errors.Add(new { fileName = file.FileName, error = ex.Message });
+                }
+            }
+            return Ok(new
+            {
+                TotalProcessed = files.Count,
+                SuccessCount = results.Count,
+                ErrorCount = errors.Count,
+                Results = results,
+                Errors = errors
+            });
+        }
+        #endregion
+
+        #region Download
+        // запрос скачивания файла
+        // GET: api/music/download/5
+        [HttpGet("download/id{id}")]
+        public async Task<IActionResult> Download(int id)
+        {
+            DownloadFileDto downloadFileInfo;
+            try
+            {
+                downloadFileInfo = await _musicService.GetMusicFileDownloadDataAsync(id);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);// может быть ошибка в запросе, или нет в БД
+            }
+
+            if (!System.IO.File.Exists(downloadFileInfo.Filepath))
+                return NotFound($"Файла с id={id} нет на диске");
+
+            string extension = downloadFileInfo.Extension.Extension;
+            string contentType = downloadFileInfo.Extension.MimeType;
+
+            return PhysicalFile(downloadFileInfo.Filepath, contentType, $"{downloadFileInfo.FilenameForSend}{extension}");
+        }
+        #endregion
+
+
+        // DELETE: api/music/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteMusicFile(int id)
+        {
+            var result = await _musicService.DeleteMusicFileAsync(id);
+            if (!result)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
+
+    }
+}

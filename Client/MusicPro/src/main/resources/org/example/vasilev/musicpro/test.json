@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "title": "Bohemian Rhapsody",
+    "artist": "Queen",
+    "album": "A Night at the Opera",
+    "genre": "Rock",
+    "year": 1975,
+    "fileSize": 10485760,
+    "duration": "00:05:55.0000000",
+    "uploadDate": "2024-01-15T10:30:00Z",
+    "downloadUrl": "http://127.0.0.1:5098/api/Music/download/id1"
+  },
+  {
+    "id": 2,
+    "title": "Detroit Rock City",
+    "artist": "Kiss",
+    "album": "Destroyer",
+    "genre": "Hard Rock",
+    "year": 1976,
+    "fileSize": 9480421,
+    "duration": "00:03:56.9880000",
+    "uploadDate": "2025-12-17T18:26:47.668934Z",
+    "downloadUrl": "http://127.0.0.1:5098/api/Music/download/id2"
+  },
+  {
+    "id": 3,
+    "title": "Stairway to Heaven",
+    "artist": "Led Zeppelin",
+    "album": "Led Zeppelin IV",
+    "genre": "Rock",
+    "year": 1971,
+    "fileSize": 12582912,
+    "duration": "00:08:02.0000000",
+    "uploadDate": "2024-02-20T14:15:30Z",
+    "downloadUrl": "http://127.0.0.1:5098/api/Music/download/id3"
+  }
+]

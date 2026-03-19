@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.vasilev.musicpro.controllers.PaginationController"
+      styleClass="pagination-panel"
+      spacing="15"
+      HBox.hgrow="ALWAYS"
+      maxWidth="Infinity"
+      alignment="CENTER"
+      fillHeight="false">
+
+    <padding>
+        <Insets top="5" right="15" bottom="5" left="15"/>
+    </padding>
+
+    <!-- Кнопка предыдущей страницы -->
+    <Button fx:id="prevPageButton" text="◀ Предыдущая"
+            styleClass="page-button"
+            onAction="#handlePrevPage"
+            disable="true"/>
+
+    <!-- Информация о странице -->
+    <Label fx:id="pageInfoLabel" text="Страница 1 из 1"
+           styleClass="page-info-label"/>
+
+    <!-- Кнопка следующей страницы -->
+    <Button fx:id="nextPageButton" text="Следующая ▶"
+            styleClass="page-button"
+            onAction="#handleNextPage"
+            disable="true"/>
+
+    <!-- Размер страницы -->
+    <HBox spacing="5" alignment="CENTER">
+        <Label text="Показывать по:" styleClass="page-size-label"/>
+        <ComboBox fx:id="pageSizeComboBox" styleClass="page-size-combo" prefWidth="70">
+        </ComboBox>
+        <Label text="элементов" styleClass="page-size-label"/>
+    </HBox>
+</HBox>

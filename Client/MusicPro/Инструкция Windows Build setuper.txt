@@ -1,0 +1,32 @@
+1. Выполни в Git Bash перед каждой сборкой:
+
+bash
+export JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.9.10-hotspot"
+export PATH="$JAVA_HOME/bin:$PATH"
+
+# Проверь, что теперь всё правильно
+java -version
+mvn --version
+
+// TODO глобально разобраться с переменной
+2. mvn clean package
+
+
+3. 
+jlink --module-path "C:\Program Files\Eclipse Adoptium\jdk-21.0.9.10-hotspot\jmods;C:\JAVA\javafx-jmods-21.0.9" \
+      --add-modules java.base,java.desktop,java.logging,java.scripting,java.sql,java.xml,jdk.jfr,jdk.unsupported,javafx.controls,javafx.fxml,javafx.media \
+      --output target/runtime
+
+4.
+jpackage --type exe \
+         --input target \
+         --name "MusicPro" \
+         --main-jar MusicPro-1.0.jar \
+         --main-class org.example.vasilev.musicpro.Launcher \
+         --runtime-image target/runtime \
+         --win-dir-chooser \
+         --win-menu \
+         --win-shortcut \
+         --win-console \
+         --verbose \
+         --dest output
