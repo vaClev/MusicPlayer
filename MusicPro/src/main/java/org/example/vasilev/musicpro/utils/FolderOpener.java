@@ -12,37 +12,44 @@ public class FolderOpener {
         if (!folder.exists() && !folder.mkdirs()) {
             return false;
         }
+        String os = System.getProperty("os.name").toLowerCase();
 
-        try {
-            if (Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().open(folder);
-                return true;
+        /// Windows or MacOS
+        if (os.contains("win") || os.contains("mac")) {
+            try {
+                if (Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().open(folder); // don't work on Ubuntu (Linux)
+                    return true;
+                }
+            } catch (Exception e) {
+                // Логируем но не показываем пользователю
+                System.err.println("Desktop.open failed: " + e.getMessage());
             }
-        } catch (Exception e) {
-            // Логируем но не показываем пользователю
-            System.err.println("Desktop.open failed: " + e.getMessage());
         }
 
-        // Fallback
-        return openFolderWithRuntime(folderPath);
+        /// Linux, and some situation
+        return openFolderWithRuntime(folderPath, os);
     }
 
-    private static boolean openFolderWithRuntime(String folderPath) {
-        try {
-            String os = System.getProperty("os.name").toLowerCase();
-            ProcessBuilder pb;
+    private static boolean openFolderWithRuntime(String folderPath, String os)
+    {
+        ProcessBuilder pb;
+        if (os.contains("win"))
+            pb = new ProcessBuilder("explorer", folderPath);
 
-            if (os.contains("win")) {
-                pb = new ProcessBuilder("explorer", folderPath);
-            } else if (os.contains("mac")) {
-                pb = new ProcessBuilder("open", folderPath);
-            } else {
-                pb = new ProcessBuilder("xdg-open", folderPath);
-            }
+        else if (os.contains("mac"))
+            pb = new ProcessBuilder("open", folderPath);
 
+        else
+            pb = new ProcessBuilder("xdg-open", folderPath);
+
+        try
+        {
             pb.start();
             return true;
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             return false;
         }
     }

@@ -73,17 +73,21 @@ public class AppConfig
 
     private File findConfigFile()
     {
-        // 1. Текущая директория
+        // 1. Текущая директория - Windows
         File currentDir = new File(CONFIG_FILE);
         if (currentDir.exists()) return currentDir;
 
-        // 2. Домашняя директория
+        // 2. Домашняя директория + MusicPlayer - Linux variant   "~/MusicPlayer/"
+        File appDirLinux = new File(Paths.get(System.getProperty("user.home"), "MusicPlayer", CONFIG_FILE).toString());
+        if (appDirLinux.exists()) return appDirLinux;
+
+        // 2.1 Домашняя директория variant
         File homeDir = new File(System.getProperty("user.home"), CONFIG_FILE);
         if (homeDir.exists()) return homeDir;
 
         // 3. Директория приложения (для macOS .app)
-        String appDir = System.getProperty("app.dir", ".");
-        File appConfig = new File(appDir, CONFIG_FILE);
+        String appDirMac = System.getProperty("app.dir", ".");
+        File appConfig = new File(appDirMac, CONFIG_FILE);
         if (appConfig.exists()) return appConfig;
 
         return currentDir; // вернем текущую для создания нового
