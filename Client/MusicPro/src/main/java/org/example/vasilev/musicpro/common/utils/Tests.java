@@ -3,7 +3,7 @@ package org.example.vasilev.musicpro.common.utils;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.example.vasilev.musicpro.common.dto.MusicFileDTO;
-import org.example.vasilev.musicpro.common.models.MusicFileCore;
+import org.example.vasilev.musicpro.common.models.MusicFile;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class Tests
 {
     /// Тестовое получение карточек. Из JSON файла. Отладка UI без сервера
-    public List<MusicFileCore> loadMusicFilesFromJson()
+    public List<MusicFile> loadMusicFilesFromJson()
     {
         // Путь к файлу в ресурсах
         String jsonPath = "/org/example/vasilev/musicpro/test.json";

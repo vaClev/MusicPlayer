@@ -6,7 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import org.example.vasilev.musicpro.common.models.ExtraFileCore;
+import org.example.vasilev.musicpro.common.models.ExtraFile;
 
 import java.awt.*;
 import java.net.URI;
@@ -30,9 +30,9 @@ public class ExtraFileCardController
     @FXML
     private Label fileIconLabel;
 
-    private ExtraFileCore extraFile;
+    private ExtraFile extraFile;
     
-    public void setExtraFile(ExtraFileCore extraFile)
+    public void setExtraFile(ExtraFile extraFile)
     {
         this.extraFile = extraFile;
         updateUI();

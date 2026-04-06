@@ -1,8 +1,8 @@
 package org.example.vasilev.musicpro.common.dto;
 
 import com.google.gson.annotations.SerializedName;
-import org.example.vasilev.musicpro.common.models.ExtraFileCore;
-import org.example.vasilev.musicpro.common.models.MusicFileCore;
+import org.example.vasilev.musicpro.common.models.ExtraFile;
+import org.example.vasilev.musicpro.common.models.MusicFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -144,7 +144,7 @@ public class MusicFileDetailDTO
     }
 
     // Метод для преобразования в доменную модель
-    public MusicFileCore toDomainModel()
+    public MusicFile toDomainModel()
     {
         LocalDateTime parsedDate = null;
         try {
@@ -156,13 +156,13 @@ public class MusicFileDetailDTO
             System.err.println("Ошибка парсинга даты: " + uploadDate);
         }
 
-        List<ExtraFileCore> extractedExtraFiles = null;
+        List<ExtraFile> extractedExtraFiles = null;
         if (extraFiles != null && !extraFiles.isEmpty())
         {
             extractedExtraFiles = getExtraFiles().stream().map(ExtraFileDTO::toDomainModel).toList();
         }
 
-        return new MusicFileCore(
+        return new MusicFile(
                 id, title, artist, extension, album, genre, year,
                 100L/*заглушка решить на сервере ошибку*/, duration, parsedDate, downloadMusicUrl,extractedExtraFiles);
     }

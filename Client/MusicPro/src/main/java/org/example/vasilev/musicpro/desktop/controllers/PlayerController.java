@@ -16,7 +16,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import org.example.vasilev.musicpro.common.models.MusicFileCore;
+import org.example.vasilev.musicpro.common.models.MusicFile;
 import org.example.vasilev.musicpro.common.services.player.MusicMetadataExtractService;
 import org.example.vasilev.musicpro.common.services.player.IPlayerService;
 
@@ -38,7 +38,7 @@ public class PlayerController implements IPlaylistOwner
     private Button clearPlaylistButton;
 
     /// Список элементов плейлиста
-    private final ObservableList<MusicFileCore> playlistItems = FXCollections.observableArrayList();
+    private final ObservableList<MusicFile> playlistItems = FXCollections.observableArrayList();
     private int currentPlaylistIndex = -1;
 
     /// ////////////////////////////////////
@@ -107,7 +107,7 @@ public class PlayerController implements IPlaylistOwner
     private void setupPlaylist()
     {
         // Обновляем счетчик кол-во песен при изменении плейлиста
-        playlistItems.addListener((ListChangeListener<MusicFileCore>) change -> {
+        playlistItems.addListener((ListChangeListener<MusicFile>) change -> {
             updatePlaylistCount();
         });
 
@@ -126,7 +126,7 @@ public class PlayerController implements IPlaylistOwner
 
     @Override
     ///Добавить файл в плейлист
-    public void addMusicFileToPlaylist(MusicFileCore musicFile)
+    public void addMusicFileToPlaylist(MusicFile musicFile)
     {
         playlistItems.add(musicFile);
 
@@ -173,7 +173,7 @@ public class PlayerController implements IPlaylistOwner
            playlistContainer.getChildren().clear();
            for (int i = 0; i < playlistItems.size(); i++)
            {
-               MusicFileCore item = playlistItems.get(i);
+               MusicFile item = playlistItems.get(i);
                try
                {
                    FXMLLoader loader = new FXMLLoader(
@@ -242,7 +242,7 @@ public class PlayerController implements IPlaylistOwner
     {
         if (index >= 0 && index < playlistItems.size())
         {
-            MusicFileCore item = playlistItems.get(index);
+            MusicFile item = playlistItems.get(index);
             currentPlaylistIndex = index;
             totalTimeLabel.setText(item.getFormattedDuration());
             loadAndPlayFile(item.getLocalFile());

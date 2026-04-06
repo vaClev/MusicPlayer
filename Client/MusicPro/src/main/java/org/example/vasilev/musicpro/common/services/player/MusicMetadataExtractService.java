@@ -1,7 +1,7 @@
 package org.example.vasilev.musicpro.common.services.player;
 
 import javafx.util.Duration;
-import org.example.vasilev.musicpro.common.models.MusicFileCore;
+import org.example.vasilev.musicpro.common.models.MusicFile;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.AudioHeader;
@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class MusicMetadataExtractService
 {
     /// Создать MusicFile из локального аудиофайла с извлечением метаданных
-    public MusicFileCore createMusicFileFromLocalFile(File audioFile)
+    public MusicFile createMusicFileFromLocalFile(File audioFile)
     {
         if (audioFile == null || !audioFile.exists() || !audioFile.canRead())
         {
@@ -30,7 +30,7 @@ public class MusicMetadataExtractService
         String baseTitle = extractTitleFromFileName(fileName);
 
         // Создаем MusicFile с минимальной информацией
-        MusicFileCore musicFile = new MusicFileCore(
+        MusicFile musicFile = new MusicFile(
                 fileId,
                 baseTitle,
                 "Неизвестный исполнитель",  // Временное значение
@@ -82,12 +82,12 @@ public class MusicMetadataExtractService
     }
 
 
-    private void extractMetadataFromFile(File audioFile, MusicFileCore musicFile)
+    private void extractMetadataFromFile(File audioFile, MusicFile musicFile)
     {
         extractMetadataWithJAudioTagger(musicFile.getLocalFilePath(), musicFile);
     }
 
-    private void extractMetadataWithJAudioTagger(String filePath, MusicFileCore musicFile)
+    private void extractMetadataWithJAudioTagger(String filePath, MusicFile musicFile)
     {
         try
         {

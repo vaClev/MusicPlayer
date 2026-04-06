@@ -1,7 +1,7 @@
 package org.example.vasilev.musicpro.common.services.music;
 
 import org.example.vasilev.musicpro.common.dto.MusicPageDTO;
-import org.example.vasilev.musicpro.common.models.MusicFileCore;
+import org.example.vasilev.musicpro.common.models.MusicFile;
 
 import java.util.List;
 import java.util.Map;
@@ -18,7 +18,7 @@ public interface IMusicClientService
     CompletableFuture<MusicPageDTO> getMusicFiles(int pageNumber, int pageSize);
 
     //OLD версия для проверки
-    CompletableFuture<List<MusicFileCore>> getMusicFiles();
+    CompletableFuture<List<MusicFile>> getMusicFiles();
 
     /**
      * Получить следующую порцию музыкальных файлов
@@ -34,7 +34,7 @@ public interface IMusicClientService
      * @param musicFileId ID музыкального файла
      * @return детальная информация о музыкальном файле
      */
-    CompletableFuture<MusicFileCore> getMusicFileDetails(long musicFileId);
+    CompletableFuture<MusicFile> getMusicFileDetails(long musicFileId);
 
     /**
      * Поиск музыкальных файлов по запросу

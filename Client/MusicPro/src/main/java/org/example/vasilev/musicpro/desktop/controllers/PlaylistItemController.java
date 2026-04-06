@@ -3,7 +3,7 @@ package org.example.vasilev.musicpro.desktop.controllers;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import org.example.vasilev.musicpro.common.models.MusicFileCore;
+import org.example.vasilev.musicpro.common.models.MusicFile;
 
 public class PlaylistItemController
 {
@@ -16,7 +16,7 @@ public class PlaylistItemController
     @FXML
     private Label durationLabel;
 
-    private MusicFileCore musicFile;
+    private MusicFile musicFile;
 
     private Runnable onRemoveListener;
 
@@ -27,7 +27,7 @@ public class PlaylistItemController
             onRemoveListener.run();
     }
 
-    public void setPlaylistItem(MusicFileCore item)
+    public void setPlaylistItem(MusicFile item)
     {
         this.musicFile = item;
         titleLabel.setText(item.getTitle());

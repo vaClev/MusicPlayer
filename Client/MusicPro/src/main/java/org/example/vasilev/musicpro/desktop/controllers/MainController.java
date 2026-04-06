@@ -14,7 +14,7 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.example.vasilev.musicpro.common.dto.MusicPageDTO;
-import org.example.vasilev.musicpro.common.models.MusicFileCore;
+import org.example.vasilev.musicpro.common.models.MusicFile;
 import org.example.vasilev.musicpro.common.services.*;
 import org.example.vasilev.musicpro.common.services.download.IDownloadService;
 import org.example.vasilev.musicpro.common.services.music.IMusicClientService;
@@ -183,11 +183,11 @@ public class MainController implements Initializable
     {
         List<VBox> cards = new ArrayList<>();
 
-        for (MusicFileCore musicFileCore : page.toCardsList())
+        for (MusicFile musicFile : page.toCardsList())
         {
             try
             {
-                VBox card = createSongCard(musicFileCore);
+                VBox card = createSongCard(musicFile);
                 cards.add(card);
             } catch (IOException e)
             {
@@ -199,7 +199,7 @@ public class MainController implements Initializable
     }
 
     ///  Создание одной карточки конкретного musicFile
-    private VBox createSongCard(MusicFileCore musicFile) throws IOException
+    private VBox createSongCard(MusicFile musicFile) throws IOException
     {
         FXMLLoader loader = new FXMLLoader(
                 getClass().getResource("/org/example/vasilev/musicpro/views/music-small-card.fxml")
@@ -259,13 +259,13 @@ public class MainController implements Initializable
         {
             Tests util = new Tests();
             // 1. Чтение JSON файла из ресурсов
-            List<MusicFileCore> musicFiles = util.loadMusicFilesFromJson();
+            List<MusicFile> musicFiles = util.loadMusicFilesFromJson();
 
             // 2. Очищаем контейнер
             songsContainer.getChildren().clear();
 
             // 3. Создаем карточки для каждого трека
-            for (MusicFileCore musicFile : musicFiles)
+            for (MusicFile musicFile : musicFiles)
             {
                 // Создаем карточку
                 VBox card = createSongCard(musicFile);

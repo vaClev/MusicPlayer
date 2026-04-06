@@ -1,10 +1,10 @@
 package org.example.vasilev.musicpro.desktop.controllers;
 
-import org.example.vasilev.musicpro.common.models.MusicFileCore;
+import org.example.vasilev.musicpro.common.models.MusicFile;
 
 public interface IPlaylistOwner
 {
-    void addMusicFileToPlaylist(MusicFileCore musicFile);
+    void addMusicFileToPlaylist(MusicFile musicFile);
     void removeMusicFile(long id);
 
     void setAsCurrent(long id);

@@ -1,7 +1,7 @@
 package org.example.vasilev.musicpro.common.dto;
 
 import com.google.gson.annotations.SerializedName;
-import org.example.vasilev.musicpro.common.models.MusicFileCore;
+import org.example.vasilev.musicpro.common.models.MusicFile;
 
 import java.time.LocalDateTime;
 
@@ -107,7 +107,7 @@ public class MusicFileDTO
 
 
     // Метод для преобразования в доменную модель
-    public MusicFileCore toDomainModel()
+    public MusicFile toDomainModel()
     {
         LocalDateTime parsedDate = null;
         try {
@@ -118,7 +118,7 @@ public class MusicFileDTO
         } catch (Exception e) {
             System.err.println("Ошибка парсинга даты: " + uploadDate);
         }
-        return new MusicFileCore(
+        return new MusicFile(
                 id, title, artist, extension, album, genre, year,
                 fileSize, duration, parsedDate, downloadUrl
         );

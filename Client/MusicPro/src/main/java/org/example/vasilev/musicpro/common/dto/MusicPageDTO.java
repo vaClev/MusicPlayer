@@ -1,7 +1,7 @@
 package org.example.vasilev.musicpro.common.dto;
 
 import com.google.gson.annotations.SerializedName;
-import org.example.vasilev.musicpro.common.models.MusicFileCore;
+import org.example.vasilev.musicpro.common.models.MusicFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +70,7 @@ public class MusicPageDTO
     public void setItems(List<MusicFileDTO> items) { this.items = items; }
 
     // Метод для преобразования в список карточек (как было раньше)
-    public List<MusicFileCore> toCardsList()
+    public List<MusicFile> toCardsList()
     {
         if (items == null || items.isEmpty()) {
             return new ArrayList<>();

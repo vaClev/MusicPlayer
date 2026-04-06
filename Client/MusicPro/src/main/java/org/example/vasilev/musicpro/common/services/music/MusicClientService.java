@@ -4,7 +4,7 @@ import com.google.gson.reflect.TypeToken;
 import org.example.vasilev.musicpro.common.dto.MusicFileDTO;
 import org.example.vasilev.musicpro.common.dto.MusicFileDetailDTO;
 import org.example.vasilev.musicpro.common.dto.MusicPageDTO;
-import org.example.vasilev.musicpro.common.models.MusicFileCore;
+import org.example.vasilev.musicpro.common.models.MusicFile;
 import org.example.vasilev.musicpro.common.services.APIClient;
 
 import java.lang.reflect.Type;
@@ -26,7 +26,7 @@ public class MusicClientService implements IMusicClientService
 
     /// Получение с сервера списка музыкальных файлов OLD
     @Override
-    public CompletableFuture<List<MusicFileCore>> getMusicFiles()
+    public CompletableFuture<List<MusicFile>> getMusicFiles()
     {
         return CompletableFuture.supplyAsync(() ->
         {
@@ -79,7 +79,7 @@ public class MusicClientService implements IMusicClientService
 
     /// Получение с сервера детальную информацию о музыкальном файле по его ID
     @Override
-    public CompletableFuture<MusicFileCore> getMusicFileDetails(long musicFileId)
+    public CompletableFuture<MusicFile> getMusicFileDetails(long musicFileId)
     {
         return CompletableFuture.supplyAsync(() ->
         {

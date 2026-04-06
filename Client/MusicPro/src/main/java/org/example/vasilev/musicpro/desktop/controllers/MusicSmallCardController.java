@@ -4,7 +4,7 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import org.example.vasilev.musicpro.common.models.MusicFileCore;
+import org.example.vasilev.musicpro.common.models.MusicFile;
 import org.example.vasilev.musicpro.desktop.controllers.details.TabManager;
 import org.example.vasilev.musicpro.common.services.download.DownloadEvent;
 import org.example.vasilev.musicpro.common.services.download.IDownloadService;
@@ -35,7 +35,7 @@ public class MusicSmallCardController
     @FXML
     private ProgressBar progressBar;
 
-    private MusicFileCore musicFile = null;
+    private MusicFile musicFile = null;
     private IPlaylistOwner playlistOwner = null;
     private IMusicClientService musicClientService = null;
     private IDownloadService downloadService = null;
@@ -52,7 +52,7 @@ public class MusicSmallCardController
     }
 
     // Метод установки MusicFile и внедрение сервиса скачивания
-    public void setMusicFile(MusicFileCore musicFile, IDownloadService downloadService)
+    public void setMusicFile(MusicFile musicFile, IDownloadService downloadService)
     {
         this.musicFile = musicFile;
         this.downloadService = downloadService;
@@ -63,17 +63,20 @@ public class MusicSmallCardController
 
     private void subscribeToDownloadEvent()
     {
-        if(downloadService== null)
+        if (downloadService == null)
             return;
 
         // Подписка на события сервиса скачивания (реализация IObservable)
-        smallCardSubscriber = event -> {
-            if(event.getFileId() != musicFile.getId())
+        smallCardSubscriber = event ->
+        {
+            if (event.getFileId() != musicFile.getId())
                 return;
 
-            switch (event.getType()) {
+            switch (event.getType())
+            {
                 case PROGRESS:
-                    Platform.runLater(()->{
+                    Platform.runLater(() ->
+                    {
                         progressBar.setProgress(event.getProgress());
                     });
                     break;
@@ -90,6 +93,7 @@ public class MusicSmallCardController
 
         downloadService.subscribe(smallCardSubscriber);
     }
+
     /// Метод установки списка воспроизведения
     public void setPlaylistOwner(IPlaylistOwner owner)
     {
@@ -118,6 +122,7 @@ public class MusicSmallCardController
         // Статус скачивания
         updateDownloadStatusUI();
     }
+
     private void updateDownloadStatusUI()
     {
         if (musicFile.isDownloaded())
@@ -129,8 +134,7 @@ public class MusicSmallCardController
 
             //отписка от событий скачивания
             downloadService.unsubscribe(smallCardSubscriber);
-        }
-        else
+        } else
         {
             statusLabel.setText("Не скачано");
             downloadButton.setDisable(false);
@@ -164,13 +168,17 @@ public class MusicSmallCardController
 
         // Запускаем загрузку
         CompletableFuture<File> downloadFuture = downloadService.downloadMusicFile(musicFile.getId(), filepathToSave.toString());
-        downloadFuture.thenAccept(file -> {
-            Platform.runLater(() -> {
+        downloadFuture.thenAccept(file ->
+        {
+            Platform.runLater(() ->
+            {
                 musicFile.setDownloaded(true);
                 musicFile.setLocalFilePath(file.getPath());
             });
-        }).exceptionally(throwable -> {
-            Platform.runLater(() -> {
+        }).exceptionally(throwable ->
+        {
+            Platform.runLater(() ->
+            {
                 progressBar.setVisible(false);
                 downloadButton.setDisable(false);
                 statusLabel.setText("Ошибка");
@@ -185,34 +193,33 @@ public class MusicSmallCardController
         //TODO оптимизировать. Перед тем как обращаться на сервер, проверить может он уже есть в открытых вкладках.
 
         musicClientService.getMusicFileDetails(musicFile.getId())
-                .thenAcceptAsync(musicFileFullInfo -> {
+                .thenAcceptAsync(musicFileFullInfo ->
+                {
                     if (musicFileFullInfo != null)
                     {
                         Platform.runLater(() ->
                         {
                             System.out.println("Детали загружены успешно");
 
-                            musicFile.updateExtraFiles(musicFileFullInfo);
+                            musicFile.addAllExtraFiles(musicFileFullInfo.getExtraFiles());
 
                             TabManager tabManager = TabManager.getInstance();
                             tabManager.showOrCreateTab(musicFile, downloadService, playlistOwner);
 
                         });
-                    }
-                    else
+                    } else
                     {
-                        Platform.runLater(() -> {
+                        Platform.runLater(() ->
+                        {
                             System.err.println("Сервис вернул null");
                         });
                     }
                 })
-                .exceptionally(throwable -> {
+                .exceptionally(throwable ->
+                {
                     System.err.println("Ошибка: " + throwable.getMessage());
                     return null;
                 });
-
-
-
     }
 
     @FXML

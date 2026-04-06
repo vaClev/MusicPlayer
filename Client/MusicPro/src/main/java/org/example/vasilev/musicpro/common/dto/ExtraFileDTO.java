@@ -1,7 +1,7 @@
 package org.example.vasilev.musicpro.common.dto;
 
 import com.google.gson.annotations.SerializedName;
-import org.example.vasilev.musicpro.common.models.ExtraFileCore;
+import org.example.vasilev.musicpro.common.models.ExtraFile;
 import org.example.vasilev.musicpro.common.models.ExtraFileType;
 
 import java.time.LocalDateTime;
@@ -153,7 +153,7 @@ public class ExtraFileDTO
     /// /////////////////////////////////////
     ///
     // Метод для преобразования в доменную модель
-    public ExtraFileCore toDomainModel()
+    public ExtraFile toDomainModel()
     {
         LocalDateTime parsedDate = null;
         try
@@ -170,7 +170,7 @@ public class ExtraFileDTO
         }
 
         ExtraFileType filetype = ExtraFileType.fromValue(fileTypeValue);
-        return new ExtraFileCore(
+        return new ExtraFile(
                 id, originalFileName, description, filetype, fileSize,
                 parsedDate, downloadExtraUrl, musicFileId
         );

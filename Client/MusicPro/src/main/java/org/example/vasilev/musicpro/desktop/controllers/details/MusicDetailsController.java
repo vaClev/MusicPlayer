@@ -10,8 +10,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.VBox;
-import org.example.vasilev.musicpro.common.models.ExtraFileCore;
-import org.example.vasilev.musicpro.common.models.MusicFileCore;
+import org.example.vasilev.musicpro.common.models.ExtraFile;
+import org.example.vasilev.musicpro.common.models.MusicFile;
 import org.example.vasilev.musicpro.desktop.controllers.IPlaylistOwner;
 import org.example.vasilev.musicpro.common.services.download.DownloadEvent;
 import org.example.vasilev.musicpro.common.services.download.IDownloadService;
@@ -72,7 +72,7 @@ public class MusicDetailsController
     @FXML private TitledPane otherFilesPane;
 
     /// Модельный объект отображаемый этой формой
-    private MusicFileCore currentMusicFile;
+    private MusicFile currentMusicFile;
     private IDownloadService downloadService;
     private Consumer<DownloadEvent> detailsCardSubscriber = null;
     private IPlaylistOwner playlistOwner = null;
@@ -83,7 +83,7 @@ public class MusicDetailsController
         this.playlistOwner = owner;
     }
 
-    public void setMusicFile(MusicFileCore musicFile, IDownloadService downloadService)
+    public void setMusicFile(MusicFile musicFile, IDownloadService downloadService)
     {
         this.currentMusicFile = musicFile;
         this.downloadService = downloadService;
@@ -188,10 +188,10 @@ public class MusicDetailsController
     }
 
     /// Создае м карточки ExtraFiles и добавлям их в указанную панель
-    private void loadExtraFilesByType(List<ExtraFileCore> files, VBox container) {
+    private void loadExtraFilesByType(List<ExtraFile> files, VBox container) {
         if (files.isEmpty()) return;
 
-        for (ExtraFileCore extraFile : files)
+        for (ExtraFile extraFile : files)
         {
             try
             {
