@@ -32,6 +32,8 @@ mvn package
 
 ### **Шаг 4: Создать runtime образ с нужными модулями**
 ```bash
+cd desktop
+
 jlink --module-path "C:\Program Files\Eclipse Adoptium\jdk-21.0.9.10-hotspot\jmods" \
       --add-modules java.base,java.desktop,java.logging,java.scripting,java.sql,java.xml,jdk.jfr,jdk.unsupported \
       --output target/runtime
@@ -47,8 +49,8 @@ rm -rf output/*
 jpackage --type exe \
          --input target \
          --name "MusicPro" \
-         --main-jar MusicPro-1.0.jar \
-         --main-class org.example.vasilev.musicpro.Launcher \
+         --main-jar musicpro-desktop-1.0.jar \
+         --main-class org.example.vasilev.musicpro.desktop.launcher.Launcher \
          --runtime-image target/runtime \
          --win-dir-chooser \
          --win-menu \
@@ -60,14 +62,16 @@ jpackage --type exe \
 ### **Шаг 6: Готово!**
 Установщик лежит в папке `output/MusicPro-1.0.exe`. Запускай и пользуйся! 🚀
 
-## 📝 **Памятка для быстрого копирования (одним блоком):**
-
+## 📝 **Памятка для быстрого копирования (одним блоком):**.
 ```bash
-cd C:\Projects\CourseWork1\MusicPro
+cd C:\Projects\CourseWork1\Client\MusicPro
+export JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.9.10-hotspot"
+export PATH="$JAVA_HOME/bin:$PATH"
 mvn clean
-del musicplayer.properties
+rm -f musicplayer.properties
 mvn package
-jlink --module-path "C:\Program Files\Eclipse Adoptium\jdk-21.0.9.10-hotspot\jmods" --add-modules java.base,java.desktop,java.logging,java.scripting,java.sql,java.xml,jdk.jfr,jdk.unsupported --output target/runtime
+cd desktop
+jlink --module-path "C:\Program Files\Eclipse Adoptium\jdk-21.0.9.10-hotspot\jmods;C:\JAVA\javafx-jmods-21.0.9" --add-modules java.base,java.desktop,java.logging,java.scripting,java.sql,java.xml,jdk.jfr,jdk.unsupported,javafx.controls,javafx.fxml,javafx.media --output target/runtime
 rm -rf output/*
-jpackage --type exe --input target --name "MusicPro" --main-jar MusicPro-1.0.jar --main-class org.example.vasilev.musicpro.Launcher --runtime-image target/runtime --win-dir-chooser --win-menu --win-shortcut --win-console --dest output
+jpackage --type exe --input target --name "MusicPro" --main-jar musicpro-desktop-1.0.jar --main-class org.example.vasilev.musicpro.desktop.launcher.Launcher --runtime-image target/runtime --win-dir-chooser --win-menu --win-shortcut --win-shortcut-prompt --dest output
 ```
