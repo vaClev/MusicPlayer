@@ -20,7 +20,6 @@ import org.example.vasilev.musicpro.common.services.download.IDownloadService;
 import org.example.vasilev.musicpro.common.services.music.IMusicClientService;
 import org.example.vasilev.musicpro.common.services.music.IPageOwner;
 import org.example.vasilev.musicpro.common.services.music.PageChangeEvent;
-import org.example.vasilev.musicpro.desktop.models.MusicFileFX;
 import org.example.vasilev.musicpro.desktop.utils.FolderOpener;
 import org.example.vasilev.musicpro.common.utils.Tests;
 
@@ -188,8 +187,7 @@ public class MainController implements Initializable
         {
             try
             {
-                var musicFile = new MusicFileFX(musicFileCore); /// TODO конвертация
-                VBox card = createSongCard(musicFile);
+                VBox card = createSongCard(musicFileCore);
                 cards.add(card);
             } catch (IOException e)
             {
@@ -201,7 +199,7 @@ public class MainController implements Initializable
     }
 
     ///  Создание одной карточки конкретного musicFile
-    private VBox createSongCard(MusicFileFX musicFile) throws IOException
+    private VBox createSongCard(MusicFileCore musicFile) throws IOException
     {
         FXMLLoader loader = new FXMLLoader(
                 getClass().getResource("/org/example/vasilev/musicpro/views/music-small-card.fxml")
@@ -261,13 +259,13 @@ public class MainController implements Initializable
         {
             Tests util = new Tests();
             // 1. Чтение JSON файла из ресурсов
-            List<MusicFileFX> musicFiles = util.loadMusicFilesFromJson();
+            List<MusicFileCore> musicFiles = util.loadMusicFilesFromJson();
 
             // 2. Очищаем контейнер
             songsContainer.getChildren().clear();
 
             // 3. Создаем карточки для каждого трека
-            for (MusicFileFX musicFile : musicFiles)
+            for (MusicFileCore musicFile : musicFiles)
             {
                 // Создаем карточку
                 VBox card = createSongCard(musicFile);

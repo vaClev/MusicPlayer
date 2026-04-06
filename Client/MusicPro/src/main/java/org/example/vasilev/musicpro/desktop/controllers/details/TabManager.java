@@ -9,8 +9,8 @@ import javafx.scene.control.TabPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import org.example.vasilev.musicpro.common.models.MusicFileCore;
 import org.example.vasilev.musicpro.desktop.controllers.IPlaylistOwner;
-import org.example.vasilev.musicpro.desktop.models.MusicFileFX;
 import org.example.vasilev.musicpro.common.services.download.IDownloadService;
 
 import java.io.IOException;
@@ -36,7 +36,7 @@ public class TabManager
         return instance;
     }
 
-    public void showOrCreateTab(MusicFileFX musicFile, IDownloadService downloadService, IPlaylistOwner playlistOwner)
+    public void showOrCreateTab(MusicFileCore musicFile, IDownloadService downloadService, IPlaylistOwner playlistOwner)
     {
         // Инициализируем окно если оно еще не создано
         initializeWindowIfNeeded();
@@ -88,7 +88,7 @@ public class TabManager
         }
     }
 
-    private void createNewTab(MusicFileFX musicFile, IDownloadService downloadService, IPlaylistOwner playlistOwner)
+    private void createNewTab(MusicFileCore musicFile, IDownloadService downloadService, IPlaylistOwner playlistOwner)
     {
         try
         {
@@ -137,7 +137,7 @@ public class TabManager
         }
     }
 
-    private String getTabTitle(MusicFileFX musicFile)
+    private String getTabTitle(MusicFileCore musicFile)
     {
         String title = String.format("%s - %s", musicFile.getArtist(), musicFile.getTitle());
         if (title.length() > 30)
@@ -155,6 +155,7 @@ public class TabManager
         alert.show();
     }
 
+    /// TODO не вызывается ?
     public void closeAllTabs()
     {
         if (tabPane != null) {

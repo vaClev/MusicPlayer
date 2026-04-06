@@ -1,5 +1,6 @@
 package org.example.vasilev.musicpro.common.models;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -68,8 +69,18 @@ public class MusicFileCore {
         }
     }
 
-    // === Геттеры ===
+    public void updateExtraFiles(MusicFileCore musicFileFullInfo)
+    {
+        if (musicFileFullInfo == null)
+            return;
 
+        // === Обновляем ExtraFiles ===
+        this.extraFiles.clear();
+        if (musicFileFullInfo.getExtraFiles() != null)
+            this.extraFiles.addAll(musicFileFullInfo.getExtraFiles());
+    }
+
+    // === Геттеры ===
     public Long getId() { return id; }
     public String getTitle() { return title; }
     public String getArtist() { return artist; }
@@ -263,21 +274,11 @@ public class MusicFileCore {
         return result;
     }
 
-    @Override
-    public String toString() {
-        return String.format("%s - %s", artist, title);
+    public File getLocalFile()
+    {
+        String path = getLocalFilePath();
+        return (path != null && !path.isEmpty()) ? new File(path) : null;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        MusicFileCore that = (MusicFileCore) o;
-        return id != null && id.equals(that.id);
-    }
 
-    @Override
-    public int hashCode() {
-        return id != null ? id.hashCode() : 0;
-    }
 }

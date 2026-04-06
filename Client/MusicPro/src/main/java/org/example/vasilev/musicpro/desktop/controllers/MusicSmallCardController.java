@@ -4,11 +4,11 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import org.example.vasilev.musicpro.common.models.MusicFileCore;
 import org.example.vasilev.musicpro.desktop.controllers.details.TabManager;
 import org.example.vasilev.musicpro.common.services.download.DownloadEvent;
 import org.example.vasilev.musicpro.common.services.download.IDownloadService;
 import org.example.vasilev.musicpro.common.services.music.IMusicClientService;
-import org.example.vasilev.musicpro.desktop.models.MusicFileFX;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -35,7 +35,7 @@ public class MusicSmallCardController
     @FXML
     private ProgressBar progressBar;
 
-    private MusicFileFX musicFile = null;
+    private MusicFileCore musicFile = null;
     private IPlaylistOwner playlistOwner = null;
     private IMusicClientService musicClientService = null;
     private IDownloadService downloadService = null;
@@ -52,7 +52,7 @@ public class MusicSmallCardController
     }
 
     // Метод установки MusicFile и внедрение сервиса скачивания
-    public void setMusicFile(MusicFileFX musicFile, IDownloadService downloadService)
+    public void setMusicFile(MusicFileCore musicFile, IDownloadService downloadService)
     {
         this.musicFile = musicFile;
         this.downloadService = downloadService;
@@ -192,7 +192,7 @@ public class MusicSmallCardController
                         {
                             System.out.println("Детали загружены успешно");
 
-                            musicFile.updateFromCore(musicFileFullInfo);
+                            musicFile.updateExtraFiles(musicFileFullInfo);
 
                             TabManager tabManager = TabManager.getInstance();
                             tabManager.showOrCreateTab(musicFile, downloadService, playlistOwner);
@@ -213,12 +213,6 @@ public class MusicSmallCardController
 
 
 
-    }
-
-    // Геттер для получения MusicFile. Будем использовать при переходе в "Подробнее..."
-    public MusicFileFX getMusicFile()
-    {
-        return musicFile;
     }
 
     @FXML

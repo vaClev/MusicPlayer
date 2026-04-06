@@ -16,9 +16,9 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.example.vasilev.musicpro.common.models.MusicFileCore;
 import org.example.vasilev.musicpro.common.services.player.MusicMetadataExtractService;
 import org.example.vasilev.musicpro.common.services.player.IPlayerService;
-import org.example.vasilev.musicpro.desktop.models.MusicFileFX;
 
 import java.io.File;
 import java.util.List;
@@ -38,7 +38,7 @@ public class PlayerController implements IPlaylistOwner
     private Button clearPlaylistButton;
 
     /// Список элементов плейлиста
-    private final ObservableList<MusicFileFX> playlistItems = FXCollections.observableArrayList();
+    private final ObservableList<MusicFileCore> playlistItems = FXCollections.observableArrayList();
     private int currentPlaylistIndex = -1;
 
     /// ////////////////////////////////////
@@ -107,7 +107,7 @@ public class PlayerController implements IPlaylistOwner
     private void setupPlaylist()
     {
         // Обновляем счетчик кол-во песен при изменении плейлиста
-        playlistItems.addListener((ListChangeListener<MusicFileFX>) change -> {
+        playlistItems.addListener((ListChangeListener<MusicFileCore>) change -> {
             updatePlaylistCount();
         });
 
@@ -126,7 +126,7 @@ public class PlayerController implements IPlaylistOwner
 
     @Override
     ///Добавить файл в плейлист
-    public void addMusicFileToPlaylist(MusicFileFX musicFile)
+    public void addMusicFileToPlaylist(MusicFileCore musicFile)
     {
         playlistItems.add(musicFile);
 
@@ -173,7 +173,7 @@ public class PlayerController implements IPlaylistOwner
            playlistContainer.getChildren().clear();
            for (int i = 0; i < playlistItems.size(); i++)
            {
-               MusicFileFX item = playlistItems.get(i);
+               MusicFileCore item = playlistItems.get(i);
                try
                {
                    FXMLLoader loader = new FXMLLoader(
@@ -242,7 +242,7 @@ public class PlayerController implements IPlaylistOwner
     {
         if (index >= 0 && index < playlistItems.size())
         {
-            MusicFileFX item = playlistItems.get(index);
+            MusicFileCore item = playlistItems.get(index);
             currentPlaylistIndex = index;
             totalTimeLabel.setText(item.getFormattedDuration());
             loadAndPlayFile(item.getLocalFile());
@@ -435,8 +435,7 @@ public class PlayerController implements IPlaylistOwner
         for (File file : selectedFiles)
         {
             var musicFileCore = extractService.createMusicFileFromLocalFile(file);
-            var musicFile = new MusicFileFX(musicFileCore); // КОНВЕРТАЦИЯ
-            playlistItems.add(musicFile);
+            playlistItems.add(musicFileCore);
         }
 
         if(currentPlaylistIndex==-1)

@@ -34,6 +34,4 @@ module org.example.vasilev.musicpro
     exports org.example.vasilev.musicpro.desktop.services;
     opens org.example.vasilev.musicpro.desktop.services to javafx.fxml;
     exports org.example.vasilev.musicpro.desktop.services.player;
-    exports org.example.vasilev.musicpro.desktop.models;
-    opens org.example.vasilev.musicpro.desktop.models to javafx.fxml;
 }
