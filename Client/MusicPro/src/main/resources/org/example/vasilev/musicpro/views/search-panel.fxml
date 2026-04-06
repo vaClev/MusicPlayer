@@ -6,7 +6,7 @@
 
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      fx:controller="org.example.vasilev.musicpro.controllers.SearchController"
+      fx:controller="org.example.vasilev.musicpro.desktop.controllers.SearchController"
       spacing="15" styleClass="search-panel">
 
     <padding>

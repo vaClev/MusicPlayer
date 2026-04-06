@@ -6,7 +6,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="org.example.vasilev.musicpro.controllers.details.MusicDetailsController">
+            fx:controller="org.example.vasilev.musicpro.desktop.controllers.details.MusicDetailsController">
 
     <top>
         <ToolBar>

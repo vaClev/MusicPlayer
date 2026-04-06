@@ -6,7 +6,7 @@
 
 <HBox fx:id="cardContainer" xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      fx:controller="org.example.vasilev.musicpro.controllers.details.ExtraFileCardController"
+      fx:controller="org.example.vasilev.musicpro.desktop.controllers.details.ExtraFileCardController"
       spacing="12" alignment="CENTER_LEFT">
 
     <!-- Иконка файла (эмодзи из модели) -->

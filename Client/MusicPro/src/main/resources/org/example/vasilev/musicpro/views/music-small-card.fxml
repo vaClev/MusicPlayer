@@ -7,7 +7,7 @@
 <?import java.lang.String?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      fx:controller="org.example.vasilev.musicpro.controllers.MusicSmallCardController"
+      fx:controller="org.example.vasilev.musicpro.desktop.controllers.MusicSmallCardController"
       styleClass="song-card"
       spacing="10"
       fx:id="songCard"

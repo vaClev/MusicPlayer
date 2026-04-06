@@ -6,7 +6,7 @@
 
 <HBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      fx:controller="org.example.vasilev.musicpro.controllers.PaginationController"
+      fx:controller="org.example.vasilev.musicpro.desktop.controllers.PaginationController"
       styleClass="pagination-panel"
       spacing="15"
       HBox.hgrow="ALWAYS"
