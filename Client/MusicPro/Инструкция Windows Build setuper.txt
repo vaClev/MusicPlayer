@@ -22,7 +22,7 @@ jpackage --type exe \
          --input target \
          --name "MusicPro" \
          --main-jar MusicPro-1.0.jar \
-         --main-class org.example.vasilev.musicpro.Launcher \
+         --main-class org.example.vasilev.musicpro.launcher.Launcher \
          --runtime-image target/runtime \
          --win-dir-chooser \
          --win-menu \

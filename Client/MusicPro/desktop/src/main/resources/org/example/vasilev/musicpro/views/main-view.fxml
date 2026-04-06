@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<?import javafx.geometry.Insets?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.vasilev.musicpro.desktop.controllers.MainController"
+      spacing="2" prefWidth="1000" prefHeight="700"
+      fx:id="root">
+
+    <!-- Шапка приложения -->
+    <VBox styleClass="header" spacing="20" alignment="CENTER_LEFT">
+        <HBox spacing="10" HBox.hgrow="ALWAYS">
+            <Label text="🎵 MusicPro v0.2" styleClass="app-title"/>
+            <Button text="JSON TEST" onAction="#handleRefresh"/>
+            <Button text="GET PAGE" onAction="#handleGetPage"/>
+            <Button text="Открыть папку загрузок" onAction="#handleOpenFolder"/>
+            <Button text="Панель поиска" onAction="#handleShowHide"/>
+        </HBox>
+        <!-- Статус бар -->
+        <Label fx:id="statusLabel" styleClass="footer"/>
+    </VBox>
+
+    <!-- Панель поиска (будет загружена программно) -->
+    <VBox fx:id="searchContainer" styleClass="search-panel-container"
+          VBox.vgrow="NEVER"
+          visible="false"
+          managed="false"/>
+
+    <!-- Кнопки пагинации (будут загружены программно)-->
+    <HBox fx:id="paginationContainer" styleClass="search-panel-container"
+          VBox.vgrow="NEVER"
+          HBox.hgrow="ALWAYS"
+          maxWidth="Infinity"
+          alignment="CENTER"
+          fillHeight="false" />
+
+    <!-- Разделитель на 2 зоны -->
+    <SplitPane fx:id="splitPane"
+               orientation="VERTICAL"
+               dividerPositions="1.0"
+               VBox.vgrow="ALWAYS"
+               HBox.hgrow="ALWAYS"
+               maxWidth="Infinity"
+               maxHeight="Infinity">
+
+        <!-- Верхняя область: Контейнер для карточек песен -->
+        <ScrollPane fitToWidth="true"
+                    hbarPolicy="NEVER"
+                    vbarPolicy="AS_NEEDED"
+                    VBox.vgrow="ALWAYS"
+                    HBox.hgrow="ALWAYS"
+                    maxWidth="Infinity"
+                    maxHeight="Infinity"
+                    minHeight="50"> <!-- Минимальная высота, чтобы не схлопнулось -->
+
+            <VBox fx:id="songsContainer" styleClass="songs-container"
+                  spacing="10"
+                  alignment="TOP_CENTER"
+                  VBox.vgrow="ALWAYS"
+                  maxWidth="Infinity"
+                  maxHeight="Infinity"
+                  minHeight="80"
+            >
+                <padding>
+                    <Insets top="10" right="10" bottom="10" left="10"/>
+                </padding>
+
+                <!-- Карточки песен будут добавляться сюда -->
+            </VBox>
+        </ScrollPane>
+
+        <!-- Нижняя область: Плеер с автоматической высотой -->
+        <VBox fx:id="playerContainer" styleClass="player-area"
+              VBox.vgrow="SOMETIMES"
+              HBox.hgrow="ALWAYS"
+              maxWidth="Infinity"
+              minHeight="80">
+            <!-- Плеер будет загружен сюда программно -->
+        </VBox>
+    </SplitPane>
+</VBox>
