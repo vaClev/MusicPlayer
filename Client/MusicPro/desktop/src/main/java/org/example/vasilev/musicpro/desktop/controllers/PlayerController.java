@@ -300,7 +300,7 @@ public class PlayerController implements IPlaylistOwner
             if (!isChanging)
             { // Когда отпустил ползунок
                 double percent = progressSlider.getValue() / 100.0;
-                playerService.seek(playerService.getTotalDuration().multiply(percent));
+                playerService.seek(playerService.getDuration() * percent);
             }
         });
         // 2.2 Прогресс воспроизведения (Плеер информирует UI)
@@ -308,9 +308,9 @@ public class PlayerController implements IPlaylistOwner
         {
             Platform.runLater(() -> {
                 if (!progressSlider.isValueChanging()) {
-                    double percent = duration.toSeconds() / playerService.getDuration();
+                    double percent = duration / playerService.getDuration();
                     progressSlider.setValue(percent * 100);
-                    currentTimeLabel.setText(formatTime(duration));
+                    currentTimeLabel.setText(formatTime(Duration.seconds(duration)));
                 }
             });
         });

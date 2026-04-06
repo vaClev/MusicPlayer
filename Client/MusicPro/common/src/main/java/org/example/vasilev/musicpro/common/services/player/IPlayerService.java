@@ -1,20 +1,19 @@
 package org.example.vasilev.musicpro.common.services.player;
-import javafx.util.Duration;
+
 import java.io.File;
+import java.time.Duration;
 import java.util.function.Consumer;
 
 /**
  * Интерфейс сервиса воспроизведения аудио
  * Базовый контракт для всех реализаций плеера
  */
-public interface IPlayerService
-{
+public interface IPlayerService {
 
     /**
      * Состояния плеера
      */
-    enum PlayerState
-    {
+    enum PlayerState {
         PLAYING,
         PAUSED,
         STOPPED,
@@ -61,16 +60,18 @@ public interface IPlayerService
     double getVolume();
 
     /**
-     * Перемотать на указанную позицию
+     * Перемотать на указанную позицию (в секундах)
      * @param seconds позиция в секундах
      */
     void seek(double seconds);
 
     /**
-     * Перемотать на указанную длительность
-     * @param duration позиция как Duration
+     * Перемотать на указанную позицию
+     * @param duration позиция как java.time.Duration
      */
-    void seek(Duration duration);
+    default void seek(Duration duration) {
+        seek(duration.toSeconds());
+    }
 
     /**
      * Получить текущую позицию воспроизведения
@@ -79,10 +80,12 @@ public interface IPlayerService
     double getCurrentTime();
 
     /**
-     * Получить текущую позицию как Duration
+     * Получить текущую позицию как java.time.Duration
      * @return текущая позиция
      */
-    Duration getCurrentDuration();
+    default Duration getCurrentDuration() {
+        return Duration.ofSeconds((long) getCurrentTime());
+    }
 
     /**
      * Получить длительность загруженного трека
@@ -91,10 +94,12 @@ public interface IPlayerService
     double getDuration();
 
     /**
-     * Получить длительность как Duration
+     * Получить длительность как java.time.Duration
      * @return длительность трека
      */
-    Duration getTotalDuration();
+    default Duration getTotalDuration() {
+        return Duration.ofSeconds((long) getDuration());
+    }
 
     /**
      * Получить текущее состояние плеера
@@ -146,15 +151,15 @@ public interface IPlayerService
 
     /**
      * Добавить слушателя изменения времени
-     * @param listener слушатель
+     * @param listener слушатель (принимает double секунды)
      */
-    void addTimeChangeListener(Consumer<Duration> listener);
+    void addTimeChangeListener(Consumer<Double> listener);
 
     /**
      * Удалить слушателя изменения времени
      * @param listener слушатель
      */
-    void removeTimeChangeListener(Consumer<Duration> listener);
+    void removeTimeChangeListener(Consumer<Double> listener);
 
     /**
      * Добавить слушателя изменения громкости

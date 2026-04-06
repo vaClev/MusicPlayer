@@ -1,6 +1,5 @@
 package org.example.vasilev.musicpro.common.services.player;
 
-import javafx.util.Duration;
 import org.example.vasilev.musicpro.common.models.MusicFile;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
@@ -108,8 +107,7 @@ public class MusicMetadataExtractService
                 if (header != null)
                 {
                     int trackLength = header.getTrackLength(); // в секундах
-                    Duration duration = Duration.seconds(trackLength);
-                    musicFile.setDuration(String.valueOf(duration)); /// КОНВЕРТАЦИЯ
+                    musicFile.setDurationFromSeconds(trackLength); /// КОНВЕРТАЦИЯ
                 }
 
                 System.out.println("[SUCCESS] Metadata extracted with JAudioTagger");

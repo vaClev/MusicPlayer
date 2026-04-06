@@ -1,6 +1,5 @@
 package org.example.vasilev.musicpro.common.services.download;
 
-import javafx.application.Platform;
 import org.example.vasilev.musicpro.common.services.APIClient;
 
 import java.io.File;
@@ -183,16 +182,16 @@ public class DownloadService implements IDownloadService, AutoCloseable
                     {
                         // Если возникла ошибка "Not on FX application thread". Это скорее всего UI-подписчик
                         // пробуем через Platform.runLater.
-                        Platform.runLater(() -> {
-                            try
-                            {
-                                subscriber.accept(event);
-                            }
-                            catch (Exception ex)
-                            {
-                                handleSubscriberError(subscriber, ex);
-                            }
-                        });
+                        //Platform.runLater(() -> {
+                        //    try
+                        //    {
+                        //        subscriber.accept(event);
+                        //    }
+                        //    catch (Exception ex)
+                        //    {
+                        //        handleSubscriberError(subscriber, ex);
+                        //    }
+                        //});
                     }
                     catch (Exception e)
                     {

@@ -1,4 +1,4 @@
-package org.example.vasilev.musicpro.launcher;
+package org.example.vasilev.musicpro.desktop.launcher;
 
 import javafx.application.Application;
 
