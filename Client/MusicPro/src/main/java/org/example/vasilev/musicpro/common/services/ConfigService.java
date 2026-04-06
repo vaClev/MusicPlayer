@@ -1,14 +1,12 @@
 package org.example.vasilev.musicpro.common.services;
 
-import org.example.vasilev.musicpro.desktop.services.AppConfig;
-
 import java.io.File;
 
 public class ConfigService
 {
-    private AppConfig config;
+    private IAppConfig config;
 
-    public ConfigService(AppConfig config)
+    public ConfigService(IAppConfig config)
     {
         this.config = config;
         initializeDirectories();
@@ -26,7 +24,7 @@ public class ConfigService
         return config.getDownloadDir() + File.separator + filename;
     }
 
-    public AppConfig getConfig()
+    public IAppConfig getConfig()
     {
         return config;
     }
