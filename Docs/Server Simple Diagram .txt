@@ -1,4 +1,4 @@
-@startuml MusicServer.API Class Diagram
+@startuml Server Simple Class Diagram
 
 ' Настройки для лучшей читаемости
 skinparam class {
@@ -37,24 +37,12 @@ package Models #ccccff {
     }
 
     enum ExtraFileType {
-        SheetMusic,     // Ноты
-        Tabs,           // Табулатуры
-        Lyrics,         // Текст песни
-        Chords,         // Аккорды
-        Image,          // Обложка/фото
-        Other           // Прочее
     }
 
     class Artist {
-        +string Name
-        +string Bio
-        +ICollection<MusicFile> MusicFiles
     }
 
     class Genre {
-        +string Name
-        +string Description
-        +ICollection<MusicFile> MusicFiles
     }
 
     ExtraFile *-- ExtraFileType
@@ -87,18 +75,10 @@ package "Database" #eeffff {
         +DbSet<ExtraFile> ExtraFiles
         +DbSet<Artist> Artists
         +DbSet<Genre> Genres
-        +OnConfiguring(DbContextOptionsBuilder)
-        +OnModelCreating(ModelBuilder)
     }
 
     interface IMusicFileRepository {
         +GetByIdAsync(int)
-        +AddAsync(MusicFile)
-        +DeleteAsync(int)
-
-        +GetByIdWithDetailsAsync(int)
-        +GetByIdWithExtensionAndArtistAsync(int) 
-
         +GetPagedAsync(PaginationParams)
         +SearchAsync(SearchParams) :
     }
@@ -117,8 +97,7 @@ package "Services" #ffdddd {
     interface IMusicService {
         +UploadMusicAsync(IFormFile) 
         +GetMusicFileAsync(int)
-        +GetAllMusicFilesAsync()
-        +GetMusicFilesPageAsync(PaginationParams)
+        +GetMusicFilesPageAsync()
         +GetMusicFileDownloadDataAsync(int)
         +DeleteMusicFileAsync(int)
         +SearchMusicFilesAsync(SearchParams)
@@ -187,7 +166,6 @@ package "Controllers" #ddffdd {
         +UploadMusic
         
         +UploadBatch(List<IFormFile>)
-        +Search([FromQuery] SearchParams)
     }
 
     class ExtraFilesController {
@@ -200,7 +178,7 @@ package "Controllers" #ddffdd {
     class SearchController {
         -IMusicService _musicService
 
-        +Search([FromQuery] SearchParams)
+        +Search()
         +SimpleSearch(string, int, int)
     }
 
