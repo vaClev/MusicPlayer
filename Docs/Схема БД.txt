@@ -13,14 +13,32 @@ entity MusicFile {
   * filename : TEXT
   * filepath : TEXT
   * title : TEXT
-  * artist : TEXT
+  * artistId : INT <<FK>>
   album : TEXT
+  * genreId : INT <<FK>>
   year : INT
-  genre : TEXT
   * filesize : BIGINT
   * duration : INTERVAL
   * uploadDate : TIMESTAMP WITH TIME ZONE
   * FileExtensionId : INT <<FK>>
+}
+
+' Сущность исполнителя
+entity Artist {
+  * Id : INT <<PK>>
+  --
+  * Name : VARCHAR(200)
+  Bio : TEXT
+  Country : VARCHAR(100)
+  FormedYear : INT
+}
+
+' Сущность жанра
+entity Genre {
+  * Id : INT <<PK>>
+  --
+  * Name : VARCHAR(100)
+  Description : TEXT
 }
 
 ' Сущность дополнительных файлов
@@ -38,7 +56,7 @@ entity ExtraFile {
   * FileExtensionId : INT <<FK>>
 }
 
-' Cущность: расширения файлов
+' Сущность: расширения файлов
 entity FileExtension {
   * Id : INT <<PK>>
   --
@@ -48,9 +66,11 @@ entity FileExtension {
   Description : TEXT
 }
 
-' Определение связи один-ко-многим
+' Определение связей
+Artist ||--o{ MusicFile : "исполняет"
+Genre ||--o{ MusicFile : "относится к"
 MusicFile ||--o{ ExtraFile : "имеет"
-FileExtension ||--o{ MusicFile 
+FileExtension ||--o{ MusicFile : "используется в"
 FileExtension ||--o{ ExtraFile : "используется в"
 
 ' Примечания и пояснения
@@ -58,7 +78,22 @@ note top of MusicFile
   Основная сущность - аудиофайл
   * - обязательные поля
   PK - первичный ключ
-  FK - внешний ключ к FileExtension
+  FK - внешний ключ
+  artistId → Artist.Id
+  genreId → Genre.Id
+  FileExtensionId → FileExtension.Id
+end note
+
+note top of Artist
+  Исполнитель музыкального произведения
+  Связь: один Artist → много MusicFile
+  Name - уникальное имя исполнителя
+end note
+
+note top of Genre
+  Музыкальный жанр
+  Связь: один Genre → много MusicFile
+  Name - уникальное название жанра
 end note
 
 note top of ExtraFile
@@ -77,7 +112,20 @@ end note
 
 ' Блок с примерами данных
 package "Пример данных" {
-   entity "FileExtension #1" as FE1 {
+  entity "Artist #1" as AR1 {
+    Queen
+    --
+    UK
+    1970
+  }
+   
+  entity "Genre #1" as GR1 {
+    Rock
+    --
+    Classic rock genre
+  }
+  
+  entity "FileExtension #1" as FE1 {
     .mp3
     --
     audio/mpeg
@@ -93,13 +141,6 @@ package "Пример данных" {
     PDF Document
   }
   
-  entity "FileExtension #3" as FE3 {
-    .jpg
-    --
-    image/jpeg
-    image
-    JPEG Image
-  }
 
   entity "MusicFile #1" as MF1 {
     Bohemian Rhapsody
@@ -109,6 +150,7 @@ package "Пример данных" {
     1975
   }
   
+    
   entity "ExtraFile #1" as EF1 {
     Ноты для фортепиано
     --
@@ -116,20 +158,14 @@ package "Пример данных" {
     SheetMusic (0)
   }
   
-  entity "ExtraFile #2" as EF2 {
-    Текст песни
-    --
-    lyrics.txt
-    Lyrics (2)
-  }
+
 }
 
 ' Показать связи с примерами
+AR1 --> MF1 : исполняет
+GR1 --> MF1 : относится к
 FE1 --> MF1 : используется для
 MF1 --> EF1 : содержит
-MF1 --> EF2 : содержит
 FE2 --> EF1 : используется для
-FE3 --> EF2 : используется для
-
 
 @enduml
