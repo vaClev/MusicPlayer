@@ -1,6 +1,12 @@
-Курсовая работа по .NET C#
+Учебная работа по ASP.NET C# и JAVA
 Тема "Музыкальный плеер с удаленной библиотекой и возможностью хранения связанных нот, табулатур"
-https://docs.google.com/document/d/1B5BQ3vxK5Hc6708G56_nAb37K9KFGfsFhen_pG0t9_w/edit?usp=sharing
+
+Пояснительная записка:
+https://docs.google.com/document/d/18PPBlPKnYPQ-fN1QCyn3jqf1NZE23WpCRSgHHfdtMlA/edit?usp=sharing
+
+Презентация:
+https://docs.google.com/presentation/d/13Gn1EXEpd8_uXNOYOxxKYUZHXNikOPBSe3unKxHz98w/edit?usp=sharing
+
 -----
 API серверной части:
 -----
