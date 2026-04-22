@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MusicPro Web Sample</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0a0c12;
+            min-height: 100vh;
+            padding: 32px;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 28px;
+            background: #0f1117;
+            border-radius: 32px;
+            padding: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .playlist-panel {
+            background: #0f1117;
+            border-radius: 24px;
+            padding: 8px 0 20px 0;
+        }
+
+        .playlist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 0 20px 20px 20px;
+            border-bottom: 1px solid #1e212a;
+            margin-bottom: 8px;
+        }
+
+        .playlist-header h2 {
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 1.5rem;
+            letter-spacing: -0.3px;
+        }
+
+        .playlist-stats {
+            color: #6c6f78;
+            font-size: 0.8rem;
+            font-weight: 500;
+            background: #1a1d26;
+            padding: 4px 12px;
+            border-radius: 40px;
+        }
+
+        .songs-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 8px 12px 8px 16px;
+        }
+
+        .songs-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .songs-list::-webkit-scrollbar-track {
+            background: #1a1d26;
+            border-radius: 4px;
+        }
+        .songs-list::-webkit-scrollbar-thumb {
+            background: #3b3f4f;
+            border-radius: 4px;
+        }
+
+        /* Карточка как в PDF */
+        .track-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 10px 16px;
+            background: transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #0f1117;
+        }
+
+        .track-icon {
+            width: 48px;
+            height: 48px;
+            background: #1a1d26;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            color: #6c6f78;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            border: 1px solid #252832;
+        }
+
+        .track-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .track-title-line {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #e6e6e8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .track-artist-line {
+            font-size: 0.75rem;
+            color: #6c6f78;
+            margin-top: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .track-duration {
+            font-size: 0.85rem;
+            color: #4b4f5c;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .track-card:hover {
+            background: #171a23;
+        }
+
+        .track-card:hover .track-icon {
+            background: #252832;
+            color: #9b8cff;
+            border-color: #3b3f4f;
+        }
+
+        .track-card.active {
+            background: #1a1d26;
+            border-left: 3px solid #9b8cff;
+            border-radius: 12px;
+            padding-left: 13px;
+        }
+
+        .track-card.active .track-icon {
+            background: #2a2e3b;
+            color: #b6a9ff;
+            border-color: #9b8cff;
+        }
+
+        .track-card.active .track-title-line {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .track-card.active .track-duration {
+            color: #9b8cff;
+        }
+
+        /* Правая панель */
+        .cassette-panel {
+            background: linear-gradient(145deg, #12141c, #0b0d12);
+            border-radius: 28px;
+            padding: 28px;
+            border: 1px solid #252832;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+
+        .cassette-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .cassette-icon {
+            width: 88px;
+            height: 88px;
+            background: #1a1d26;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 18px;
+            font-size: 2.6rem;
+            border: 1px solid #2f3340;
+            color: #9b8cff;
+        }
+
+        .cassette-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .cassette-artist {
+            font-size: 1rem;
+            color: #8f92a0;
+            margin-top: 8px;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+            background: rgba(10,12,18,0.6);
+            border-radius: 24px;
+            padding: 20px;
+            margin: 28px 0;
+            border: 1px solid #1e212a;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .detail-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #6c6f78;
+            font-weight: 600;
+        }
+
+        .detail-value {
+            font-size: 1rem;
+            color: #e6e6e8;
+            font-weight: 500;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .btn-play {
+            background: #9b8cff;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 44px;
+            color: #0f1117;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-play:hover {
+            background: #b0a3ff;
+            transform: scale(1.01);
+        }
+
+        .btn-download {
+            background: transparent;
+            border: 1px solid #3b3f4f;
+            padding: 12px 28px;
+            border-radius: 44px;
+            color: #cacde2;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-download:hover {
+            background: #1a1d26;
+            border-color: #9b8cff;
+            color: #ffffff;
+        }
+
+        .btn-related {
+            background: transparent;
+            border: 1px solid #9b8cff;
+            padding: 10px 24px;
+            border-radius: 44px;
+            color: #9b8cff;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .btn-related:hover {
+            background: #2a2e3b;
+            border-color: #c2b6ff;
+            color: #ffffff;
+        }
+
+        /* Аудиоплеер */
+        .audio-player {
+            margin-top: 16px;
+            margin-bottom: 24px;
+            padding: 12px;
+            background: #1a1d26;
+            border-radius: 40px;
+            border: 1px solid #2f3340;
+        }
+
+        audio {
+            width: 100%;
+            outline: none;
+            border-radius: 40px;
+        }
+
+        /* Связанные файлы */
+        .related-files-section {
+            margin-top: 24px;
+            border-top: 1px solid #252832;
+            padding-top: 20px;
+        }
+
+        .related-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .related-header h4 {
+            color: #e6e6e8;
+            font-weight: 500;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        .related-files-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 180px;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+
+        .related-file-card {
+            background: #1a1d26;
+            border-radius: 12px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border: 1px solid #2a2e38;
+            transition: 0.2s;
+        }
+
+        .related-file-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .related-file-type {
+            font-size: 0.7rem;
+            color: #9b8cff;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .related-file-desc {
+            font-size: 0.85rem;
+            color: #e6e6e8;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .related-file-ext {
+            font-size: 0.7rem;
+            color: #6c6f78;
+            margin-left: 8px;
+        }
+
+        .related-download-btn {
+            background: #2a2e3b;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: 0.2s;
+            color: #cacde2;
+        }
+
+        .related-download-btn:hover {
+            background: #9b8cff;
+            color: #0f1117;
+            transform: scale(1.02);
+        }
+
+        .empty-files {
+            text-align: center;
+            padding: 24px;
+            color: #4b4f5c;
+            font-size: 0.8rem;
+            background: #1a1d26;
+            border-radius: 20px;
+        }
+
+        .empty-playlist {
+            text-align: center;
+            padding: 48px 20px;
+            color: #6c6f78;
+        }
+
+        @media (max-width: 860px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Левая панель: плейлист -->
+        <div class="playlist-panel">
+            <div class="playlist-header">
+                <h2>🎧 Плейлист</h2>
+                <div class="playlist-stats" id="playlistStats">— песен</div>
+            </div>
+            <div id="songsList" class="songs-list">
+                <div class="empty-playlist">🎵 Загрузите треки</div>
+            </div>
+            <div style="margin-top: 20px; padding: 0 16px;">
+                <button id="refreshBtn" style="width:100%; background:#1a1d26; border:1px solid #2f3340; padding:12px; border-radius:44px; color:#e6e6e8; font-weight:600; cursor:pointer;">🔄 Обновить </button>
+            </div>
+        </div>
+
+        <!-- Правая панель: кассета + связанные файлы -->
+        <div class="cassette-panel" id="cassettePanel">
+            <div class="cassette-header">
+                <div class="cassette-icon">🎵</div>
+                <div class="cassette-title" id="detailTitle">Не выбрано</div>
+                <div class="cassette-artist" id="detailArtist">—</div>
+            </div>
+            <div class="details-grid">
+                <div class="detail-item"><div class="detail-label">Альбом</div><div class="detail-value" id="detailAlbum">—</div></div>
+                <div class="detail-item"><div class="detail-label">Жанр</div><div class="detail-value" id="detailGenre">—</div></div>
+                <div class="detail-item"><div class="detail-label">Год</div><div class="detail-value" id="detailYear">—</div></div>
+                <div class="detail-item"><div class="detail-label">Длительность</div><div class="detail-value" id="detailDuration">—</div></div>
+                <div class="detail-item"><div class="detail-label">Размер</div><div class="detail-value" id="detailSize">—</div></div>
+                <div class="detail-item"><div class="detail-label">Расширение</div><div class="detail-value" id="detailExt">—</div></div>
+                <div class="detail-item"><div class="detail-label">Загружено</div><div class="detail-value" id="detailDate">—</div></div>
+                <div class="detail-item"><div class="detail-label">ID</div><div class="detail-value" id="detailId">—</div></div>
+            </div>
+            <div class="action-buttons">
+                <button class="btn-play" id="playBtn">▶ Воспроизвести</button>
+                <button class="btn-download" id="downloadBtnAlt">⬇ Скачать</button>
+                <button class="btn-related" id="relatedFilesBtn">📎 Связанные файлы</button>
+            </div>
+            <div class="audio-player" id="audioPlayerContainer" style="display: none;">
+                <audio id="audioElement" controls>Ваш браузер не поддерживает аудио</audio>
+            </div>
+            
+            <!-- Блок связанных файлов -->
+            <div class="related-files-section" id="relatedFilesSection" style="display: none;">
+                <div class="related-header">
+                    <h4>📄 Дополнительные файлы</h4>
+                    <span id="relatedCount" style="color:#6c6f78; font-size:0.7rem;">0</span>
+                </div>
+                <div id="relatedFilesList" class="related-files-list">
+                    <div class="empty-files">Нет связанных файлов</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; text-align:center; font-size:0.7rem; color:#4a4d5a;">📼 выберите трек → связанные файлы (ноты, табы)</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:5098/api/music';
+        const EXTRAFILES_API_BASE = 'http://127.0.0.1:5098/api/extrafiles/music/id';
+        let currentSongs = [];
+        let activeSongId = null;
+        let currentActiveSong = null;
+        let currentRelatedFiles = [];
+
+        function formatDuration(duration) {
+            if (!duration) return '—';
+            return duration.split('.')[0];
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes) return '—';
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '—';
+            const d = new Date(dateString);
+            return d.toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        function renderPlaylist(songs) {
+            const container = document.getElementById('songsList');
+            const statsSpan = document.getElementById('playlistStats');
+            if (!songs || songs.length === 0) {
+                container.innerHTML = '<div class="empty-playlist">📭 Нет треков. Обновите список.</div>';
+                statsSpan.innerText = '0 песен';
+                return;
+            }
+            statsSpan.innerText = `${songs.length} песен`;
+            container.innerHTML = '';
+            songs.forEach(song => {
+                const trackDiv = document.createElement('div');
+                trackDiv.className = 'track-card';
+                if (activeSongId === song.id) trackDiv.classList.add('active');
+                trackDiv.innerHTML = `
+                    <div class="track-icon">♪</div>
+                    <div class="track-info">
+                        <div class="track-title-line">${escapeHtml(song.title)}</div>
+                        <div class="track-artist-line">${escapeHtml(song.artist)}</div>
+                    </div>
+                    <div class="track-duration">${formatDuration(song.duration)}</div>
+                `;
+                trackDiv.addEventListener('click', () => {
+                    setActiveSong(song.id);
+                    showSongDetails(song);
+                    // При переключении трека скрываем связанные файлы (пока не нажмут кнопку)
+                    document.getElementById('relatedFilesSection').style.display = 'none';
+                    currentRelatedFiles = [];
+                });
+                container.appendChild(trackDiv);
+            });
+        }
+
+        function setActiveSong(songId) {
+            const cards = document.querySelectorAll('.track-card');
+            cards.forEach(card => card.classList.remove('active'));
+            const children = document.getElementById('songsList').children;
+            for (let i = 0; i < children.length; i++) {
+                if (currentSongs[i] && currentSongs[i].id === songId) {
+                    children[i].classList.add('active');
+                    break;
+                }
+            }
+            activeSongId = songId;
+        }
+
+        function showSongDetails(song) {
+            document.getElementById('detailTitle').innerText = escapeHtml(song.title);
+            document.getElementById('detailArtist').innerText = escapeHtml(song.artist);
+            document.getElementById('detailAlbum').innerText = (song.album && song.album !== 'Unknown Album') ? escapeHtml(song.album) : '—';
+            document.getElementById('detailGenre').innerText = (song.genre && song.genre !== 'Unknown Genre') ? escapeHtml(song.genre) : '—';
+            document.getElementById('detailYear').innerText = (song.year && song.year > 0) ? song.year : '—';
+            document.getElementById('detailDuration').innerText = formatDuration(song.duration);
+            document.getElementById('detailSize').innerText = formatFileSize(song.fileSize);
+            document.getElementById('detailExt').innerText = song.extension || '—';
+            document.getElementById('detailDate').innerText = formatDate(song.uploadDate);
+            document.getElementById('detailId').innerText = song.id;
+            currentActiveSong = song;
+        }
+
+        // Загрузка связанных файлов
+        async function loadRelatedFiles(musicFileId) {
+            try {
+                const url = `${EXTRAFILES_API_BASE}${musicFileId}`;
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const data = await response.json();
+                currentRelatedFiles = Array.isArray(data) ? data : [];
+                renderRelatedFiles(currentRelatedFiles);
+            } catch (err) {
+                console.error('Ошибка загрузки связанных файлов:', err);
+                currentRelatedFiles = [];
+                renderRelatedFiles([]);
+            }
+        }
+
+        function renderRelatedFiles(files) {
+            const container = document.getElementById('relatedFilesList');
+            const section = document.getElementById('relatedFilesSection');
+            const countSpan = document.getElementById('relatedCount');
+            
+            if (!files || files.length === 0) {
+                container.innerHTML = '<div class="empty-files">📭 Нет связанных файлов для этого трека</div>';
+                countSpan.innerText = '0';
+                section.style.display = 'block';
+                return;
+            }
+            
+            countSpan.innerText = files.length;
+            container.innerHTML = '';
+            files.forEach(file => {
+                const card = document.createElement('div');
+                card.className = 'related-file-card';
+                // Отображаем: fileTypeName, extension, description и кнопку скачать
+                card.innerHTML = `
+                    <div class="related-file-info">
+                        <div class="related-file-type">${escapeHtml(file.fileTypeName || 'Файл')}</div>
+                        <div class="related-file-desc">
+                            ${escapeHtml(file.description || 'Без описания')}
+                            <span class="related-file-ext">${escapeHtml(file.extension || '')}</span>
+                        </div>
+                    </div>
+                    <button class="related-download-btn" data-url="${escapeHtml(file.downloadExtraUrl)}" data-name="${escapeHtml(file.originalFileName)}">⬇️</button>
+                `;
+                const downloadBtn = card.querySelector('.related-download-btn');
+                downloadBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const url = downloadBtn.dataset.url;
+                    const filename = downloadBtn.dataset.name;
+                    if (url) {
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = filename || 'download';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    } else {
+                        alert('Ссылка для скачивания отсутствует');
+                    }
+                });
+                container.appendChild(card);
+            });
+            section.style.display = 'block';
+        }
+
+        // Воспроизведение через скачивание в память
+        async function playSong(song) {
+            if (!song || !song.downloadUrl) {
+                alert('Нет ссылки для воспроизведения');
+                return;
+            }
+            try {
+                const response = await fetch(song.downloadUrl);
+                if (!response.ok) throw new Error('Ошибка загрузки файла');
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                const audio = document.getElementById('audioElement');
+                const container = document.getElementById('audioPlayerContainer');
+                container.style.display = 'block';
+                audio.src = blobUrl;
+                audio.load();
+                audio.play().catch(e => console.warn('Автовоспроизведение заблокировано:', e));
+                audio.onended = () => URL.revokeObjectURL(blobUrl);
+            } catch (err) {
+                console.error(err);
+                alert('Не удалось загрузить трек для проигрывания');
+            }
+        }
+
+        function downloadSong(song) {
+            if (song && song.downloadUrl) {
+                const a = document.createElement('a');
+                a.href = song.downloadUrl;
+                a.download = `${song.artist} - ${song.title}.mp3`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } else {
+                alert('Нет ссылки для скачивания');
+            }
+        }
+
+        function bindActionButtons() {
+            const playBtn = document.getElementById('playBtn');
+            const downloadAlt = document.getElementById('downloadBtnAlt');
+            const relatedBtn = document.getElementById('relatedFilesBtn');
+            
+            playBtn.onclick = () => {
+                if (currentActiveSong) playSong(currentActiveSong);
+                else alert('Выберите трек');
+            };
+            downloadAlt.onclick = () => {
+                if (currentActiveSong) downloadSong(currentActiveSong);
+                else alert('Выберите трек');
+            };
+            relatedBtn.onclick = () => {
+                if (currentActiveSong && currentActiveSong.id) {
+                    loadRelatedFiles(currentActiveSong.id);
+                } else {
+                    alert('Сначала выберите музыкальный трек');
+                }
+            };
+        }
+
+        async function loadMusicData() {
+            const container = document.getElementById('songsList');
+            container.innerHTML = '<div class="empty-playlist">⏳ Загрузка...</div>';
+            try {
+                const resp = await fetch(API_URL);
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const data = await resp.json();
+                if (data.items && data.items.length) {
+                    currentSongs = data.items;
+                    renderPlaylist(currentSongs);
+                    showSongDetails(currentSongs[0]);
+                    setActiveSong(currentSongs[0].id);
+                    // Скрываем секцию связанных файлов при смене трека
+                    document.getElementById('relatedFilesSection').style.display = 'none';
+                    currentRelatedFiles = [];
+                } else {
+                    currentSongs = [];
+                    renderPlaylist([]);
+                    document.getElementById('detailTitle').innerText = 'Нет треков';
+                }
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = '<div class="empty-playlist">❌ Ошибка соединения с сервером</div>';
+            }
+        }
+
+        function init() {
+            bindActionButtons();
+            document.getElementById('refreshBtn').addEventListener('click', loadMusicData);
+            loadMusicData();
+        }
+        init();
+    </script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 @startuml
 ' === КОМПАКТНЫЕ НАСТРОЙКИ ===
-!pragma layout smetana
+'!pragma layout smetana
 skinparam compress true
 skinparam roundcorner 15
 
@@ -30,8 +30,11 @@ skinparam arrow {
 
 skinparam nodesep 0.5
 skinparam ranksep 0.5
-
+skinparam linetype polyline
 ' === МОДЕЛИ ===
+package Common #aabbcc
+{
+
 package models #ddffdd {
     class MusicFile {
         - id, title, artist
@@ -49,10 +52,6 @@ package models #ddffdd {
         CHORDS, IMAGE, OTHER
     }
     
-    class AppConfig {
-        + getInstance()
-        + getServerUrl()
-    }
 }
 
 ' === DTO ===
@@ -71,6 +70,11 @@ package dto #LightSeaGreen {
         - id, fileType
         + toDomainModel()
     }
+
+    class MusicPageDTO
+    {
+        + List<MusicFile> toCardsList()
+    }
 }
 
 ' === СЕРВИСЫ ===
@@ -78,7 +82,14 @@ package services #ddddff {
     class ConfigService {
         + getConfig()
     }
-    
+
+    interface IAppConfig 
+    {
+        + getDownloadDir();
+        + getServerUrl();
+    }
+    ConfigService *-- IAppConfig
+
     class APIClient {
         + getAsync()
         + downloadAsync()
@@ -92,6 +103,14 @@ package services #ddddff {
         }
         
         class MusicClientService implements IMusicClientService
+
+        interface IPageOwner
+        {
+            + search() 
+            + nextPage()
+        }
+
+        class PageOwner implements IPageOwner
     }
     
     ' --- Плеер ---
@@ -99,8 +118,6 @@ package services #ddddff {
         interface IPlayerService {
             + play(), pause(), stop()
         }
-        
-        class BasicPlayerService implements IPlayerService
         
         class MusicMetadataExtractService
     }
@@ -116,6 +133,11 @@ package services #ddddff {
     }
 }
 
+}
+
+package DESKTOP-APPLICATION
+{
+
 ' === КОНТРОЛЛЕРЫ ===
 package controllers #Orange {
     interface IPlaylistOwner {
@@ -124,10 +146,10 @@ package controllers #Orange {
     }
     
     class MainController {
-        - configService
-        - downloadService
-        - musicClientService
-        - playlistOwner
+        - searchContainer
+        - paginationContainer
+        - songsContainer
+        - playerContainer
     }
     
     class MusicSmallCardController {
@@ -139,6 +161,17 @@ package controllers #Orange {
         - playerService
         - playlistItems
     }
+
+    class PaginationController
+    {
+        - pageOwner;
+        - paginationSubscriber
+    }
+    class SearchController
+    {
+        - pageOwner;
+        - searchSubscriber
+    }
     
     ' --- Детали ---
     package details #Orange {
@@ -147,42 +180,75 @@ package controllers #Orange {
     }
 }
 
+package launcher
+{
+    class MusicProApplication
+    {
+        -  configService
+        -  downloadService
+        -  musicClientService
+        -  pageOwner 
+
+        - playerService
+        - extractService
+
+        + startServices()
+    }
+}
+MusicProApplication -->MainController : Внедряет зависимости
+package services_Implemetation
+{
+    class AppConfig  {
+        + getInstance()
+        + getServerUrl()
+    }
+
+    class BasicPlayerService
+    {
+
+    }
+}
+MusicProApplication -->services_Implemetation : Использует
+}
+
+
 ' === КЛЮЧЕВЫЕ СВЯЗИ ===
 ' Модели
 MusicFile "1" --o{ "0..*" ExtraFile
 ExtraFile o-- ExtraFileType
-AppConfig --o ConfigService
 
 ' DTO преобразования
-MusicFile <-- MusicFileDTO : toDomainModel()
-MusicFile <-- MusicFileDetailDTO : toDomainModel()
-ExtraFile <-- ExtraFileDTO : toDomainModel()
+MusicFile <-- MusicFileDTO
+MusicFile <-- MusicFileDetailDTO 
+ExtraFile <-- ExtraFileDTO
 MusicFileDetailDTO o-- ExtraFileDTO
 
 ' Сервисные зависимости
-ConfigService --> AppConfig
 MusicClientService *-- APIClient
-MusicClientService --> MusicFileDTO
-MusicClientService --> MusicFileDetailDTO
+MusicClientService --> dto
+PageOwner --> dto
 DownloadService *-- APIClient
 
 ' Контроллерные зависимости
 MainController o-- IPlaylistOwner
 MainController o-- MusicSmallCardController
-MainController o-- ConfigService
-MainController o-- IMusicClientService
-MainController o-- IDownloadService
+MainController o-- SearchController
+MainController o-- PaginationController
+MusicProApplication o-- ConfigService
+MusicProApplication o-- IMusicClientService
+MusicProApplication o-- IDownloadService
+MusicProApplication o-- Common.services.player.IPlayerService
+MusicProApplication o-- Common.services.music.IPageOwner
 
 MusicSmallCardController o--> IPlaylistOwner
-PlayerController *-- IPlayerService
-PlayerController *-- MusicMetadataExtractService
+MusicProApplication o-- MusicMetadataExtractService
 
 ' UI навигация
 MusicSmallCardController --> TabManager
 TabManager o--> MusicDetailsController
 
 ' Сервисные внедрения в контроллеры
-MusicSmallCardController ..> IDownloadService : использует
-MusicDetailsController ..> IDownloadService : использует
 MusicMetadataExtractService --> MusicFile : создает
+
+
 @enduml

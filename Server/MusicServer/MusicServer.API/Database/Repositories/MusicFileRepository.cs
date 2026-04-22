@@ -305,6 +305,50 @@ namespace MusicServer.API.Database.Repositories
 			return await _context.SaveChangesAsync();
 		}
 
-		#endregion
-	}
+        #endregion
+
+
+        #region "Реализация методов для ExtraFile - IExtraFileRepository"
+
+        public async Task<IEnumerable<ExtraFile>> GetExtraFilesByMusicIdAsync(int musicFileId)
+        {
+            return await _context.ExtraFiles
+                .Include(ef => ef.FileExtension)
+                .Where(ef => ef.MusicFileId == musicFileId)
+                .OrderByDescending(ef => ef.UploadDate)
+                .ToListAsync();
+        }
+
+        public async Task<ExtraFile?> GetExtraFileByIdAsync(int extraFileId)
+        {
+            return await _context.ExtraFiles
+                .FirstOrDefaultAsync(ef => ef.Id == extraFileId);
+        }
+
+        public async Task<ExtraFile?> GetExtraFileByIdWithDetailsAsync(int extraFileId)
+        {
+            return await _context.ExtraFiles
+                .Include(ef => ef.FileExtension)
+                .Include(ef => ef.MusicFile)
+                    .ThenInclude(mf => mf.artist)
+                .FirstOrDefaultAsync(ef => ef.Id == extraFileId);
+        }
+
+        public async Task AddExtraFileAsync(ExtraFile extraFile)
+        {
+            await _context.ExtraFiles.AddAsync(extraFile);
+        }
+
+        public async Task<bool> DeleteExtraFileAsync(int extraFileId)
+        {
+            var extraFile = await _context.ExtraFiles.FindAsync(extraFileId);
+            if (extraFile == null)
+                return false;
+
+            _context.ExtraFiles.Remove(extraFile);
+            return true;
+        }
+
+        #endregion
+    }
 }

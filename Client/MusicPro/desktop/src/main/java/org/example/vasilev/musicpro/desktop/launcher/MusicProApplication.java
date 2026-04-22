@@ -58,7 +58,7 @@ public class MusicProApplication extends Application
             // Устанавливаем заголовок
             stage.setTitle("MusicPro v.0.2");
 
-            /// TODO Создать все сервисы и Внедрить зависимости
+            /// Создать все сервисы и Внедрить зависимости
             startServices();
             loadSearchPanel();
             loadPagination();

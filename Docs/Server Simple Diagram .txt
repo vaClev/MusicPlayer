@@ -1,0 +1,190 @@
+@startuml Server Simple Class Diagram
+
+' Настройки для лучшей читаемости
+skinparam class {
+    BackgroundColor White
+    ArrowColor #2E3436
+    BorderColor #2E3436
+}
+skinparam shadowing true
+'left to right direction
+
+' Глобальные отступы между элементами
+skinparam package {
+    Padding 8         ' Внутренние отступы пакета (по умолчанию 12)
+    Margin 4           ' Внешние отступы пакета (по умолчанию 10)
+}
+
+' Отступы вокруг текста в классах
+skinparam class {
+    Margin 1           ' Отступ внутри класса (по умолчанию 2)
+    Padding 1          ' Отступ текста от границ (по умолчанию 4)
+}
+skinparam linetype polyline
+
+' === 1. МОДЕЛИ ДАННЫХ (Entities) ===
+package Models #ccccff {
+    class MusicFile {
+        +string Title
+        +int? ArtistId {fk}
+        +int? GenreId {fk}
+        +ICollection<ExtraFile> ExtraFiles
+    }
+
+    class ExtraFile {
+        +ExtraFileType FileType {enum}
+        +MusicFile MusicFile {nav}
+    }
+
+    enum ExtraFileType {
+    }
+
+    class Artist {
+    }
+
+    class Genre {
+    }
+
+    ExtraFile *-- ExtraFileType
+    MusicFile "1" --o{ "0..*" ExtraFile : содержит >
+    Artist "1" --o{ "0..*" MusicFile : has >
+    Genre "1" --o{ "0..*" MusicFile : has >
+
+package Common #ffffff {
+    class PaginationParams {
+        +int PageNumber
+        +int PageSize
+        +string ToQueryString()
+    }
+
+    class SearchParams extends PaginationParams
+    {
+    }
+}
+}
+
+' === 2. DTO (Data Transfer Objects) ===
+package DTOs #ddddff {
+
+}
+
+' === 3. СЛОЙ ДАННЫХ (Data Layer) ===
+package "Database" #eeffff {
+    class AppDbContext {
+        +DbSet<MusicFile> MusicFiles
+        +DbSet<ExtraFile> ExtraFiles
+        +DbSet<Artist> Artists
+        +DbSet<Genre> Genres
+    }
+
+    interface IMusicFileRepository {
+        +GetByIdAsync(int)
+        +GetPagedAsync(PaginationParams)
+        +SearchAsync(SearchParams) :
+    }
+
+    class MusicFileRepository {
+        -AppDbContext _context
+    }
+
+    IMusicFileRepository <|.. MusicFileRepository : реализует
+    MusicFileRepository o--> AppDbContext
+    Models.MusicFile <.. MusicFileRepository : возвращает
+}
+
+' === 4. СЛОЙ СЕРВИСОВ (Business Logic) ===
+package "Services" #ffdddd {
+    interface IMusicService {
+        +UploadMusicAsync(IFormFile) 
+        +GetMusicFileAsync(int)
+        +GetMusicFilesPageAsync()
+        +GetMusicFileDownloadDataAsync(int)
+        +DeleteMusicFileAsync(int)
+        +SearchMusicFilesAsync(SearchParams)
+    }
+
+    class MusicService {
+        -IConfiguration _configuration
+        -IMusicFileRepository _repository
+        -IUploadServiceFactory _uploadServiceFactory
+        -IUploadService? _uploadService
+    }
+
+    interface IExtraFileService {
+        +UploadExtraFileAsync(int, IFormFile, int, string)
+        +GetExtraFileDownloadDataAsync(int)
+        +DeleteExtraFileAsync(int)
+    }
+
+    class ExtraFileService {
+        -IConfiguration _configuration
+        -IMusicFileRepository _repository
+        -IUploadServiceFactory _uploadServiceFactory
+        -IUploadService? _uploadService
+    }
+
+    interface IUploadServiceFactory {
+        +Create(string, string[]) : IUploadService
+    }
+
+    class UploadServiceFactory {
+    }
+
+    interface IUploadService {
+        +GetExtensionWithCheck(IFormFile) : string
+        +CreateFilePath(string) : string
+        +SaveFile(IFormFile, string) : Task
+        +DeleteFile(string)
+    }
+
+    class UploadService {
+        -string _folderFullSystemPath
+        -string[] _allowedExtensions
+    }
+
+    IMusicService <|.. MusicService : реализует
+    IExtraFileService <|.. ExtraFileService : реализует
+    IUploadServiceFactory <|.. UploadServiceFactory : реализует
+    IUploadService <|.. UploadService : реализует
+
+    MusicService --> IMusicFileRepository : использует
+    MusicService --> IUploadServiceFactory : использует
+    ExtraFileService --> IMusicFileRepository
+    ExtraFileService --> IUploadServiceFactory : использует
+    UploadServiceFactory --> IUploadService : создаёт
+
+    MusicService ..> DTOs
+    ExtraFileService ..> DTOs : возвращает
+}
+
+' === 5. СЛОЙ КОНТРОЛЛЕРОВ (API Layer) ===
+package "Controllers" #ddffdd {
+    class MusicController {
+        -IMusicService _musicService
+        +GetMusicFilesPage
+        +Download
+        +UploadMusic
+        
+        +UploadBatch(List<IFormFile>)
+    }
+
+    class ExtraFilesController {
+        -IExtraFileService _extraFileService
+        +UploadExtraFile
+        +Get
+        +Download
+    }
+
+    class SearchController {
+        -IMusicService _musicService
+
+        +Search()
+        +SimpleSearch(string, int, int)
+    }
+
+    MusicController --> IMusicService : зависит от
+    ExtraFilesController --> IExtraFileService : зависит от
+    SearchController --> IMusicService : зависит от
+}
+
+@enduml

@@ -3,7 +3,7 @@ using MusicServer.API.Models;
 
 namespace MusicServer.API.Database
 {
-    public interface IMusicFileRepository
+    public interface IMusicFileRepository : IExtraFileRepository
     {
         // Базовые CRUD операции
         Task<MusicFile?> GetByIdAsync(int id);
@@ -30,5 +30,27 @@ namespace MusicServer.API.Database
 
         // Сохранение изменений
         Task<int> SaveChangesAsync();
+
+    }
+
+
+    //Задел на возможность разделения репозиториев
+    public interface IExtraFileRepository
+    {
+        // ===  МЕТОДЫ ДЛЯ ExtraFile ===
+        /// Получить все дополнительные файлы для музыкального файла
+        Task<IEnumerable<ExtraFile>> GetExtraFilesByMusicIdAsync(int musicFileId);
+
+        /// Получить дополнительный файл по ID
+        Task<ExtraFile?> GetExtraFileByIdAsync(int extraFileId);
+
+        /// Получить дополнительный файл по ID со всеми связями
+        Task<ExtraFile?> GetExtraFileByIdWithDetailsAsync(int extraFileId);
+
+        /// Добавить дополнительный файл
+        Task AddExtraFileAsync(ExtraFile extraFile);
+
+        /// Удалить дополнительный файл
+        Task<bool> DeleteExtraFileAsync(int extraFileId);
     }
 }

@@ -12,62 +12,70 @@ namespace MusicServer.API.Services
 {
     public class ExtraFileService : IExtraFileService
     {
-        private readonly AppDbContext _context;
-        private readonly IConfiguration _configuration; //TODO проверить можно без нее?
+        private readonly IConfiguration _configuration;
+        private readonly IMusicFileRepository _repository;
+        private readonly IUploadServiceFactory _uploadServiceFactory;
 
-        private readonly IUploadService m_uploadService;
-        private readonly string m_pathPrefix;
-        private readonly string m_folderName;
-        //private readonly ILogger<ExtraFileService> _logger; TODO обдумать возможно стоит добавить
+        private IUploadService? _uploadService;
+        private readonly string _pathPrefix;
+        private readonly string _folderName;
 
         public ExtraFileService(
-            AppDbContext context,
             IConfiguration configuration,
-            IUploadServiceFactory uploadServiceFactory)
+            IUploadServiceFactory uploadServiceFactory,
+            IMusicFileRepository repository)
         {
-            _context = context;
             _configuration = configuration;
+            _uploadServiceFactory = uploadServiceFactory;
+            _repository = repository;
 
-            string musicFolderFullSystemPath = configuration.GetSection("ExtraStorage:FullPath").Get<string>() ?? string.Empty; ;
-            var allowedExtensions = configuration.GetSection("ExtraStorage:AllowedExtensions").Get<string[]>() ?? new[] { string.Empty };
-            m_uploadService = uploadServiceFactory.Create(musicFolderFullSystemPath, allowedExtensions);
+            _pathPrefix = configuration.GetSection("ExtraStorage:PrefixPath").Get<string>() ?? string.Empty;
+            _folderName = configuration.GetSection("ExtraStorage:Path").Value ?? string.Empty;
+        }
 
-            m_pathPrefix = configuration.GetSection("ExtraStorage:PrefixPath").Get<string>() ?? string.Empty;
-            m_folderName = configuration.GetSection("ExtraStorage:Path").Value ?? string.Empty;
+        private void LazyInitUploadService()
+        {
+            if (_uploadService == null)
+            {
+                string musicFolderFullSystemPath = _configuration.GetSection("ExtraStorage:FullPath").Get<string>() ?? string.Empty;
+                var allowedExtensions = _configuration.GetSection("ExtraStorage:AllowedExtensions").Get<string[]>() ?? new[] { string.Empty };
+                _uploadService = _uploadServiceFactory.Create(musicFolderFullSystemPath, allowedExtensions);
+            }
         }
 
         #region Upload
         public async Task<ExtraFileDto> UploadExtraFileAsync(UploadExtraFileDto uploadDto)
         {
-            bool musicFileExists = await MusicFileExistsAsync(uploadDto.MusicFileId);
+           // 0.Проверка на пустой файл
+            if (uploadDto.File == null || uploadDto.File.Length == 0)
+                throw new ArgumentException("Файл пустой");
+
+            // 1. Проверяем существование музыкального файла
+            var musicFileExists = await _repository.GetByIdAsync(uploadDto.MusicFileId) != null;
             if (!musicFileExists)
-                throw new ArgumentException($"MusicFile with id {uploadDto.MusicFileId} not found");
+                throw new ArgumentException($"MusicFile c id {uploadDto.MusicFileId} не найден");
 
-            // 1. Проверяем расширение файла.
-            var extension = m_uploadService.GetExtensionWithCheck(uploadDto.File);
-            var fileExtension = await _context.FileExtensions
-                .FirstOrDefaultAsync(e => e.Extension == extension);
-            // 1.1 Проверка расширения. Что оно есть в таблице сервера. 
+            LazyInitUploadService();
+            if (_uploadService == null)
+                throw new Exception("Не удалось инициализировать Upload Service");
+
+            // 2. Проверяем расширение файла
+            var extension = _uploadService.GetExtensionWithCheck(uploadDto.File);
+            var fileExtension = await _repository.GetFileExtensionAsync(extension);
             if (fileExtension == null)
-                throw new ArgumentException($"Неизвесное расширение файла, такие загружать на сервер нельзя {extension}");
+                throw new ArgumentException($"Неизвестное расширение файла: {extension}");
 
-            // 2. Создаем уникальное имя файла
+            // 3. Создаем уникальное имя файла и сохраняем
             var fileName = Guid.NewGuid().ToString() + extension;
-            var filePath = m_uploadService.CreateFilePath(fileName);
+            var filePath = _uploadService.CreateFilePath(fileName);
+            await _uploadService.SaveFile(uploadDto.File, filePath);
 
-            // 3. Сохраняем файл
-            await m_uploadService.SaveFile(uploadDto.File, filePath);
-            // TODO пункты 1. 2 и 3 можно инкапсулировать внутрь m_uploadService
-            // - нужен только FilePath на выходе
-
-            // 4. Сохранить в БД
-            string fileNameForSaveDb = Path.GetFileName(filePath) ?? "";
-            string filePathForSaveDb = Path.Combine(m_folderName, fileNameForSaveDb); //в базу пишем только от папки ExtraFiles, для кросплатформенности Linux
+            // 4. Создаем сущность ExtraFile
             var extraFile = new ExtraFile
             {
                 OriginalFileName = uploadDto.File.FileName,
-                StoredFileName = fileNameForSaveDb,
-                FilePath = filePathForSaveDb,
+                StoredFileName = fileName,
+                FilePath = Path.Combine(_folderName, fileName),
                 Description = uploadDto.Description,
                 FileType = uploadDto.FileType,
                 FileSize = uploadDto.File.Length,
@@ -75,112 +83,103 @@ namespace MusicServer.API.Services
                 MusicFileId = uploadDto.MusicFileId,
                 FileExtensionId = fileExtension.Id
             };
-            _context.ExtraFiles.Add(extraFile);
-            await _context.SaveChangesAsync();
 
-            return MapToDto(extraFile);
+            // 5. Сохраняем в БД через репозиторий
+            await _repository.AddExtraFileAsync(extraFile);
+            await _repository.SaveChangesAsync();
+
+            return MapToDto(extraFile, fileExtension);
         }
 
 
-        private async Task<bool> MusicFileExistsAsync(int musicFileId)
-        {
-            return await _context.MusicFiles.AnyAsync(mf => mf.id == musicFileId);
-        }
-        #endregion
-
-        #region GetExtraFiles for MyMusicFile
         public async Task<IEnumerable<ExtraFileDto>> GetExtraFilesByMusicIdAsync(int musicFileId)
         {
-            var extraFiles = await _context.ExtraFiles
-                .Where(ef => ef.MusicFileId == musicFileId)
-                .OrderByDescending(ef => ef.UploadDate)
-                .ToListAsync();
-
-            return extraFiles.Select(ef => MapToDto(ef));
+            var extraFiles = await _repository.GetExtraFilesByMusicIdAsync(musicFileId);
+            return extraFiles.Select(ef => MapToDto(ef, ef.FileExtension));
         }
-        #endregion
 
-        #region GetExtraFile
         public async Task<ExtraFileDto> GetExtraFileAsync(int extraFileId)
         {
-            var extraFile = await GetExtraFileEntityAsync(extraFileId); // может пробросить исключение
-            
-            return MapToDto(extraFile);
+            var extraFile = await GetExtraFileEntityAsync(extraFileId);
+            return MapToDto(extraFile, extraFile.FileExtension);
         }
 
+        public async Task<DownloadFileDto> GetExtraFileDownloadDataAsync(int id)
+        {
+            var extraFile = await GetExtraFileEntityAsync(id);
+            return ToDownloadDto(extraFile);
+        }
+
+        public async Task<bool> DeleteExtraFileAsync(int extraFileId)
+        {
+            LazyInitUploadService();
+
+            var extraFile = await _repository.GetExtraFileByIdAsync(extraFileId);
+            if (extraFile == null)
+                return false;
+
+            // Удаляем физический файл
+            string filepath = Path.Combine(_pathPrefix, extraFile.FilePath);
+            _uploadService?.DeleteFile(filepath);
+
+            // Удаляем запись из БД
+            var deleted = await _repository.DeleteExtraFileAsync(extraFileId);
+            if (deleted)
+                await _repository.SaveChangesAsync();
+
+            return deleted;
+        }
+
+        #endregion
+        #region "Приватные методы"
 
         private async Task<ExtraFile> GetExtraFileEntityAsync(int extraFileId)
         {
-            var extraFile =  await _context.ExtraFiles
-                .Include(ef => ef.FileExtension)
-                .Include(ef => ef.MusicFile)
-                .FirstOrDefaultAsync(ef => ef.Id == extraFileId);
-
+            var extraFile = await _repository.GetExtraFileByIdWithDetailsAsync(extraFileId);
             if (extraFile == null)
-                throw new ArgumentException($"Файла c id={extraFileId} не найдено");
+                throw new ArgumentException($"Файл с id={extraFileId} не найден");
 
-            extraFile.FilePath = Path.Combine(m_pathPrefix, extraFile.FilePath);
+            // Формируем полный путь для доступа к файлу
+            extraFile.FilePath = Path.Combine(_pathPrefix, extraFile.FilePath);
 
             return extraFile;
         }
+
         #endregion
 
-
-        // Получить данные для скачивания ExtraFile
-        public async Task<DownloadFileDto> GetExtraFileDownloadDataAsync(int id)
+        #region "Методы маппинга"
+        private ExtraFileDto MapToDto(ExtraFile extraFile, FileExtension? fileExtension = null)
         {
-            var musicFile = await GetExtraFileEntityAsync(id); // может пробросить исключение
-            return ToDownloadDto(musicFile);
-        }
+            var ext = fileExtension ?? extraFile.FileExtension;
 
-
-        // Удалить доп файл из базы и с диска
-        public async Task<bool> DeleteExtraFileAsync(int extraFileId)
-        {
-            var extraFile = await _context.ExtraFiles.FindAsync(extraFileId);
-            if (extraFile == null) return false;
-
-            // Удаляем физический файл c диска.
-            string filepath = Path.Combine(m_pathPrefix, extraFile.FilePath);
-            m_uploadService.DeleteFile(extraFile.FilePath);
-
-            // Удаляем запись из БД.
-            _context.ExtraFiles.Remove(extraFile);
-            await _context.SaveChangesAsync();
-
-            return true;
-        }
-
-
-        //----------
-        // TODO вынести в другой класс.
-        //Маппирование сущности в DTO
-        private ExtraFileDto MapToDto(ExtraFile extraFile)
-        {
             return new ExtraFileDto
             {
                 Id = extraFile.Id,
                 OriginalFileName = extraFile.OriginalFileName,
-                Extension = extraFile.FileExtension.Extension,
+                Extension = ext?.Extension ?? string.Empty,
                 Description = extraFile.Description,
                 FileType = extraFile.FileType,
                 FileSize = extraFile.FileSize,
                 UploadDate = extraFile.UploadDate,
-                DownloadExtraUrl = $"download URL",
+                DownloadExtraUrl = string.Empty, // Заполняется в контроллере
                 MusicFileId = extraFile.MusicFileId
             };
         }
 
-
-        //Маппирование сущности в DTO
         private DownloadFileDto ToDownloadDto(ExtraFile extraFile)
         {
+            var artistName = extraFile.MusicFile?.artist?.Name ?? "Unknown";
+            var title = extraFile.MusicFile?.title ?? "Unknown";
+
             return new DownloadFileDto
             {
-                FilenameForSend = $"{extraFile.MusicFile.artist}-{extraFile.MusicFile.title} - {extraFile.OriginalFileName}",
+                FilenameForSend = $"{artistName}-{title} - {extraFile.OriginalFileName}",
                 Filepath = extraFile.FilePath,
                 Extension = extraFile.FileExtension
             };
         }
+
+        #endregion
+
     }
 }
