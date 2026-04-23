@@ -29,6 +29,8 @@ public class MusicSmallCardController
     @FXML
     private Label durationLabel;
     @FXML
+    public Label yearLabel;
+    @FXML
     private Label statusLabel;
     @FXML
     private Button downloadButton;
@@ -118,6 +120,9 @@ public class MusicSmallCardController
         genreLabel.setText(musicFile.getGenre());
         // Форматированная длительность
         durationLabel.setText("Длительность: " + musicFile.getFormattedDuration());
+
+        final var year = musicFile.getYear();
+        yearLabel.setText(year.equals(0)? "" : year.toString());
 
         // Статус скачивания
         updateDownloadStatusUI();
